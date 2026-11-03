@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://loftpethouse.com/sitemap.xml

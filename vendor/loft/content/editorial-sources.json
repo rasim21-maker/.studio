@@ -1,0 +1,29 @@
+{
+  "reviewedAt": "2026-10-30",
+  "homeCopyRevision": "The owner supplied replacement homepage wording about real customers' experiences on 2026-10-30. Applied verbatim in Turkish with equivalent translations. This wording change is not a new independent authentication of reviews.",
+  "maps": {
+    "url": "https://www.google.com/maps/place/Loft+Pet+House/@41.0098302,29.0397426,17z/data=!4m8!3m7!1s0x14cab804068be33b:0xdad18209ed601518!8m2!3d41.0098302!4d29.0397426!9m1!1b1!16s%2Fg%2F11f3p167lm",
+    "rating": 4.6,
+    "count": 191,
+    "scope": "Five reviews visible in the relevance view were read; one long recent review was expanded. This is not an analysis of all 191 reviews. Google labels reviews unverified.",
+    "observations": [
+      {"review":"Irmak Erpolat, 5 stars, displayed 3 weeks ago", "paraphrase":"Describes video updates, feeding routines, garden time and grooming during boarding. Personal experience, not verified standard service."},
+      {"review":"Kamil Gokdemir, 5 stars, displayed 2 months ago", "paraphrase":"Praises welcoming interaction and management."},
+      {"review":"Necmiye Akgumus, 5 stars, displayed 5 months ago", "paraphrase":"Describes returning for dog boarding after a positive prior stay."},
+      {"review":"Cem Açış, 1 star, displayed 7 years ago", "paraphrase":"Reports an unsatisfactory incomplete cat grooming experience and subsequent sensitivity. Historical personal allegation, not independently verified."},
+      {"review":"Ozlem Sensu, 5 stars, displayed 5 years ago", "paraphrase":"Visible opening mentions touring the facility before choosing boarding. Remaining truncated text was not used."}
+    ],
+    "editorialUse":"Themes guide practical pre-booking questions. No copied testimonials, guarantees, new services, prices or aggregate review structured data added. Existing dated Turkish rating panel remains unchanged."
+  },
+  "images": "Nine existing Google Maps business-owner photos listed in maps-photos.json and the existing hero/logo were visually inspected. Descriptions state visible subjects without inferring happiness, health, breed, safety or credentials.",
+  "ownerFacts": "Current address, telephone and daily 09:00–18:30 hours follow the owner's supplied screenshot. Holiday caveat retained.",
+  "preservation": "Existing Turkish catalog and original visible text retained. New practical guidance is additional. Archived claims about licences, monitoring, veterinary routines, walks and training methods have not been independently reverified.",
+  "reviewNeeded": "The archived training paragraphs contain alpha/pack framing. They are retained to honor the instruction not to change Turkish, not endorsed as a newly verified training standard. Owner review recommended before claiming current methods.",
+  "seoReferences": [
+    "https://developers.google.com/search/docs/appearance/google-images",
+    "https://developers.google.com/search/docs/specialty/international/localized-versions",
+    "https://developers.google.com/search/docs/crawling-indexing/canonicalization",
+    "https://developers.google.com/search/docs/appearance/structured-data/local-business",
+    "https://developers.google.com/search/blog/2019/09/making-review-rich-results-more-helpful"
+  ]
+}

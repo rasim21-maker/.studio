@@ -1,0 +1,6 @@
+* text=auto
+vendor/loft/** -text
+*.png binary
+*.webp binary
+*.jpg binary
+*.ico binary

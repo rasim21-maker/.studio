@@ -1,0 +1,79 @@
+﻿LOFT PET HOUSE — RUSÇA, SEO VE İÇERİK KONTROLÜ
+30 Ekim 2026
+
+SONUÇ
+11 dil, 143 statik sayfa. Rusça tamamlandı. Türkçe ve Açık tema varsayılan.
+Kaynak sürümü: e9d366c79b8777340c36926f91a2df95a23dd72d
+Sites yayını: https://loft-pet-house-yeniden.turka-ara-mu-0204.chatgpt.site
+
+YAPILANLAR
+- 11 dilde 230 temel çeviri anahtarı ve 43 SEO/ek bilgi anahtarı.
+- Her sayfada özgün başlık ve açıklama; tek H1; doğru lang ve Arapça RTL.
+- Her sayfanın kendi mutlak canonical adresi. 11 dil için karşılıklı hreflang
+  bağlantıları ve Türkçe x-default. Yerel dil seçimi alan adı değiştirmez.
+- sitemap.xml: 143 URL, her URL için 12 alternatif bağlantı.
+- robots.txt site haritasını belirtir.
+- LocalBusiness, WebSite, WebPage ve uygun sayfalarda BreadcrumbList JSON-LD.
+  Adres, telefon, saat ve koordinatlar sahibin verdiği bilgilerle uyumludur.
+- Open Graph ve Twitter paylaşım bilgileri; gerçek işletme giriş fotoğrafı.
+- 9 işletme fotoğrafı, ana görsel ve logo görsel olarak incelendi. Her dilde
+  sahneyi açıklayan alt metin; gerçek piksel boyutları ve asenkron çözümleme.
+  Ana görsel öncelikli, önceki alt bölüm görsellerinin lazy yüklemesi korunur.
+  WebP fotoğraflar 87–307 KB aralığındadır; görseller yeniden üretilmedi.
+- Galeri büyütmesinde açıklayıcı alt metin de korunur.
+- Ana sayfa, hizmetler, altı hizmet detayı ve rezervasyon için ek hazırlık bilgisi.
+
+METİN VE YORUM KAYNAKLARI
+Mevcut 13 Türkçe sayfanın görünen metinleri önceki sürümle karşılaştırıldı:
+özgün içerik aynı; ek bölümler ve istenen SEO/alt metin değişiklikleri ayrıdır.
+Türkçe çeviri kataloğu dosyası da önceki sürümle birebir aynı kaldı.
+Google Maps 30 Ekim 2026'da 4,6/5 ve 191 değerlendirme gösteriyordu.
+Alaka sırasındaki beş yorum okundu; yakın tarihli uzun bir yorum açılarak okundu.
+İletişim, beslenme düzeni, konaklama ve bakım deneyimi temaları kullanıldı.
+Eleştirel bakım yorumu da örnekleme dahildir; tüm 191 yorum incelenmedi.
+Yorumlar bağımsız doğrulanmış işletme taahhütleri sayılmadı. Alıntı müşteri
+referansı, yeni hizmet iddiası, fiyat, garanti veya Review/AggregateRating eklenmedi.
+Google Maps yorum kaynağı ve gözlem ayrıntıları tam yedekte
+kaynak-kod/content/editorial-sources.json içindedir.
+Türkçe mevcut puan panelindeki 27 Ekim 2026 tarihi korundu.
+Ana sayfanın yorum açıklaması sonradan işletme sahibinin verdiği metinle
+değiştirildi; 10 diğer dilde aynı anlam uygulandı. Bu ifade bağımsız bir
+yorum doğrulaması değildir. Son değişiklikte yalnızca 11 ana sayfa paragrafı
+değiştiği, diğer 153 web dosyasının aynı kaldığı karşılaştırılarak doğrulandı.
+
+İŞLETMENİN GÖZDEN GEÇİRMESİ GEREKEN ESKİ İFADELER
+Türkçe değişmesin talebi nedeniyle arşivden gelen metinler yeniden yazılmadı.
+Ruhsatlar, 24 saat izleme, veteriner rutinleri, yürüyüş sayısı ve eğitim
+yöntemleri güncel operasyon için bağımsız olarak doğrulanmış değildir.
+Özellikle eğitim sayfasındaki alfa/sürü yaklaşımının güncel uygulamayla uyumunu
+işletme değerlendirmelidir. Yeni metinler bu yaklaşımı doğru kabul eden bir iddia eklemez.
+Bazı eski galeri başlıkları genel tanıtım dilindedir; alt metinler ise fotoğrafta
+gerçekte görünen bakım işlemlerini ve ortamı tarif eder.
+
+KONTROLLER
+- 143 sayfa ve 7502 yerel dosya başvurusu: geçti.
+- 451 görsel kullanımı için alt metin ve gerçek boyut kontrolü: geçti.
+- Canonical, hreflang, dil menüsü, sitemap ve JSON-LD yapısı: geçti.
+- 13 Türkçe sayfanın önceki görünen metninin korunması: geçti.
+- 11 dilde hizmetler sayfası 390 px mobil: yatay taşma yok.
+- 13 Rusça sayfa 390 px mobil: yatay taşma yok.
+- Rusça masaüstü; Açık/Koyu tema; mobil menü ve Escape; dil menüsü;
+  Türkçe/Rusça aynı sayfaya geçiş; galeri büyütme: geçti.
+- 10 tercih davranışı: varsayılan Açık, Sistem takibi, saklama ve yerel Rusça yönlendirme geçti.
+- Rusça rezervasyon formu yerel e-posta taslağı oluşturdu. Mesaj gönderilmedi.
+- Natro ZIP ve Sites arşivi dosya hash'leri eşleşti.
+
+SINIRLAR
+Talep gereği pentest, SQL injection, exploit veya diğer siber taramalar tekrarlanmadı.
+Natro'ya yükleme ve Natro sunucu yapılandırması yapılmadı. HTTPS yönlendirmeleri,
+gerçek HTTP durum kodları, canlı performans ve Search Console dizin raporları
+Natro yayını sonrasında kontrol edilmelidir. Google Rich Results veya canlı
+URL Inspection sonucu alınmadı; yapılandırılmış veri yerel olarak doğrulandı.
+SEO teknik hazırlığı tamamlandı; sıralama/dizine eklenme garantisi değildir.
+
+GOOGLE RESMÎ KAYNAKLARI
+https://developers.google.com/search/docs/appearance/google-images
+https://developers.google.com/search/docs/specialty/international/localized-versions
+https://developers.google.com/search/docs/crawling-indexing/canonicalization
+https://developers.google.com/search/docs/appearance/structured-data/local-business
+https://developers.google.com/search/blog/2019/09/making-review-rich-results-more-helpful

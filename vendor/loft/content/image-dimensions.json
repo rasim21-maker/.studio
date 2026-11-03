@@ -1,0 +1,57 @@
+{
+  "assets/hero.webp": {
+    "width": 1800,
+    "height": 1059,
+    "bytes": 306770
+  },
+  "assets/loft-pet-house-logo.jpg": {
+    "width": 640,
+    "height": 640,
+    "bytes": 32131
+  },
+  "assets/maps-1.webp": {
+    "width": 1243,
+    "height": 700,
+    "bytes": 258036
+  },
+  "assets/maps-10.webp": {
+    "width": 1400,
+    "height": 1502,
+    "bytes": 288218
+  },
+  "assets/maps-2.webp": {
+    "width": 1400,
+    "height": 1750,
+    "bytes": 87150
+  },
+  "assets/maps-3.webp": {
+    "width": 1400,
+    "height": 1608,
+    "bytes": 152656
+  },
+  "assets/maps-5.webp": {
+    "width": 1400,
+    "height": 1533,
+    "bytes": 185444
+  },
+  "assets/maps-6.webp": {
+    "width": 1400,
+    "height": 1462,
+    "bytes": 245138
+  },
+  "assets/maps-7.webp": {
+    "width": 768,
+    "height": 825,
+    "bytes": 86588
+  },
+  "assets/maps-8.webp": {
+    "width": 1400,
+    "height": 1581,
+    "bytes": 189960
+  },
+  "assets/maps-9.webp": {
+    "width": 1400,
+    "height": 1400,
+    "bytes": 112888
+  }
+}

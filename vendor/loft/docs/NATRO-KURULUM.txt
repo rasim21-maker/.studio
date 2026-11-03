@@ -1,0 +1,54 @@
+﻿LOFT PET HOUSE — NATRO KURULUMU
+30 Ekim 2026 — Rusça ve SEO güncellemesi
+
+PAKET: loft-pet-house-natro-2026-10-30.zip
+11 dil, 143 HTML sayfası, toplam 164 dosya.
+Türkçe varsayılan; mevcut Türkçe metinler korunmuştur. Yeni hazırlık
+bilgileri ayrı bölümlerdir. Varsayılan tema Açık; Koyu ve Sistem seçenekleri vardır.
+Rusça, önceki 10 dile eklenmiştir. Dil ve tema menüsü sağ üsttedir.
+Yayımlanan kaynak sürümü: e9d366c79b8777340c36926f91a2df95a23dd72d
+
+YÜKLEME
+1. Natro panelinde loftpethouse.com alan adınıza ait hosting'i açın.
+   Mevcut web dosyalarınızı önce yedekleyin.
+2. Panelde belirtilen web/belge köküne gidin. Hesaba göre public_html,
+   httpdocs veya www olabilir; kendi alan adınızın belge kökünü esas alın.
+3. Bu ZIP'i web köküne yükleyip çıkartın. Panel desteklemiyorsa ZIP'i
+   bilgisayarınızda açın ve içindekileri hosting'in dosya aktarım bilgileriyle yükleyin.
+4. index.html doğrudan web kökünde olmalı; ek bir site/dist klasörü oluşturmayın.
+   assets/, tr/, en/, zh/, hi/, es/, ar/, fr/, bn/, pt/, id/, ru/ ve diğer
+   sayfa klasörlerini; JS/CSS, favicon, robots.txt ve sitemap.xml dosyalarını birlikte yükleyin.
+5. Eski açılış dosyası görünüyorsa varsayılan belgeyi index.html olarak ayarlayın.
+   Mevcut sunucu yönlendirmelerini kontrol edin; hesap ve posta dizinlerini değiştirmeyin.
+6. Alan adı bağlantısı ve SSL sertifikası hazır olduktan sonra HTTPS yönlendirmesini açın.
+7. https://loftpethouse.com/ adresini açın; sayfaları, Rusça seçimini, temaları
+   ve galeri büyütmeyi deneyin. Yüklenen ZIP'i web kökünde bırakmayın.
+
+SEO AYARLARI
+- Canonical, hreflang, sosyal paylaşım görselleri ve sitemap asıl adres olarak
+  https://loftpethouse.com/ kullanır. Site bu alan adının kökünde kurulmalıdır.
+- www veya farklı bir alan adı kullanacaksanız tam yedekteki
+  kaynak-kod/content/site.json içinde canonicalOrigin değerini değiştirip
+  kaynak-kod klasöründe node build.mjs çalıştırın; yeni dist/ içeriğini yükleyin.
+- https://loftpethouse.com/sitemap.xml adresini yayından sonra kontrol edin
+  ve erişiminiz varsa Search Console'dan site haritasını gönderin.
+- HTTPS/non-www yönlendirmeleri ve sunucu durum kodları Natro'da ayarlanır.
+- Dosya paketi tek başına Google dizine eklenme veya sıralama garantisi vermez.
+- Sites üzerindeki mevcut özel paylaşım korunmuştur. Google'ın asıl alan adını
+  taraması için Natro yayınının dışarıdan erişilebilir olması gerekir.
+
+TEKNİK BİLGİLER
+Bu statik paket PHP, Node.js, WordPress veya veritabanı gerektirmez.
+Fotoğraflar yereldir; dil menüsü önizleme ve hosting üzerinde yerel gezinir.
+Form yalnızca e-posta taslağı hazırlar; otomatik gönderim veya rezervasyon yapmaz.
+info@loftpethouse.com posta kutusunun işletme tarafından çalışır tutulması gerekir.
+Önceki güvenlik düzeltmeleri korunur; bu güncellemede siber güvenlik testi tekrarlanmadı.
+
+DOĞRULAMA
+ZIP bütünlüğü geçti. 164 dosya, Sites'e yayımlanan arşiv ve doğrulanan
+kaynak sürümünün dosya hash'leriyle birebir eşleşti. Natro hesabınıza yükleme yapılmadı.
+Ayrıntılı sonuçlar: SEO-RAPORU.txt.
+SHA-256: 0328243b3d1a850d89690f89a96c056072499e18b4c1721da30cf2d81a12a24e
+
+Natro'nun dosya aktarım açıklaması:
+https://www.natro.com/hemendestek/bilgibankasi/dosyalarimi-web-siteme-nasil-aktarabilirim
