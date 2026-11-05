@@ -12,17 +12,20 @@ export function localEpoch(value,zone){
  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)||!dateOnly(value.slice(0,10))||!hhmm(value.slice(11)))fail(422,'Geçerli yerel tarih ve saat girin.');
  const nominal=Date.parse(value+'Z');let epoch=nominal;
  for(let i=0;i<4;i++){const p=localParts(epoch,zone);epoch+=nominal-Date.parse(`${p.date}T${p.time}Z`);}
- const p=localParts(epoch,zone);if(`${p.date}T${p.time}`!==value)fail(422,'Bu yerel saat saat diliminde mevcut değil.');return epoch;
+ const p=localParts(epoch,zone);if(`${p.date}T${p.time}`!==value)fail(422,'Bu yerel saat saat diliminde mevcut değil.');
+ for(const delta of [-36,36]){const probe=epoch+delta*3600000,parts=localParts(probe,zone),offset=Date.parse(`${parts.date}T${parts.time}Z`)-probe,candidate=nominal-offset;if(candidate!==epoch){const other=localParts(candidate,zone);if(`${other.date}T${other.time}`===value)fail(422,'Saat değişimi nedeniyle bu saat iki kez oluşuyor; farklı bir saat seçin.');}}
+ return epoch;
 }
 export const bookingDefaults=()=>({timezone:'Europe/Istanbul',publicEnabled:false,approval:'manual',pendingMinutes:30,cancellationHours:24,allowedOrigins:[],runtimeUrl:'',services:[
  {id:'pet-hotel',name:'Pet Hotel',kind:'overnight',enabled:false,resource:'hotel',capacity:10,priceMinor:0,currency:'TRY',durationMinutes:60,stepMinutes:30,bufferMinutes:0,minNoticeHours:24,maxAdvanceDays:365,minNights:1,maxNights:30,checkIn:'14:00',checkOut:'11:00',hours:['09:00','18:30'],weekdays:[0,1,2,3,4,5,6]},
  {id:'pet-grooming',name:'Bakım & Kuaför',kind:'appointment',enabled:false,resource:'grooming',capacity:1,priceMinor:0,currency:'TRY',durationMinutes:60,stepMinutes:30,bufferMinutes:15,minNoticeHours:2,maxAdvanceDays:90,minNights:1,maxNights:30,checkIn:'14:00',checkOut:'11:00',hours:['09:00','18:30'],weekdays:[1,2,3,4,5,6]}]});
 export function validateBookingSettings(c){
  if(!c||typeof c!=='object')fail(422,'Rezervasyon ayarları gerekli.');
+ if(c.participantMode!==undefined&&!['generic','pets'].includes(c.participantMode))fail(422,'Katılımcı modeli geçersiz.');
  try{new Intl.DateTimeFormat('en',{timeZone:c.timezone}).format();}catch{fail(422,'Geçersiz saat dilimi.');}
  if(typeof c.publicEnabled!=='boolean'||!['manual','automatic'].includes(c.approval)||!integer(c.pendingMinutes,5,1440)||!integer(c.cancellationHours,0,720))fail(422,'Rezervasyon politikası geçersiz.');
  if(!Array.isArray(c.allowedOrigins)||c.allowedOrigins.length>10||c.allowedOrigins.some(o=>{try{const u=new URL(o);return u.origin!==o||u.protocol!=='https:';}catch{return true;}}))fail(422,'İzin verilen kökenler tam HTTPS kökenleri olmalı.');
- if(c.runtimeUrl && !/^https:\/\/[^\s?#]+$/.test(c.runtimeUrl))fail(422,'Canlı rezervasyon sunucusu için HTTPS URL gerekli.');
+ if(c.runtimeUrl){try{const u=new URL(c.runtimeUrl);if(typeof c.runtimeUrl!=='string'||u.protocol!=='https:'||u.username||u.password||u.search||u.hash||/[\s<>"']/.test(c.runtimeUrl))throw Error();}catch{fail(422,'Canlı rezervasyon sunucusu için kimlik bilgisi içermeyen HTTPS URL gerekli.');}}
  if(!Array.isArray(c.services)||c.services.length>30)fail(422,'En çok 30 hizmet tanımlayın.');const ids=new Set(),resources=new Map();
  for(const s of c.services){
   if(!/^[a-z0-9-]{1,60}$/.test(s.id)||ids.has(s.id)||!text(s.name,100,true)||!['overnight','appointment'].includes(s.kind)||typeof s.enabled!=='boolean'||!/^[a-z0-9-]{1,60}$/.test(s.resource))fail(422,'Hizmet kimliği, adı veya türü geçersiz.');ids.add(s.id);
@@ -37,7 +40,8 @@ export class Booking {
  CREATE TABLE IF NOT EXISTS reservations(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES sites(id),revision INTEGER NOT NULL,reference TEXT UNIQUE NOT NULL,service_id TEXT NOT NULL,resource TEXT NOT NULL,start INTEGER NOT NULL,end INTEGER NOT NULL,busy_start INTEGER NOT NULL,busy_end INTEGER NOT NULL,quantity INTEGER NOT NULL,status TEXT NOT NULL,hold_until INTEGER,price_minor INTEGER NOT NULL,currency TEXT NOT NULL,customer TEXT NOT NULL,pets TEXT NOT NULL,notes TEXT NOT NULL,token_hash TEXT NOT NULL,created TEXT NOT NULL,updated TEXT NOT NULL);
  CREATE INDEX IF NOT EXISTS booking_capacity ON reservations(site_id,resource,busy_start,busy_end,status);
  CREATE TABLE IF NOT EXISTS calendar_events(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES sites(id),revision INTEGER NOT NULL,title TEXT NOT NULL,start INTEGER NOT NULL,end INTEGER NOT NULL,resource TEXT NOT NULL,blocks INTEGER NOT NULL,notes TEXT NOT NULL);
- CREATE TABLE IF NOT EXISTS booking_requests(site_id TEXT NOT NULL,request_id TEXT NOT NULL,booking_id TEXT NOT NULL,PRIMARY KEY(site_id,request_id));`);}
+ CREATE TABLE IF NOT EXISTS booking_requests(site_id TEXT NOT NULL,request_id TEXT NOT NULL,booking_id TEXT NOT NULL,PRIMARY KEY(site_id,request_id));
+ CREATE TABLE IF NOT EXISTS reservation_participants(booking_id TEXT NOT NULL REFERENCES reservations(id),position INTEGER NOT NULL,name TEXT NOT NULL,notes TEXT NOT NULL,extensions TEXT NOT NULL,PRIMARY KEY(booking_id,position));`);}
  settings(site){let r=this.store.get('SELECT * FROM booking_settings WHERE site_id=?',site);if(!r){this.store.run('INSERT INTO booking_settings VALUES (?,0,?)',site,JSON.stringify(bookingDefaults()));r=this.store.get('SELECT * FROM booking_settings WHERE site_id=?',site);}return{revision:r.revision,values:JSON.parse(r.content)};}
  saveSettings(site,input,actor){const c=validateBookingSettings(input.values);return this.store.transaction(()=>{
   const old=this.settings(site);if(input.revision!==old.revision)fail(409,'Rezervasyon ayarları değişti. Yeniden yükleyin.');this.expire(site);
@@ -85,22 +89,24 @@ export class Booking {
   return{slots,timezone:c.timezone};
  }
  row(site,id){const r=this.store.get('SELECT * FROM reservations WHERE id=? AND site_id=?',id,site);if(!r)fail(404,'Rezervasyon bulunamadı.');return r;}
- present(r){const{token_hash,...rest}=r;return{...rest,customer:JSON.parse(r.customer),pets:JSON.parse(r.pets)};}
+ present(r){const{token_hash,...rest}=r;const pets=JSON.parse(r.pets),rows=this.store.all('SELECT name,notes,extensions FROM reservation_participants WHERE booking_id=? ORDER BY position',r.id);const participants=rows.length?rows.map(p=>({...p,extensions:JSON.parse(p.extensions)})):pets.map(p=>({name:p.name,notes:p.notes||'',extensions:{pet:{species:p.species}}}));return{...rest,customer:JSON.parse(r.customer),pets,participants};}
  list(site){this.expire(site);return this.store.all('SELECT * FROM reservations WHERE site_id=? ORDER BY start DESC LIMIT 1000',site).map(r=>this.present(r));}
  create(site,input,actor,{publicRequest=false}={}){
   const{c,s}=this.service(site,input.serviceId);if(publicRequest&&!c.publicEnabled)fail(403,'Çevrimiçi rezervasyon henüz açılmadı.');
   if(!/^[a-f0-9-]{36}$/.test(input.requestId||''))fail(422,'Tekil istek kimliği gerekli.');
   const customer=input.customer;if(!customer||!text(customer.name,120,true)||!text(customer.email,254,true)||!/^\S+@\S+\.\S+$/.test(customer.email)||!text(customer.phone,40,true))fail(422,'Ad, geçerli e-posta ve telefon gerekli.');
-  if(!Array.isArray(input.pets)||!input.pets.length||input.pets.length>20||input.pets.some(p=>!text(p.name,80,true)||!['dog','cat','other'].includes(p.species)||!text(p.notes||'',1500)))fail(422,'En az bir petin adı ve türü gerekli.');
+  const generic=c.participantMode==='generic',people=generic?input.participants:input.pets;
+  if(!Array.isArray(people)||!people.length||people.length>20||people.some(p=>!text(p.name,80,true)||!text(p.notes||'',1500)||(!generic&&!['dog','cat','other'].includes(p.species))))fail(422,generic?'En az bir katılımcı adı gerekli.':'En az bir petin adı ve türü gerekli.');
   if(!text(input.notes||'',3000)||input.consent!==true)fail(422,'Not alanı veya rezervasyon veri onayı eksik.');
-  const t=this.interval(c,s,input);if(input.pets.length!==t.quantity)fail(422,'Pet sayısı rezervasyon adediyle aynı olmalı.');
+  const t=this.interval(c,s,input);if(people.length!==t.quantity)fail(422,'Katılımcı sayısı rezervasyon adediyle aynı olmalı.');
   return this.store.transaction(()=>{
    const existing=this.store.get('SELECT booking_id FROM booking_requests WHERE site_id=? AND request_id=?',site,input.requestId);if(existing){const r=this.row(site,existing.booking_id);if(publicRequest)return{reference:r.reference,duplicate:true};return this.present(r);}
    if(this.capacity(site,s,t)<t.quantity)fail(409,'Bu zaman aralığı için yeterli kapasite yok.');
    const id=randomUUID(),reference='LFT-'+randomBytes(5).toString('hex').toUpperCase(),manageToken=randomBytes(32).toString('base64url'),now=new Date().toISOString();
    const status=publicRequest?(c.approval==='automatic'?'confirmed':'pending'):(input.status==='confirmed'?'confirmed':'pending');
    const hold=status==='pending'?Date.now()+c.pendingMinutes*60000:null;
-   this.store.run('INSERT INTO reservations VALUES (?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',id,site,reference,s.id,s.resource,t.start,t.end,t.busyStart,t.busyEnd,t.quantity,status,hold,t.priceMinor,t.currency,JSON.stringify(customer),JSON.stringify(input.pets),input.notes||'',hash(manageToken),now,now);
+   this.store.run('INSERT INTO reservations VALUES (?,?,0,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',id,site,reference,s.id,s.resource,t.start,t.end,t.busyStart,t.busyEnd,t.quantity,status,hold,t.priceMinor,t.currency,JSON.stringify(customer),JSON.stringify(generic?[]:input.pets),input.notes||'',hash(manageToken),now,now);
+   people.forEach((p,position)=>this.store.run('INSERT INTO reservation_participants VALUES (?,?,?,?,?)',id,position,p.name,p.notes||'',JSON.stringify(generic?{}:{pet:{species:p.species}})));
    this.store.run('INSERT INTO booking_requests VALUES (?,?,?)',site,input.requestId,id);this.store.event(site,actor,'booking_created',{id,reference,status});
    const r=this.present(this.row(site,id));return publicRequest?{id,reference,status,manageToken,start:r.start,end:r.end,priceMinor:r.price_minor,currency:r.currency,holdUntil:hold}:r;
   });
@@ -136,7 +142,7 @@ export class Booking {
  }
  removeEvent(site,id,revision,actor){const r=this.store.get('SELECT * FROM calendar_events WHERE id=? AND site_id=?',id,site);if(!r)fail(404,'Etkinlik bulunamadı.');if(r.revision!==revision)fail(409,'Etkinlik değişti.');this.store.run('DELETE FROM calendar_events WHERE id=? AND site_id=?',id,site);this.store.event(site,actor,'calendar_removed',{id});return{ok:true};}
  ics(site){const esc=s=>String(s).replaceAll('\\','\\\\').replaceAll('\n','\\n').replaceAll(',','\\,').replaceAll(';','\\;').replaceAll('\r',''),stamp=t=>new Date(t).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
-  const events=[...this.list(site).filter(r=>r.status!=='cancelled').map(r=>({id:r.id,title:`${r.reference} · ${r.customer.name}`,start:r.start,end:r.end,notes:`${r.status} · ${r.pets.map(p=>p.name).join(', ')}`})),...this.events(site)];
+  const events=[...this.list(site).filter(r=>r.status!=='cancelled').map(r=>({id:r.id,title:`${r.reference} · ${r.customer.name}`,start:r.start,end:r.end,notes:`${r.status} · ${r.participants.map(p=>p.name).join(', ')}`})),...this.events(site)];
   const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Loft Studio//Booking//TR','CALSCALE:GREGORIAN',...events.flatMap(e=>['BEGIN:VEVENT',`UID:${e.id}@loft-studio`,`DTSTAMP:${stamp(Date.now())}`,`DTSTART:${stamp(e.start)}`,`DTEND:${stamp(e.end)}`,`SUMMARY:${esc(e.title)}`,`DESCRIPTION:${esc(e.notes)}`,'END:VEVENT']),'END:VCALENDAR'];
   return lines.map(line=>{let out='',current='';for(const ch of line){if(Buffer.byteLength(current+ch)>73){out+=current+'\r\n ';current='';}current+=ch;}return out+current;}).join('\r\n')+'\r\n';
  }
