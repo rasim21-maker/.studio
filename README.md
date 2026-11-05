@@ -1,14 +1,20 @@
-# Studio site yönetim konsolu
+# Loft Studio 2 — ön sürüm
+
+`v2` dalı farklı site kaynaklarını bağlayan yeni çalışma alanını içerir. Yeni arayüz `/v2/`, mevcut Loft konsolu `/` adresindedir. [V2 kurulum ve kullanım](docs/v2/README.md), [geçiş planı](docs/v2/MIGRATION.md) ve [doğrulama/kalan kapsam](docs/v2/VERIFICATION.md) belgelerini okuyun. Bu sürüm otomatik olarak canlı sitenizin yerini almaz.
+
+## Mevcut Loft konsolu
 
 Loft Pet House için çalışan yerel yönetim pilotu. İçerik, SEO, sayfa yapısı, menü ve tema değişiklikleri taslakta saklanır; kimlik doğrulamalı önizleme veya Natro’ya uygun statik ZIP üretilir. Konsol canlı siteye dosya göndermez.
 
 ## Başlatma
 
-Node.js **24.13 veya üzeri 24.x** kullanın. Harici npm bağımlılığı yoktur; `npm install` gerekmez.
+Node.js **24.13 veya üzeri 24.x** kullanın. V2 bağımlılıkları kilit dosyasıyla sabittir.
 
 ```powershell
 git clone https://github.com/rasim21-maker/.studio.git
 cd .studio
+npm.cmd ci --ignore-scripts
+npm.cmd run build
 npm.cmd start
 ```
 

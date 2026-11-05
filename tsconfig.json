@@ -1,0 +1,1 @@
+{"compilerOptions":{"target":"ES2023","module":"NodeNext","moduleResolution":"NodeNext","jsx":"react-jsx","strict":true,"allowJs":true,"checkJs":false,"skipLibCheck":true,"noEmit":true,"allowImportingTsExtensions":true,"lib":["ES2023","DOM","DOM.Iterable"]},"include":["src/v2/**/*.ts","shared/v2/**/*.ts","ui/**/*.tsx","ui/**/*.ts"],"exclude":["node_modules"]}

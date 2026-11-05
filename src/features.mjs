@@ -18,7 +18,7 @@ export async function createFeatures({store,dataDir,origin,security}){
   if(requestOrigin){res.setHeader('Access-Control-Allow-Origin',requestOrigin);res.setHeader('Vary','Origin');}
   if(method==='OPTIONS'){res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, X-Booking-Token');res.writeHead(204);res.end();return true;}
   if(method!=='GET'&&!requestOrigin)fail(403,'İstek kökeni gerekli.');rateLimit(`public:${site}:${req.socket.remoteAddress}`,120);
-  if(tail==='catalog'&&method==='GET'){json(res,200,{enabled:c.publicEnabled,timezone:c.timezone,approval:c.approval,pendingMinutes:c.pendingMinutes,cancellationHours:c.cancellationHours,services:c.services.filter(s=>s.enabled).map(({resource,...s})=>s),payments:integrations.list(site).filter(p=>p.kind==='payment'&&p.ready).map(p=>({id:p.id,name:p.name,mode:p.mode,note:p.note}))});return true;}
+  if(tail==='catalog'&&method==='GET'){json(res,200,{participantMode:c.participantMode||'pets',enabled:c.publicEnabled,timezone:c.timezone,approval:c.approval,pendingMinutes:c.pendingMinutes,cancellationHours:c.cancellationHours,services:c.services.filter(s=>s.enabled).map(({resource,...s})=>s),payments:integrations.list(site).filter(p=>p.kind==='payment'&&p.ready).map(p=>({id:p.id,name:p.name,mode:p.mode,note:p.note}))});return true;}
   const gadget=tail.match(/^gadgets\/(weather|news|stocks|index|traffic)$/);if(gadget&&method==='GET'){json(res,200,await integrations.gadget(site,gadget[1]));return true;}
   if(!c.publicEnabled)fail(403,'Çevrimiçi rezervasyon henüz açılmadı.');
   if(tail==='availability'&&method==='POST'){json(res,200,booking.availability(site,await body(req)));return true;}
@@ -29,9 +29,9 @@ export async function createFeatures({store,dataDir,origin,security}){
    if(method==='POST'){const input=await body(req);if(b[2]==='cancel')json(res,200,booking.cancelPublic(site,r.id,token,input.revision));else if(b[2]==='checkout'){rateLimit(`checkout:${r.id}`,8);json(res,200,await integrations.checkout(site,r,input.provider,input.billing,origin,req.socket.remoteAddress));}else if(b[2]==='verify'){if(!store.get('SELECT id FROM payment_transactions WHERE id=? AND site_id=? AND booking_id=?',input.paymentId,site,r.id))fail(404,'Ödeme bulunamadı.');json(res,200,await integrations.verify(site,input.paymentId));}else fail(404,'İşlem bulunamadı.');return true;}
   }fail(404,'İşlem bulunamadı.');
  }
- async function adminRoute({req,res,siteId,tail,method,body,user}){
+ async function adminRoute({req,res,siteId,tail,method,body,user,authorize}){
   if(!/^(design|booking-settings|bookings(?:\/|$)|availability|calendar(?:\/|\.ics|$)|integrations(?:\/|$)|payments(?:\/|$))/.test(tail))return false;
-  store.membership(user.user_id,siteId,'admin');
+  if(authorize)authorize();else store.membership(user.user_id,siteId,'admin');
   if(tail==='design'&&method==='GET')json(res,200,{themes,templates,layoutDefaults,sectionDefaults});
   else if(tail==='booking-settings'&&method==='GET')json(res,200,booking.settings(siteId));
   else if(tail==='booking-settings'&&method==='PUT')json(res,200,booking.saveSettings(siteId,await body(req),user.email));

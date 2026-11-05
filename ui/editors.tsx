@@ -1,0 +1,46 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {useEditor,EditorContent} from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import TextAlign from '@tiptap/extension-text-align';
+import {EditorView,keymap,lineNumbers,highlightActiveLine} from '@codemirror/view';
+import {EditorState} from '@codemirror/state';
+import {html} from '@codemirror/lang-html';
+import type {Field,Document,Layout} from '../shared/v2/model.ts';
+import {validRich,safeUrl} from '../shared/v2/validation.ts';
+export function CodeEditor({value,onChange,readOnly=false,label='HTML kaynak'}:{value:string;onChange?:(value:string)=>void;readOnly?:boolean;label?:string}){
+ const container=useRef<HTMLDivElement>(null),view=useRef<EditorView|null>(null),change=useRef(onChange);change.current=onChange;
+ useEffect(()=>{if(!container.current)return;const editor=new EditorView({doc:value,parent:container.current,extensions:[lineNumbers(),highlightActiveLine(),html(),EditorView.lineWrapping,EditorState.readOnly.of(readOnly),EditorView.contentAttributes.of({'aria-label':label,role:'textbox','aria-multiline':'true'}),EditorView.updateListener.of(update=>{if(update.docChanged)change.current?.(update.state.doc.toString());}),keymap.of([{key:'Escape',run:()=>{container.current?.closest('dialog')?.focus();return true;}}])]});view.current=editor;return()=>{editor.destroy();view.current=null;};},[readOnly,label]);
+ useEffect(()=>{const editor=view.current;if(editor&&editor.state.doc.toString()!==value)editor.dispatch({changes:{from:0,to:editor.state.doc.length,insert:value}});},[value]);
+ return <div className="code-editor" ref={container}/>;
+}
+export function RichEditor({value,onChange,label}:{value:string;onChange:(value:string)=>void;label:string}){
+ const [source,setSource]=useState(false),[link,setLink]=useState(''),[showLink,setShowLink]=useState(false),latest=useRef(onChange);latest.current=onChange;
+ const editor=useEditor({extensions:[StarterKit.configure({heading:{levels:[2,3,4]},link:{openOnClick:false,protocols:['https','mailto','tel'],HTMLAttributes:{rel:'noopener noreferrer',target:'_blank'}}}),TextAlign.configure({types:['heading','paragraph']})],content:validRich(value)?value:'',editorProps:{attributes:{'aria-label':label,role:'textbox','aria-multiline':'true',class:'rich-content'}},onUpdate:({editor})=>latest.current(editor.getHTML())});
+ useEffect(()=>{if(editor&&editor.getHTML()!==value&&validRich(value))editor.commands.setContent(value,{emitUpdate:false});},[value,editor]);
+ const tool=(name:string,text:string,run:()=>void,active=false)=><button type="button" title={name} aria-label={name} aria-pressed={active} onClick={run}>{text}</button>;
+ return <div className="rich-editor"><div className="rich-top"><span>{label}</span><button type="button" onClick={()=>setSource(!source)} aria-pressed={source}>{source?'Görsel editör':'HTML'}</button></div>{source?<CodeEditor value={value} onChange={onChange} label={label+' HTML'}/>:<>
+ <div className="rich-toolbar" role="toolbar" aria-label="Metin biçimi">{tool('Kalın','B',()=>editor?.chain().focus().toggleBold().run(),editor?.isActive('bold'))}{tool('İtalik','I',()=>editor?.chain().focus().toggleItalic().run(),editor?.isActive('italic'))}{tool('Başlık','H2',()=>editor?.chain().focus().toggleHeading({level:2}).run())}{tool('Madde listesi','•',()=>editor?.chain().focus().toggleBulletList().run())}{tool('Numaralı liste','1.',()=>editor?.chain().focus().toggleOrderedList().run())}{(['left','center','right','justify'] as const).map((align,i)=>tool(['Sola yasla','Ortala','Sağa yasla','İki yana yasla'][i],['⇤','↔','⇥','☰'][i],()=>editor?.chain().focus().setTextAlign(align).run(),editor?.isActive({textAlign:align})))}{tool('Bağlantı ekle','↗',()=>setShowLink(!showLink))}{tool('Biçimi temizle','Tx',()=>editor?.chain().focus().unsetAllMarks().clearNodes().run())}</div>
+ {showLink&&<div className="inline-form"><label>Bağlantı adresi<input type="url" value={link} onChange={e=>setLink(e.target.value)} placeholder="https://…"/></label><button type="button" disabled={!link||!safeUrl(link)} onClick={()=>{editor?.chain().focus().setLink({href:link}).run();setShowLink(false);}}>Ekle</button><button type="button" onClick={()=>{editor?.chain().focus().unsetLink().run();setShowLink(false);}}>Bağı kaldır</button></div>}<EditorContent editor={editor}/></>}
+ {!validRich(value)&&<p className="field-error" role="alert">HTML desteklenen etiket veya biçim kurallarına uymuyor. Kaynak görünümünde düzeltin.</p>}</div>;
+}
+export function FieldEditor({field,document,onChange,locale,media=[]}:{field:Field;document:Document;onChange:(value:Field['value'])=>void;locale:string;media:any[]}){
+ const value=locale===document.locale||!['text','rich'].includes(field.type)?field.value:field.translations?.[locale]??'',id='field-'+field.id, common={id,required:field.required,'aria-label':field.label,maxLength:field.maxLength};
+ if(field.type==='rich')return <RichEditor value={String(value)} onChange={onChange} label={field.label}/>;
+ return <label className="field" htmlFor={id}><span>{field.label}{field.required&&' *'}</span>
+ {field.type==='boolean'?<input {...common} type="checkbox" checked={Boolean(value)} onChange={e=>onChange(e.target.checked)}/>:field.type==='enum'?<select {...common} value={String(value)} onChange={e=>onChange(e.target.value)}><option value="">Seçin…</option>{document.dictionaries.find(d=>d.id===field.dictionary)?.entries.map(e=><option key={e.id} value={e.id} disabled={!e.active&&e.id!==value}>{e.labels[locale]||e.labels.tr||e.id}{!e.active?' (pasif)':''}</option>)}</select>:field.type==='image'?<select {...common} value={String(value)} onChange={e=>onChange(e.target.value)}><option value="">Görsel seçin</option>{media.filter(a=>a.path.startsWith('media/')).map(a=><option key={a.path} value={a.path}>{a.path.slice(6,18)} · {a.width} × {a.height}</option>)}</select>:field.type==='number'?<input {...common} type="number" min={field.min} max={field.max} step={field.step||1} value={Number.isFinite(value)?String(value):''} onChange={e=>onChange(e.target.value===''?NaN:Number(e.target.value))}/>:<textarea {...common} rows={field.type==='url'?2:3} value={String(value)} onChange={e=>onChange(e.target.value)}/>}
+ {typeof value==='string'&&<small>{value.length} / {field.maxLength||12000}</small>}</label>;
+}
+export function LayoutEditor({value,onChange}:{value:Layout;onChange:(value:Layout)=>void}){
+ const set=(key:keyof Layout,next:any)=>onChange({...value,[key]:next});
+ return <div className="layout-editor"><label>Düzen<select value={value.display||''} onChange={e=>{if(!e.target.value){const next={...value};delete next.display;onChange(next);}else set('display',e.target.value);}}><option value="">Kaynağı / üst cihazı kullan</option><option value="stack">Tek sütun</option><option value="grid">Grid</option><option value="flex">Flex</option></select></label>
+ <div className="input-grid">{([['columns','Sütun',1,4],['gap','Öğe aralığı',0,160],['padding','İç boşluk',0,160],['margin','Dış boşluk',0,160],['maxWidth','En fazla genişlik',320,1920]] as const).map(([key,label,min,max])=><label key={key}>{label}<div className="number-unit"><input aria-label={label} type="number" min={min} max={max} step="1" placeholder="Otomatik" value={value[key]??''} onChange={e=>{if(e.target.value===''){const next={...value};delete next[key];onChange(next);}else set(key,Number(e.target.value));}}/><span>{key==='columns'?'adet':'px'}</span></div></label>)}</div>
+ <label>Yatay hizalama<select value={value.align||'stretch'} onChange={e=>set('align',e.target.value)}><option value="left">Sol</option><option value="center">Orta</option><option value="right">Sağ</option><option value="stretch">Alanı doldur</option></select></label>
+ <label>Dikey hizalama<select value={value.vertical||'start'} onChange={e=>set('vertical',e.target.value)}><option value="start">Üst</option><option value="center">Orta</option><option value="end">Alt</option></select></label>
+ <label>Metin hizalama<select value={value.textAlign||'left'} onChange={e=>set('textAlign',e.target.value)}><option value="left">Sol</option><option value="center">Orta</option><option value="right">Sağ</option><option value="justify">İki yana yasla</option></select></label>
+ <label className="check"><input type="checkbox" checked={value.autoAlign!==false} onChange={e=>set('autoAlign',e.target.checked)}/>Mobilde otomatik hizala</label><button className="quiet" type="button" onClick={()=>onChange({})}>Bu cihazın ayarlarını sıfırla</button></div>;
+}
+export function Modal({title,onClose,children,wide=false}:{title:string;onClose:()=>void;children:React.ReactNode;wide?:boolean}){
+ const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{const previous=document.activeElement as HTMLElement;dialog.current?.showModal();return()=>{dialog.current?.close();previous?.focus();};},[]);
+ return <dialog className={wide?'modal wide':'modal'} ref={dialog} aria-labelledby="dialog-title" onCancel={e=>{e.preventDefault();onClose();}}><div className="modal-heading"><h2 id="dialog-title">{title}</h2><button aria-label="Pencereyi kapat" onClick={onClose}>×</button></div><div className="modal-body">{children}</div></dialog>;
+}

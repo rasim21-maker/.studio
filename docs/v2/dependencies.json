@@ -1,0 +1,2005 @@
+{
+  "lockfileVersion": 3,
+  "packages": [
+    {
+      "name": "@codemirror/autocomplete",
+      "version": "6.20.4",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/autocomplete",
+      "location": "node_modules/@codemirror/autocomplete",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-yF8RhOf2SXlg00+qtupzLhrglcas61boqaONiNcbPIebHCpJocpqTBA6dyrtUrQO47hqyTdeob/3XnYilT7TaQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/lang-css",
+      "version": "6.3.1",
+      "license": "MIT",
+      "source": "https://github.com/codemirror/lang-css",
+      "location": "node_modules/@codemirror/lang-css",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-kr5fwBGiGtmz6l0LSJIbno9QrifNMUusivHbnA1H6Dmqy4HZFte3UAICix1VuKo0lMPKQr2rqB+0BkKi/S3Ejg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/lang-html",
+      "version": "6.4.12",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/lang-html",
+      "location": "node_modules/@codemirror/lang-html",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-pw2ReWKUqSkbvh76RAT4NYxiogRu+PWkR2ukAwO9uOgrm8uipkzjtKKtNpyeAQwHOqxEeSvAXZ6vr3AfyB9y/w==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/lang-javascript",
+      "version": "6.2.5",
+      "license": "MIT",
+      "source": "https://github.com/codemirror/lang-javascript",
+      "location": "node_modules/@codemirror/lang-javascript",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-zD4e5mS+50htS7F+TYjBPsiIFGanfVqg4HyUz6WNFikgOPf2BgKlx+TQedI1w6n/IqRBVBbBWmGFdLB/7uxO4A==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/language",
+      "version": "6.13.1",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/language",
+      "location": "node_modules/@codemirror/language",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-zfvU2r3TyylQLMj/te+5CnQ0rSqZi8B1oTCBbQkagcLW4Xc6imab6qN+pEJhsuNOLaJqiRyBXp9UhWA1DhVvDw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/lint",
+      "version": "6.9.7",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/lint",
+      "location": "node_modules/@codemirror/lint",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-28/+iWLYxKxsvGYhSYL7zaCZqLz5+FFFDq9tVsvGv9kv8RY4fFAchJ5WX9M3YrrRlTIsECjsXPqeNgnSmNP2dg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/state",
+      "version": "6.7.6",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/state",
+      "location": "node_modules/@codemirror/state",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-kAz+AncRtKuIknedxT1bq4XwXv4UowhbkHU1myPrtVb/jZtImWuV5BXzv5vK6i3kYACsdiZiQKFQQ5Mq7elW8w==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/streamparser",
+      "version": "6.0.0",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/streamparser",
+      "location": "node_modules/@codemirror/streamparser",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-JTFPF6xrfjt0mnfGPgzcLiMwYmvIyNaoizp8BYzv8FE8KrT6GBGDZ190rtt+O7Wke3gG/MFHyiY9YGNeimof4w==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@codemirror/view",
+      "version": "6.43.15",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/codemirror/view",
+      "location": "node_modules/@codemirror/view",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-HHsfpqFeHyXLs983pSRe38Xajs0vFWZQ2BuX0m7Ki8w3jZ5iD8cuR3lBz2/5/X53Dhf32SBHKh6rtSTB6tKeGw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "05c6130cda97e7600ca91427a41e8a065efcf82365fc0293e7de80faec494c07"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@dnd-kit/accessibility",
+      "version": "3.1.1",
+      "license": "MIT",
+      "source": "https://github.com/clauderic/dnd-kit",
+      "location": "node_modules/@dnd-kit/accessibility",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "537607e3f1533ad2c5b12978967f5ab27f34ffb7e626e321017a7ccca6cc24ff"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@dnd-kit/core",
+      "version": "6.3.1",
+      "license": "MIT",
+      "source": "https://github.com/clauderic/dnd-kit",
+      "location": "node_modules/@dnd-kit/core",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "537607e3f1533ad2c5b12978967f5ab27f34ffb7e626e321017a7ccca6cc24ff"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@dnd-kit/sortable",
+      "version": "10.0.0",
+      "license": "MIT",
+      "source": "https://github.com/clauderic/dnd-kit",
+      "location": "node_modules/@dnd-kit/sortable",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-+xqhmIIzvAYMGfBYYnbKuNicfSsk4RksY2XdmJhT+HAC01nix6fHCztU68jooFiMUB01Ky3F0FyOvhG/BZrWkg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "537607e3f1533ad2c5b12978967f5ab27f34ffb7e626e321017a7ccca6cc24ff"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@dnd-kit/utilities",
+      "version": "3.2.2",
+      "license": "MIT",
+      "source": "https://github.com/clauderic/dnd-kit",
+      "location": "node_modules/@dnd-kit/utilities",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "537607e3f1533ad2c5b12978967f5ab27f34ffb7e626e321017a7ccca6cc24ff"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/aix-ppc64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/android-arm",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/android-arm",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-kXXoiPVVGQcnIYGOeaovwOURpniDBpSq4A03qkQ+BMQqtGG6HYap3xne9C1O1yo4TR3qxlCX5IqqmX6fFo2Lqg==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/android-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/android-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-5YfKeeI8qWfBZIX+u2xZC3Zlb3Os/gLS2sbEKM+I4ZOcsWmHS2WLysCcQZDAFRslDUU5Oiq44gf6PYN1vGwG5A==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/android-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/android-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-O387ite7SzUyCcy3JQX4P4bLtEA7bLLkx+esve5JHnyYfNTxcVpXZo9jhdB0lTKN44gztELTdU7nS8Nr16Fs1Q==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/darwin-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-n4KqkOQrraxHJcgjM1RvwbigfQKIKJVpM7xp+KsxiyUSrRdIXnt73VhrPAx0fV44hgfmIVKjxMN9J1t5jySVkw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/darwin-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/darwin-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-uq6suIWYP37qzGddBKPw5QEQPi6HiLGsO7UmkpfyaYNQ3D+rN6w6WfwH+nuqcGXWvawGwxOEroO4YGnFh95azw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/freebsd-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-n+I0BTSRIoy+d6RPKnEVwql5UwBJolytvY4mAOIEJorKlqgPII8ix6slVVrfZ5Tnj7glIZvloylbB/EJPMWEXw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/freebsd-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-78XJTJkvPs0kz2w61301PJjXl4g7q3JqiYMZ/M/yVI73EHBrCRTgkhu9oqG7vPqq+a/yadEW8aD+agKlk5xrmg==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-arm",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-arm",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-XlDnu2q5yoqems+xay6wSAcg9DDD7K9RLKZEBOMZm3ckNpJBvOX20tSfby8KfrrhINDyv9V2YVZKY/SpoGJI8w==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-pW4AC0P3it8c7do9MVM4p51FzHzdM/TZrerurgRcHJ2WTa1VQ1CIq18xncfpBJw4ojkiZZrKW2yIBWBP92j6Ug==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-ia32",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-ia32",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-CYbnj78HsIeA+DhgUKgFCfvNsTHFhMMrinUrMZpDXJXKN8T3XViTZ/+wtHeVxEWY8ewSzTFN+nRmSwO2tZaLUQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-loong64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-loong64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-buwkd8nsph4R+ajRvw0qM5Hja/TXQow3ptzWO2EbG/cqcIkHloRrdlBtQlshyYGTNFvfkfJ5tpPLVkY4DtsPfQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-mips64el",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-ZVykbDyk7519VwiNb9Lcj9m8XM6v5V9uKPvrEMkkEedVewf+0itkhahp4HDpgERXhwLRpWFypsGbG/J8s0QjJA==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-ppc64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-CAXl+Dtd9UUuJd8pKKdwh6MLm3MUMiqMPmhZ3tTSXPqfyQ3vDl6R5hZdZ/kYojK4ofXtdfSv1tFq8XzWx3heNQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-riscv64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-GeXCej4IQtU1B+QlDV8W/RRvbzI3O/Stss+/bCXv4lZls5WGRtu2a+3JkA3i4qIUlMXpcHebWpF8AkJhATowuA==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-s390x",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-s390x",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-3H1weTYZPxt/WOhByszQZybS9w5lKzUn1FDMsgEChbHWQwHYQQRfBxgCcZvPhjHfKyJjIievvMmEUawJrdY9Dg==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/linux-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/linux-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/netbsd-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-sSATRjPeDBg3pdgHoQfoYBob11Kk1FGa9lui5RIHZCoCkJa9QKlvl3/vKz2usCmYYjs7ymJR/2Nnsqe+Hjt5nw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/netbsd-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-lqnzCV+mM0gIADaKihiCg6ifgfU2L3h5E33rNQBN1Y4MaVGnzryzmvvf7UHxprpQdE8hpqLolJ9Rl+SkIRDpyw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/openbsd-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-AL2qJILH7lNjrDmCQDvdxMfAUIv8KMNZOvrwAQ8i8//ntL9FflhOyMJ8OZSMBb8/AWXe3/5v5S20y3zCoZWKoQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/openbsd-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-QtiuPytchRyC4rwUKhexJdQKvDuZ6hWloi3igqPQNUJCS1/v9EiO3UTOXR6A3FoMo4fnAKbWJdqaIwhOzh8qEw==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/openharmony-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/openharmony-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-WkhYDmpTjLvGlScA1rwjRUmhl4k8oXR3cIbtqWmELgU/dFeHHlEllxDvdWcNJV9rbzCexB5vz8gtNewWLgCT7Q==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/sunos-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/sunos-x64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-GPMSkTOtMnv2U2F8gxe4Io6qmVs+YKyp832Etqqxr0hFngmXQ3rzwytelm3GIn7T4VviRUlf3sOgBOiTdvaf7g==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/win32-arm64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/win32-arm64",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-PIhhEkE9uPBleRBrQEJpUn7MBnibZzbGzYWPmY3x+YoVg/95zbjB4CxPPOQ8l5tYYM4mMaCthF8/1DIfBQQyWQ==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/win32-ia32",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/win32-ia32",
+      "direct": false,
+      "development": true,
+      "installed": false,
+      "integrity": "sha512-YmJbfTlvU7Sdn9BB+4PRES4oB6pxgS37MAONj+hBr/cpXS1aBPKXxNnDbu+QCWPj0o9dgyxeq79g6c5P8KeuYA==",
+      "evidence": [],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@esbuild/win32-x64",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/@esbuild/win32-x64",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==",
+      "evidence": [
+        {
+          "file": "node_modules/esbuild/LICENSE.md (same upstream version)",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@floating-ui/core",
+      "version": "1.8.0",
+      "license": "MIT",
+      "source": "https://github.com/floating-ui/floating-ui",
+      "location": "node_modules/@floating-ui/core",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@floating-ui/utils",
+      "version": "0.2.12",
+      "license": "MIT",
+      "source": "https://github.com/floating-ui/floating-ui",
+      "location": "node_modules/@floating-ui/utils",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "0e4c9a9b6c71019cbbea3bdc20b01223110a9035700f9c960c8fcbf78c2325ce"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/common",
+      "version": "1.5.5",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/lezer/common",
+      "location": "node_modules/@lezer/common",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Pw7PVCndruF1pb3ebCxpSVpkMHSDjwRCLcTRw+RizUKco5QbWylwq2g4lnG/RYN7yTTQDXE9F77MwtkAyphrjg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/css",
+      "version": "1.3.9",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/lezer/css",
+      "location": "node_modules/@lezer/css",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-ZmzgvTOBdJWGIsY/ItAfN7UW8DV802oZG+jeG6E508SwEzz5YhuAajptpWPICvIyqYAD2+VjMdOS40GgGkyEOQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/highlight",
+      "version": "1.2.5",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/lezer/highlight",
+      "location": "node_modules/@lezer/highlight",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-O1GMVKgtf5YspFaRzpmqkVgMtIk2HG9uMAbH6wdAIdNh3TVzCsch/+cRi+6l2//UGDKe6NB9BW3cvuR5ezMQ0w==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/html",
+      "version": "1.3.13",
+      "license": "MIT",
+      "source": "https://github.com/lezer-parser/html",
+      "location": "node_modules/@lezer/html",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-oI7n6NJml729m7pjm9lvLvmXbdoMoi2f+1pwSDJkl9d68zGr7a9Btz8NdHTGQZtW2DA25ybeuv/SyDb9D5tseg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/javascript",
+      "version": "1.5.6",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/lezer/javascript",
+      "location": "node_modules/@lezer/javascript",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-sEvOqpl4vJQca0NugSQK02vQPbc5KrvoojnYGoqqFgFO0MtcYhwGiHKVEB+LuXYJnfyXo4QPA8ztbrEa4Fw5NA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@lezer/lr",
+      "version": "1.4.12",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/lezer/lr",
+      "location": "node_modules/@lezer/lr",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-On9HU4oMMiHPMkQDgoTnGahjgG5n/MkN38CgG77sMraKLL+3JBbeQNi1FcCXV9QRqwF9/BUXP3caHyJC1fBOTQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "568902fb66eaf1f11750e966b33fd7b5d7c618e65af09f35ef843635bcf5f1ba"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@marijn/find-cluster-break",
+      "version": "1.0.4",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/marijn/find-cluster-break",
+      "location": "node_modules/@marijn/find-cluster-break",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Wy0V7+SGUjnF9/TkiM1hKVDPj7jKXduPNboMVtHTA8dySMURWqfg/JZ9E2Sq8JgSJmkl7k7Qe9FLeMSrSraWmQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "9360b00fdd091f05c783b568bdd46c679c41b72415599252de98949462ea1acb"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/core",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/core",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-EitM8KY3agYfnp/bqhfxcaReVq4CUqVzMqoSIl7xSfYABTGYoTDtVXUdYSGutcCBFjc86BbXjrOlDlqkgC8BsQ==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-blockquote",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-blockquote",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-VLcdnbOm7G52NpUhgbyo3XIOz6Eky7/DyGYuYnCpEUe0TE5xk7Qs6ukrh9vaf2XhyeLDHsmVZuzybGrdtqoC0w==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-bold",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-bold",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-5Q8bScZEZbIBB2tBgnc7Cr6XuH2Nt/6l1HP3FO0wWO7nqXPOcodEbjslePI3v1iag+LNWX16BZ8fDrJr/PbxXA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-bubble-menu",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-bubble-menu",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-mwxWtLHiwhtzXpvdjoegH10eIA8CJr5INGAzUSfzRp4v13zH3rDbsoafljwEi+V5JfcSY/bbXf1akOtsny4yXw==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-bullet-list",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-bullet-list",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-YP7IlC3swrNPlnFHIgVDsDl70geqqWtcAkbuncQEs5FJ9UQg432VwVfwCUW4NsG532p5AqlTTwOKcSLS7p/pqA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-code",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-code",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-jm7qXuDmBzQYPemm/9chLepQjCNVtZhaoU9N2f4GxdUi8u/fi3AQLP7xlXjRCQUyam50FVqIIWgD567mLQ3sMg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-code-block",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-code-block",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-KFkPMMgXEgXImGpbUsrHNaERtvOGbJ/JiWn0zHNGSJCf6frn44OLeRFPpEMptmwMqtJxftBVFbEbcPOlATYqDw==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-document",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-document",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-zKWj8jh1kpckfSwle+kqFn0ZnYvkhb7nz89nrNvpnnsQMbbGU2/+bUAfYU3XSEKZr3VBvW176FtlMPD8ggC3Cg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-dropcursor",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-dropcursor",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-mE9muf4KSY3s+LCaHG/G957pVHVF2q46i+YkZF3ZG70errQcyZ5YFKnce9PSL1fiL0VLL+2UhMAL2QDM5oDiNA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-floating-menu",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-floating-menu",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-JPyJQvJlGDxn2v7Mr8Yft2BmcXaHiapVsXBMYiOJh5BeWbnwUYFWNH9h5PU/xTOz2zVEV79Kh4HmpgXZS3FCbg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-gapcursor",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-gapcursor",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-7W/iX8h6KQ2HK2SfvzCIgySOEJwTM4owqz1tXVOPiLPvKSvDDa9GQsp60+xNyqDNHuplE8bRsZ5dH1nilgAaAg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-hard-break",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-hard-break",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-oIdXmya2XBzp3Cw9Nr36agPvr9ZXP3p2fQXaFflxYYBKOG3UUzw38CId7J6K1jYxBf8c1zodbiKFEL7rttJ6fQ==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-heading",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-heading",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-AE2WNA3jVnPV/cVyTwTmtmGZqX8LiiGicDHXX4bdvfzv+Aez4sgzdkuFjOGWtnEy43NnXdoI1UX7y/984NM0iA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-horizontal-rule",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-horizontal-rule",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Pl0YRS60R339yHrAWGhPT9WHIlD72BO6SGVdj8lBs2OAaYw5RQL/1BGZi+7UvAyc2yJxaRC4XN9X4jdQHDUq9A==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-italic",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-italic",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-aqk8OK4Xo59qZni7YSy42/ltQFb2IOmli3YERIq1XPQ4vl5sxoYhL+sFoOPmvbjHvaHZpK6n8vPh1SmAnB570A==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-link",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-link",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-EwQtMXsU1Vc03n+yud7lfaR+RjHTPwFyI/hcEylvJba7iIXDSLA/ey4mnpwt2od8CEx/ZcOutIryORKVR9Py/Q==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-list",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-list",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-rLYk3GXSswrCakyZwo8VW0+yjnYhLJSBRvzClneIrlPhqQ2r/oDUjeqkpm8lGvwREw1lDSh7wefGhkhTRcQkAw==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-list-item",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-list-item",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-vTdPfzZODLVXog/NMs6zcaTOhtlh6ptJidlMg8l1TLhO+YQyEyO/K45aV429D9xTo/BOVazreav/C+hgemSnYg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-list-keymap",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-list-keymap",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-SioQO8TqRb8aq9L+GpI/a/F7HCSBarm3Uvqtt2YttyazjSjEedu1zSnaa93V+WEFmlqyXnxVa24vv2zj6qlavQ==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-ordered-list",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-ordered-list",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-WQw2fLtJAxCYftKAk+YNlPDc+OxtXK4nNfXRBwr6oC67SoJtoLe0bo5jS6vF+cEqzHjDaboJi+O3MSNp2L2VQA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-paragraph",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-paragraph",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-3bqC//4GEhUiux3dhW/TJuveBp9ADv4nHlqBdVQa3A+USGbaBvE9YvXxA32wZL0leSRykxEnHbNHZ1J4KjIynQ==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-strike",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-strike",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-i3d4vCrZySS9g5nGa5W0LS6LPMKxcAnJO6uADTnGVlKK0ewklcWWZbZ9GB/Fpx/IjKAvXWeayjfsNpTae/yVZg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-text",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-text",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-W6G7UbQ71TyvZvORDdj6u8By8B/Dymy8KoaKGaNHqB82SpM42ZK2TmeFBHI0Lo4wTkZJL3LuI+QthaDvh0USsA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-text-align",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-text-align",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-o1DKPodB0FKqpdYp/OKyM6nYSbZXnPEC9rWx/O/Vccs2OOeF08iOO3cKYs1lS/qNg/xFeR8gKxGMrve7CfCkKA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extension-underline",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extension-underline",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-kY7B5ocKx3JzqIl2kLXGvnLGZRxuYEFzMkpgJ6Vh6/VTTK+JCeOVItYEQGFrAxrodIMmhIrXpi1jF57s6iZswg==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/extensions",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/extensions",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-TUE1JedPjYQ/T527f2a4xz+4Xi1a5nIgW8KwC0DjmqbaHirlz0eCNI2nMEN70pu5WPpqgXmki3lCF3LScQxIGw==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/pm",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/pm",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-4cuUbYf55NnYBIvDBK/K1VFVQ4pocKwAZC5TAy4s9dptvazxVHkQVMbiQsyhwfIbM4rxmHWkM/6omaFfTB++/g==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/react",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/react",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-IrraXFTp6S9R+GlCzavMUQel0wK9wafXU3VnaujeC/REi6sYWNuyBe0jICimdbEk1dU32UvlkvPCuIDRPKlzaQ==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@tiptap/starter-kit",
+      "version": "3.32.2",
+      "license": "MIT",
+      "source": "https://github.com/ueberdosis/tiptap",
+      "location": "node_modules/@tiptap/starter-kit",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-6K+oOMF4orhnOxivgUTKiSpNAEftHyWOcfFIvIEMUP044b34obBUogzMTfM3RjtewZtQXVafO9zmGU30IllC1g==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "c96e5ecb55ac593157ad1d21d1f44a611187f494a0f04c235a1ae692c88d6ba9"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@types/node",
+      "version": "24.10.1",
+      "license": "MIT",
+      "source": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "location": "node_modules/@types/node",
+      "direct": true,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-GNWcUTRBgIRJD5zj+Tq0fKOJ5XZajIiBroOF0yvj2bSU1WvNdYS/dn9UxwsujGW4JX06dnHyjV2y9rRaybH0iQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@types/react",
+      "version": "19.3.0",
+      "license": "MIT",
+      "source": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "location": "node_modules/@types/react",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.3.0",
+      "license": "MIT",
+      "source": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "location": "node_modules/@types/react-dom",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "@types/use-sync-external-store",
+      "version": "0.0.6",
+      "license": "MIT",
+      "source": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "location": "node_modules/@types/use-sync-external-store",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "license": "MIT",
+      "source": "ajv-validator/ajv",
+      "location": "node_modules/ajv",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "a05350a88e318e4f5f2c2a1ff1e2e88daa4dd38e6e78b71cccae422bdc762cc3"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "crelt",
+      "version": "1.0.7",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/marijn/crelt",
+      "location": "node_modules/crelt",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-aK6BbWfhf4U/wCcLHKPJl/xa6VkVstRaPywWtMKGwuOLc/wZTyQYuoxgvZnNsBvv7Kg3YTBQYYBCggcviQczuA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "23852ebf6aef7fadffc92514b3c5df163a8651f2c3ed0dbb494cb49d93bd5de5"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "csstype",
+      "version": "3.2.3",
+      "license": "MIT",
+      "source": "https://github.com/frenic/csstype",
+      "location": "node_modules/csstype",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "11d55bd4541c75ee7879547ac49089c489163dae49551389713c3d026cab383e"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "entities",
+      "version": "9.0.0",
+      "license": "BSD-2-Clause",
+      "source": "https://github.com/fb55/entities",
+      "location": "node_modules/entities",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-oJFNDJg3kTPwAD1cNn2+WmUq4wFoo09npc3Ydf1D7ED4smRiWrsKnaLxykrTWgyGEcusc87P5dxlAleol9kpkg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "cb992345949ccd6e8394b2cd6c465f7b897c864f845937dbf64e8997f389e164"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "license": "MIT",
+      "source": "https://github.com/evanw/esbuild",
+      "location": "node_modules/esbuild",
+      "direct": true,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==",
+      "evidence": [
+        {
+          "file": "LICENSE.md",
+          "sha256": "b40ec5baec7bb34fa5b1c09521fa3cd52d5fad7adafed74932a2010d3612a681"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "license": "MIT",
+      "source": "https://github.com/epoberezkin/fast-deep-equal",
+      "location": "node_modules/fast-deep-equal",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "fast-equals",
+      "version": "5.4.5",
+      "license": "MIT",
+      "source": "https://github.com/planttheidea/fast-equals",
+      "location": "node_modules/fast-equals",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-yKEpcFuRPu/pTQL2VB8YKE2yFldrLlIsoWtJeBnAdqEhvu21OgkFT0C8njf/xYc2LSZGEr3K9JGjthHJxnVLvQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c0af1c3e74a891b408dc4365897482cc8c284365808e3837c56ea3c337ed7a2c"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/fastify/fast-uri",
+      "location": "node_modules/fast-uri",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "b010b0dfdfdb23d7396e03b82cd4621fc9bb8f95d6b0aea70b9c24e12074c786"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.3",
+      "license": "MIT",
+      "source": "https://github.com/101arrowz/fflate",
+      "location": "node_modules/fflate",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "license": "MIT",
+      "source": "https://github.com/epoberezkin/json-schema-traverse",
+      "location": "node_modules/json-schema-traverse",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "7bf9b2de73a6b356761c948d0e9eeb4be6c1270bd04c79cd489c1e400ffdfc1a"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "linkifyjs",
+      "version": "4.4.0",
+      "license": "MIT",
+      "source": "https://github.com/nfrasser/linkifyjs",
+      "location": "node_modules/linkifyjs",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-InTexvtbai+2c+dEVGcc6O6P2DMVIiwD9a/i4zFroazOIYLOS6FSVmAJ7kFeumnCMx6/gQqNAkbUvgMubV4+MA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "58e6f3677452cca096ce5328ebf7de37a1406bbeeb2f263c1b2ededc8c7d0228"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "orderedmap",
+      "version": "2.1.1",
+      "license": "MIT",
+      "source": "https://github.com/marijnh/orderedmap",
+      "location": "node_modules/orderedmap",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "869c30f368eb08735e779027b9f4bc9fea2f39624351856aebe42741f0bc0884"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "parse5",
+      "version": "8.1.0",
+      "license": "MIT",
+      "source": "https://github.com/inikulin/parse5",
+      "location": "node_modules/parse5",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-sq3qBFpee5jeocbFbO48VHlGr8sT7mbXS0vxlKN6sottBtJzrOG3998sr0llSZcQAGgfpdmEYAIZE0P9z0dE8w==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "8c535800331e1e4439835555b3f9edc7fe9dee2fab0d8bbbd5a982e8b8343d4d"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-changeset",
+      "version": "2.4.6",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-changeset",
+      "location": "node_modules/prosemirror-changeset",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-P0cY3DSLm4M2boUOCmHDyaID5o6HgWmb21Bvs9p8lLqfJjKBBEHG5Ma5qW5SCmwOYamtWOLf2k+yvt6077zlTg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "7543dfe82fa61d5bb2478c78cbd9dfb2cbd500b6ac2893b24ed925773b67fb70"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-commands",
+      "version": "1.7.2",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-commands",
+      "location": "node_modules/prosemirror-commands",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-q6Q6szxqdu9Xd6EcdKsqXghu5nQdZTpB4Q9yd04WRc7/jt763e/rT60Owh0L1GYY+T46o5rD+9lEN36dZS43tw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-dropcursor",
+      "version": "1.8.4",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-dropcursor",
+      "location": "node_modules/prosemirror-dropcursor",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-VmKxhcA6a+h5oPSYmfF1ZNeQqPbyYaIxqZsKqeYCyTlPtrjUgNaHL3P8vVaO19oqAV0zuaM/axkowZHrB1P3Tg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-gapcursor",
+      "version": "1.4.1",
+      "license": "MIT",
+      "source": "https://github.com/prosemirror/prosemirror-gapcursor",
+      "location": "node_modules/prosemirror-gapcursor",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-pMdYaEnjNMSwl11yjEGtgTmLkR08m/Vl+Jj443167p9eB3HVQKhYCc4gmHVDsLPODfZfjr/MmirsdyZziXbQKw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-history",
+      "version": "1.5.1",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-history",
+      "location": "node_modules/prosemirror-history",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-onlwnqKvgtFg6srZOmDOAhlAy1FIHQpOExORybX0S+DvJepE5tPALrB9iGet/2sqqqrelSnB10OoiOJqAvu2DA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-inputrules",
+      "version": "1.5.1",
+      "license": "MIT",
+      "source": "https://github.com/prosemirror/prosemirror-inputrules",
+      "location": "node_modules/prosemirror-inputrules",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-7wj4uMjKaXWAQ1CDgxNzNtR9AlsuwzHfdFH1ygEHA2KHF2DOEaXl1CJfNPAKCg9qNEh4rum975QLaCiQPyY6Fw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-keymap",
+      "version": "1.2.3",
+      "license": "MIT",
+      "source": "https://github.com/prosemirror/prosemirror-keymap",
+      "location": "node_modules/prosemirror-keymap",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-4HucRlpiLd1IPQQXNqeo81BGtkY8Ai5smHhKW9jjPKRc2wQIxksg7Hl1tTI2IfT2B/LgX6bfYvXxEpJl7aKYKw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-model",
+      "version": "1.25.12",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-model",
+      "location": "node_modules/prosemirror-model",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Ue2gTmXMa7EhpLNhC7J+h4+ykD8ha12K6rrZFFKKJHBForfIStw5gJ6Zrf1mqqAa9NmpmEB4wp9bKmA4eUVjWg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-schema-list",
+      "version": "1.6.0",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-schema-list",
+      "location": "node_modules/prosemirror-schema-list",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-G1srDtan+VqWn+qpmWFj/6j0YsZ5zMU+ZIlGVIW41a5JF2jAI3jzfMRWmSABmEH2Qoq1PmAG/o2mucMMdLOsLg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-state",
+      "version": "1.4.4",
+      "license": "MIT",
+      "source": "https://github.com/prosemirror/prosemirror-state",
+      "location": "node_modules/prosemirror-state",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-6jiYHH2CIGbCfnxdHbXZ12gySFY/fz/ulZE333G6bPqIZ4F+TXo9ifiR86nAHpWnfoNjOb3o5ESi7J8Uz1jXHw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-tables",
+      "version": "1.8.5",
+      "license": "MIT",
+      "source": "https://github.com/ProseMirror/prosemirror-tables",
+      "location": "node_modules/prosemirror-tables",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-V/0cDCsHKHe/tfWkeCmthNUcEp1IVO3p6vwN8XtwE9PZQLAZJigbw3QoraAdfJPir4NKJtNvOB8oYGKRl+t0Dw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "d1d2046ebbe6362f9ad8fd4d62e9074f2553f289c0e1de895a650f10ba5f4239"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-transform",
+      "version": "1.12.4",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-transform",
+      "location": "node_modules/prosemirror-transform",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-2/WuPum3pn+O/Vi2vzpi8210ICUe2kIPXdLYjQ09Pv5DtT5bcKWMJhAKPBwvpPjpp5iOYUVwVEr0gOM1BY1Mgw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "prosemirror-view",
+      "version": "1.42.9",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/prosemirror/prosemirror-view",
+      "location": "node_modules/prosemirror-view",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-bKbfzeKZOu2H2JQU2TaJmYu6EBcor3VnGIR4jR31cbEt1ztUnfUB6bKGV1+fJzOJdrVWR+tRU0208zM3oQx4wA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "ef0b452ced6304db2ce78ca66de1fc7b97bab05bc1750c95df359ed3fe1d65c8"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "react",
+      "version": "19.3.1",
+      "license": "MIT",
+      "source": "https://github.com/react/react",
+      "location": "node_modules/react",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.1",
+      "license": "MIT",
+      "source": "https://github.com/react/react",
+      "location": "node_modules/react-dom",
+      "direct": true,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "license": "MIT",
+      "source": "floatdrop/require-from-string",
+      "location": "node_modules/require-from-string",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==",
+      "evidence": [
+        {
+          "file": "license",
+          "sha256": "6ee0feb1f6ef996ff5a68600f8cf98909cf412d39ef3cdceaefd87d636fa1b7f"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "rope-sequence",
+      "version": "1.3.4",
+      "license": "MIT",
+      "source": "https://github.com/marijnh/rope-sequence",
+      "location": "node_modules/rope-sequence",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-UT5EDe2cu2E/6O4igUr5PSFs23nvvukicWHx6GnOPlHAiiYbzNuCRQCuiUdHJQcqKalLKlrYJnjY0ySGsXNQXQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "530424aebdd0e73f53238d1f89df250057bc8d8ce090cf5954197fadce5bf226"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "scheduler",
+      "version": "0.28.0",
+      "license": "MIT",
+      "source": "https://github.com/react/react",
+      "location": "node_modules/scheduler",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "style-mod",
+      "version": "4.1.4",
+      "license": "MIT",
+      "source": "https://code.haverbeke.berlin/marijn/style-mod",
+      "location": "node_modules/style-mod",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-XXWIQt633/EpAFx8aZDOTjBzrCaGmhvEQlQo6MVPfa2OzO2cWo+4hV9h+6UkHYlXGfy+ODXKUdP7Pthmcu5ATw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "cb4474e26547397169061d3586c00022cda5330a1b64fa13e872319f3b63aff1"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "tslib",
+      "version": "2.9.1",
+      "license": "0BSD",
+      "source": "https://github.com/Microsoft/tslib",
+      "location": "node_modules/tslib",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==",
+      "evidence": [
+        {
+          "file": "LICENSE.txt",
+          "sha256": "210b19e543130388c68654b7497e967119ce17145f66ab7d85688fbd70f08751"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "license": "Apache-2.0",
+      "source": "https://github.com/microsoft/TypeScript",
+      "location": "node_modules/typescript",
+      "direct": true,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+      "evidence": [
+        {
+          "file": "LICENSE.txt",
+          "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47"
+        }
+      ],
+      "obligations": "Retain license and applicable NOTICE; mark modified source; review patent terms."
+    },
+    {
+      "name": "undici-types",
+      "version": "7.16.0",
+      "license": "MIT",
+      "source": "https://github.com/nodejs/undici",
+      "location": "node_modules/undici-types",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "use-sync-external-store",
+      "version": "1.7.0",
+      "license": "MIT",
+      "source": "https://github.com/react/react",
+      "location": "node_modules/use-sync-external-store",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-6L+EeigHMQhdaIPNIFUKwfWJSwWFQ8gJbJ2DLOs5sDIegTwR9fRxvnM3uciHKjIZhFz+KAv2emhWMRvDmMcY8A==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "w3c-keyname",
+      "version": "2.2.8",
+      "license": "MIT",
+      "source": "https://github.com/marijnh/w3c-keyname",
+      "location": "node_modules/w3c-keyname",
+      "direct": false,
+      "development": false,
+      "installed": true,
+      "integrity": "sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "869c30f368eb08735e779027b9f4bc9fea2f39624351856aebe42741f0bc0884"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    }
+  ],
+  "reviewRequired": []
+}

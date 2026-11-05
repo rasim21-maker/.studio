@@ -10,15 +10,16 @@ import { hash, fail, within } from './util.mjs';
 import { token, passwordHash, passwordMatches, passwordPolicy, normalizeEmail } from './auth.mjs';
 import { Recaptcha } from './captcha.mjs';
 import { Federation, providerConfig } from './federation.mjs';
+import { createPlatform } from './v2/platform.ts';
 
 const publicRoot = path.resolve(import.meta.dirname, '../public');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 const ttl = 8 * 60 * 60 * 1000;
 function json(res, status, body) { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(body)); }
-async function body(req) {
+async function body(req, maxBytes = 2 * 1024 * 1024) {
   if (req.headers['content-type']?.split(';')[0] !== 'application/json') fail(415, 'JSON içerik gerekli.');
   const chunks = []; let size = 0;
-  for await (const chunk of req) { size += chunk.length; if (size > 2 * 1024 * 1024) fail(413, 'İstek çok büyük.'); chunks.push(chunk); }
+  for await (const chunk of req) { size += chunk.length; if (size > maxBytes) fail(413, 'İstek çok büyük.'); chunks.push(chunk); }
   try {
     const value = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     if (!value || typeof value !== 'object' || Array.isArray(value)) fail(400, 'Geçersiz JSON nesnesi.');
@@ -38,6 +39,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   const store = new Store(path.join(dataDir, 'console.sqlite'));
   store.seed(adapter);
   const features = await createFeatures({store,dataDir,origin,security});
+  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,transport:security.studioTransport});
   const captcha = new Recaptcha({ hostname: urlOrigin.hostname, siteKey: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET, required: process.env.AUTH_REQUIRE_CAPTCHA === '1' || !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname), ...security.captcha });
   const federation = new Federation({ store, origin, providers: security.providers || providerConfig(), ...(security.fetcher ? { fetcher: security.fetcher } : {}) });
   const setupToken = store.get('SELECT COUNT(*) AS count FROM users').count === 0 ? token() : null;
@@ -174,6 +176,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
       if (route.startsWith('/api/')) {
         const user = session(req);
         if (method !== 'GET') csrf(req, user);
+        if (await platform.route({req,res,url,method,user,body,json})) return;
         if (route === '/api/me' && method === 'GET') return json(res, 200, { user: { id: user.user_id, email: user.email }, csrf: user.csrf });
         if (route === '/api/identities' && method === 'GET') return json(res, 200, { providers: federation.publicConfig(), linked: store.all('SELECT DISTINCT provider FROM external_identities WHERE user_id=?', user.user_id).map(p => p.provider) });
         const identityAction = route.match(/^\/api\/identities\/(google|microsoft|apple|facebook)\/(link|unlink)$/);
@@ -322,6 +325,10 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
       const asset = route.match(/^\/assets\/([a-z0-9-]+)\/(assets\/[a-z0-9.-]+)$/);
       if (asset && method === 'GET') { const user = session(req); store.membership(user.user_id, asset[1]); const { selected } = siteAdapter(asset[1]); return await staticFile(res, path.join(selected.root, 'dist'), asset[2]); }
       if (method === 'GET' && /^\/book\/[a-z0-9-]+\/?$/.test(route)) return await staticFile(res, publicRoot, 'booking.html');
+      if (method === 'GET' && ['/v2','/v2/','/v2/app.js','/v2/app.css'].includes(route)) {
+        res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'self'; form-action 'self'");
+        return await staticFile(res, publicRoot, ['/v2','/v2/'].includes(route) ? 'v2/index.html' : route.slice(1));
+      }
       if (method === 'GET' && ['/', '/app.js', '/structure.js', '/style.css', '/structure.css','/rich-core.js','/rich-editor.js','/features-ui.js','/features.css','/booking.js','/gadgets.js'].includes(route)) return await staticFile(res, publicRoot, route === '/' ? 'index.html' : route.slice(1));
       fail(404, 'Sayfa bulunamadı.');
     } catch (error) {
@@ -334,5 +341,5 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   server.requestTimeout = 30_000;
   server.headersTimeout = 15_000;
   server.keepAliveTimeout = 5000;
-  return { server, store, adapter, features, origin, setupToken, dataDir, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
+  return { server, store, adapter, features, platform, origin, setupToken, dataDir, close: async () => { await platform.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
 }

@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import {build} from 'esbuild';
+import Ajv from 'ajv';
+import standaloneCode from 'ajv/dist/standalone/index.js';
+import {documentSchema} from '../shared/v2/schema.ts';
+await fs.mkdir('public/v2',{recursive:true});
+const projectLock=JSON.parse(await fs.readFile('package-lock.json','utf8'));
+const sdkLock={name:'northstar-studio-fixture',lockfileVersion:3,requires:true,packages:{'':{name:'northstar-studio-fixture',dependencies:{react:'19.3.1','react-dom':'19.3.1'},devDependencies:{esbuild:'0.28.2'}},...Object.fromEntries(Object.entries(projectLock.packages).filter(([key])=>/^node_modules\/(?:react|react-dom|scheduler|esbuild|@esbuild\/[^/]+)$/.test(key)))}};
+await fs.writeFile('src/v2/sdk-lock.ts','// Generated from the reviewed workspace lockfile.\nexport default '+JSON.stringify(JSON.stringify(sdkLock,null,2))+';\n');
+const ajv=new Ajv({allErrors:true,allowUnionTypes:true,code:{source:true,esm:true}});
+const validator=ajv.compile(documentSchema);
+const standalone=await build({stdin:{contents:standaloneCode(ajv,validator),resolveDir:process.cwd()},bundle:true,format:'esm',write:false,legalComments:'inline'});
+await fs.writeFile('shared/v2/schema-validator.js',standalone.outputFiles[0].text);
+await fs.writeFile('docs/v2/document.schema.json',JSON.stringify(documentSchema,null,2)+'\n');
+if(process.argv.includes('--schema-only'))process.exit(0);
+await build({entryPoints:['ui/main.tsx'],bundle:true,minify:true,format:'esm',target:['es2022'],outfile:'public/v2/app.js',legalComments:'linked',define:{'process.env.NODE_ENV':'"production"'}});
+await fs.copyFile('ui/index.html','public/v2/index.html');
+console.log('V2 shared validation and editor built.');
