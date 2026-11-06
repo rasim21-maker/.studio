@@ -6,6 +6,14 @@ import type {Source,Asset} from '../../shared/v2/model.ts';
 export const limits={compressed:8*1024*1024,expanded:24*1024*1024,file:4*1024*1024,text:2*1024*1024,count:800,ratio:100};
 export const digest=(value:Buffer|string)=>createHash('sha256').update(value).digest('hex');
 export const safePath=(value:string)=>typeof value==='string'&&value.length<=240&&!/[\\\u0000-\u001f\u007f:%]/.test(value)&&!value.startsWith('/')&&!value.split('/').some(p=>!p||p==='.'||p==='..'||/[. ]$/.test(p)||/^(con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(p));
+// Compare canonical identities without renaming source paths: CSS/HTML references
+// must keep resolving to the exact spelling supplied by the source author.
+export function claimSourcePath(value:string,seen:Set<string>):void{
+ if(!safePath(value))fail(422,'Güvensiz kaynak dosyası yolu.');
+ const identity=value.normalize('NFC').toLowerCase();
+ if(seen.has(identity))fail(422,'Unicode veya büyük/küçük harf bakımından çakışan kaynak yolu.');
+ seen.add(identity);
+}
 const secretPath=/(^|\/)(\.git|\.svn|node_modules|\.env(?:\..*)?|\.aws|\.ssh|\.npmrc|id_rsa|id_ed25519|credentials[^/]*)(\/|$)|\.(pem|key|p12|pfx|sqlite|db|bak|sql|dump|log)$/i;
 const secretValue=/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{40,}|sk_live_[A-Za-z0-9]{16,}|AKIA[A-Z0-9]{16})\b|(?:api[_-]?secret|client[_-]?secret|password|access[_-]?token)\s*[=:]\s*["'][^"'\s]{12,}["']/i;
 function crc32(bytes:Buffer){let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let n=0;n<8;n++)crc=crc>>>1^(-(crc&1)&0xedb88320);}return(crc^0xffffffff)>>>0;}
@@ -22,10 +30,11 @@ export function readZip(bytes:Buffer):Record<string,Buffer>{
   if(at+46>end||bytes.readUInt32LE(at)!==0x02014b50)fail(422,'Bozuk ZIP dizini.');
   const flags=bytes.readUInt16LE(at+8),method=bytes.readUInt16LE(at+10),crc=bytes.readUInt32LE(at+16),compressed=bytes.readUInt32LE(at+20),expanded=bytes.readUInt32LE(at+24),nl=bytes.readUInt16LE(at+28),el=bytes.readUInt16LE(at+30),cl=bytes.readUInt16LE(at+32),attrs=bytes.readUInt32LE(at+38),offset=bytes.readUInt32LE(at+42),next=at+46+nl+el+cl;
   if(next>end||flags&1||![0,8].includes(method)||offset+30>start||compressed===0xffffffff||expanded===0xffffffff||bytes.readUInt32LE(offset)!==0x04034b50)fail(422,'ZIP kaydı desteklenmiyor.');
-  const raw=bytes.subarray(at+46,at+46+nl),name=new TextDecoder('utf-8',{fatal:true}).decode(raw).normalize('NFC'),directory=name.endsWith('/'),clean=directory?name.slice(0,-1):name;
+  const raw=bytes.subarray(at+46,at+46+nl),name=new TextDecoder('utf-8',{fatal:true}).decode(raw),directory=name.endsWith('/'),clean=directory?name.slice(0,-1):name;
   const kind=(attrs>>>16)&0xf000;
-  if(!safePath(clean)||seen.has(clean.toLowerCase())||(kind!==0&&kind!==0x8000&&kind!==0x4000))fail(422,'Güvensiz, yinelenen veya bağlantı içeren arşiv yolu.');
-  seen.add(clean.toLowerCase());total+=expanded;
+  claimSourcePath(clean,seen);
+  if(kind!==0&&kind!==0x8000&&kind!==0x4000)fail(422,'Bağlantı içeren arşiv yolu.');
+  total+=expanded;
   if(expanded>limits.file||total>limits.expanded||expanded>Math.max(1024,compressed*limits.ratio))fail(422,'Arşiv açılım sınırını aşıyor.');
   const localNameLength=bytes.readUInt16LE(offset+26),localExtra=bytes.readUInt16LE(offset+28),dataStart=offset+30+localNameLength+localExtra,dataEnd=dataStart+compressed;
   if(dataEnd>start||!raw.equals(bytes.subarray(offset+30,offset+30+localNameLength))||method!==bytes.readUInt16LE(offset+8)||(bytes.readUInt16LE(offset+6)&1))fail(422,'ZIP yerel kaydı uyuşmuyor.');
@@ -56,7 +65,7 @@ export function inspectFiles(input:Record<string,Buffer>):{source:Source;report:
  const files:Record<string,string>=Object.create(null),assets:Record<string,Asset>=Object.create(null),report:ImportReport={accepted:[],rejected:[],warnings:[],bytes:0},names=new Set<string>();
  if(Object.keys(input).length>limits.count)fail(422,'Dosya sayısı sınırı aşıldı.');
  for(const [filename,bytes]of Object.entries(input)){
-  if(!safePath(filename)||names.has(filename.toLowerCase()))fail(422,'Güvensiz veya yinelenen dosya yolu.');names.add(filename.toLowerCase());report.bytes+=bytes.length;if(report.bytes>limits.expanded||bytes.length>limits.file)fail(422,'Import boyut sınırı aşıldı.');
+  claimSourcePath(filename,names);report.bytes+=bytes.length;if(report.bytes>limits.expanded||bytes.length>limits.file)fail(422,'Import boyut sınırı aşıldı.');
   const reject=(reason:string)=>report.rejected.push({path:filename,reason});
   if(secretPath.test(filename)){reject('Sır, çalışma zamanı verisi veya bağımlılık dizini dışlandı.');continue;}
   if(/\.(zip|gz|tar|7z|rar|exe|dll|bat|cmd|ps1|sh)$/i.test(filename)){reject('Arşiv veya çalıştırılabilir dosya dışlandı.');continue;}

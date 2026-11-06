@@ -86,6 +86,22 @@ describe('V2 HTTP and persistence contract',()=>{
   assert.equal((await admin(prefix+'/calendar.ics')).status,200);
  });
  async function reviewImport(input){const started=await admin('/api/v2/imports','POST',{requestId:randomUUID(),orgId:org,...input});assert.equal(started.status,202,JSON.stringify(started.data));let review;for(let i=0;i<100;i++){review=await admin('/api/v2/imports/'+started.data.id);if(!['queued','analyzing'].includes(review.data.status))break;await new Promise(r=>setTimeout(r,10));}return review.data;}
+ test('E-10 E-13: corrupted history cannot bypass validation through restore or release download',async()=>{
+  const loaded=(await admin('/api/v2/sites/'+site)).data;
+  const release=await admin('/api/v2/sites/'+site+'/releases','POST',{revision:loaded.revision});assert.equal(release.status,201);
+  const version=app.store.get('SELECT * FROM studio_versions WHERE site_id=? AND revision=?',site,loaded.revision),bad=JSON.parse(version.document);
+  bad.pages[0].sections[0].fields[0].value='<script>alert(1)</script>';
+  const before=app.store.get('SELECT * FROM studio_sites WHERE id=?',site),historyCount=app.store.get('SELECT COUNT(*) n FROM studio_versions WHERE site_id=?',site).n;
+  app.store.run('UPDATE studio_versions SET document=? WHERE id=?',JSON.stringify(bad),version.id);
+  try{
+   assert.equal((await admin(release.data.url)).status,422);
+   const restored=await admin('/api/v2/sites/'+site+'/restore','POST',{revision:loaded.revision,target:loaded.revision});assert.equal(restored.status,422);assert.ok(restored.data.details.length);
+   assert.equal((await admin('/api/v2/sites/'+site+'/releases','POST',{revision:loaded.revision})).status,422);
+   assert.deepEqual(app.store.get('SELECT * FROM studio_sites WHERE id=?',site),before);
+   assert.equal(app.store.get('SELECT COUNT(*) n FROM studio_versions WHERE site_id=?',site).n,historyCount);
+  }finally{app.store.run('UPDATE studio_versions SET document=? WHERE id=?',version.document,version.id);}
+  assert.equal((await admin(release.data.url)).status,200);
+ });
  test('WordPress bridge contract checks source revision, rejects external conflicts and never exports credentials',async()=>{
   const secret='fixture-app-password-ONLY',remote={html:'<!doctype html><html><head><title>WP fixture</title></head><body><main><section><h1>CMS page</h1><p>Original</p></section></main></body></html>',revision:'revision-one'};
   remoteBehavior=async(url,options)=>{assert.equal(url,'https://wordpress.example.test/wp-json/loft-studio/v1/pages/7');assert.equal(options.headers.Authorization,'Basic '+Buffer.from('fixture:'+secret).toString('base64'));if(options.method==='PUT'){if(options.headers['If-Match']!==remote.revision)return{status:412,headers:{},body:Buffer.from('{}')};remote.html=JSON.parse(options.body).html;remote.revision='revision-three';}return{status:200,headers:{},body:Buffer.from(JSON.stringify(remote))};};
@@ -97,6 +113,49 @@ describe('V2 HTTP and persistence contract',()=>{
   remote.revision='revision-one';assert.equal((await admin(prefix+'/publish','POST',{revision:1})).status,200);assert.match(remote.html,/Edited CMS/);
   const release=await admin(prefix+'/releases','POST',{revision:1}),files=readZip((await admin(release.data.url)).bytes);assert.ok(!JSON.stringify(Object.fromEntries(Object.entries(files).map(([k,v])=>[k,v.toString()]))).includes(secret));
   const row=app.store.get('SELECT * FROM studio_connections WHERE site_id=?',imported.data.siteId);assert.ok(!JSON.stringify(row).includes(secret));assert.equal((await outsider(prefix+'/connection/check')).status,404);
+ });
+ test('E-14 E-24: GitHub duplicate paths fail before any blob is fetched',async()=>{
+  const calls=[];remoteBehavior=async(url)=>{calls.push(url);return{status:200,headers:{},body:Buffer.from(JSON.stringify({sha:'tree',tree:['caf\u00e9.txt','cafe\u0301.txt'].map(path=>({path,type:'blob',mode:'100644',size:1,sha:'blob'}))}))};};
+  const review=await reviewImport({kind:'github',repository:'fixture/site',ref:'main',token:''});
+  assert.equal(review.status,'failed');assert.match(review.error,/çakışan/);assert.equal(calls.length,1);
+ });
+ test('E-04: queued work rechecks permissions before contacting its source',async(t)=>{
+  const gate=Promise.withResolvers(),entered=Promise.withResolvers(),calls=[];t.after(()=>gate.resolve());
+  remoteBehavior=async(url)=>{calls.push(url);entered.resolve();await gate.promise;return{status:200,headers:{},body:Buffer.from(JSON.stringify({html:'<main><section><p>Queue blocker</p></section></main>',revision:'r1'}))};};
+  const blocker=await admin('/api/v2/imports','POST',{kind:'wordpress',url:'https://blocker.example.test',username:'fixture',password:'test',pageId:7,requestId:randomUUID(),orgId:org});assert.equal(blocker.status,202);await entered.promise;
+  assert.equal((await admin('/api/v2/sites/'+site+'/members','PUT',{email:'editor@v2.test',permissions:['import']})).status,200);
+  const loaded=(await admin('/api/v2/sites/'+site)).data;
+  const queued=await editor('/api/v2/imports','POST',{kind:'github',repository:'fixture/revoked',ref:'main',token:'',siteId:site,revision:loaded.revision,requestId:randomUUID()});assert.equal(queued.status,202);
+  assert.equal(app.store.get('SELECT status FROM studio_imports WHERE id=?',queued.data.id).status,'queued');
+  // Simulate a permission change by another worker, without this process's revocation hook.
+  app.store.run('UPDATE studio_members SET permissions=? WHERE site_id=? AND user_id=?',JSON.stringify(['content']),site,'editor');gate.resolve();
+  for(let i=0;i<200;i++){if(app.store.get('SELECT status FROM studio_imports WHERE id=?',queued.data.id).status==='failed')break;await new Promise(r=>setTimeout(r,10));}
+  const failed=app.store.get('SELECT * FROM studio_imports WHERE id=?',queued.data.id);assert.equal(failed.status,'failed');assert.equal(failed.result,null);
+  assert.equal(calls.length,1);assert.equal((await editor('/api/v2/imports/'+queued.data.id)).status,403);
+  assert.equal((await admin('/api/v2/imports/'+blocker.data.id+'/cancel','POST',{})).status,200);
+ });
+ test('E-04: removing import permission aborts active work and discards staged data',async()=>{
+  const entered=Promise.withResolvers();let aborted=false;
+  remoteBehavior=async(_url,options)=>{entered.resolve();return new Promise((_resolve,reject)=>options.signal.addEventListener('abort',()=>{aborted=true;reject(Error('aborted'));},{once:true}));};
+  await admin('/api/v2/sites/'+site+'/members','PUT',{email:'editor@v2.test',permissions:['import','content']});
+  const loaded=(await admin('/api/v2/sites/'+site)).data;
+  const active=await editor('/api/v2/imports','POST',{kind:'github',repository:'fixture/active',ref:'main',token:'',siteId:site,revision:loaded.revision,requestId:randomUUID()});assert.equal(active.status,202);await entered.promise;
+  assert.equal((await admin('/api/v2/sites/'+site+'/members','PUT',{email:'editor@v2.test',permissions:['content']})).status,200);
+  assert.ok(aborted);const row=app.store.get('SELECT * FROM studio_imports WHERE id=?',active.data.id);assert.equal(row.status,'failed');assert.equal(row.result,null);
+  assert.equal((await editor('/api/v2/imports/'+active.data.id+'/commit','POST',{})).status,403);
+  assert.equal((await admin('/api/v2/sites/'+site)).data.revision,loaded.revision);
+ });
+ test('E-04: removing a member clears an already analyzed import',async()=>{
+  const owner=app.store.get('SELECT owner FROM studio_orgs WHERE id=?',org).owner;
+  assert.equal((await admin('/api/v2/sites/'+site+'/members','DELETE',{userId:owner})).status,422);
+  await admin('/api/v2/sites/'+site+'/members','PUT',{email:'editor@v2.test',permissions:['import','content','design']});
+  const loaded=(await admin('/api/v2/sites/'+site)).data;
+  const staged=await editor('/api/v2/imports','POST',{kind:'example',example:'static',siteId:site,revision:loaded.revision,requestId:randomUUID()});assert.equal(staged.status,202);
+  for(let i=0;i<200;i++){if(app.store.get('SELECT status FROM studio_imports WHERE id=?',staged.data.id).status==='review')break;await new Promise(r=>setTimeout(r,10));}
+  assert.equal(app.store.get('SELECT status FROM studio_imports WHERE id=?',staged.data.id).status,'review');
+  assert.equal((await admin('/api/v2/sites/'+site+'/members','DELETE',{userId:'editor'})).status,200);
+  const row=app.store.get('SELECT * FROM studio_imports WHERE id=?',staged.data.id);assert.equal(row.status,'failed');assert.equal(row.result,null);
+  assert.equal((await editor('/api/v2/imports/'+staged.data.id+'/commit','POST',{})).status,404);
  });
  test('cancelling a remote import aborts its request and leaves no committed site',async()=>{
   let aborted=false;remoteBehavior=async(_url,options)=>new Promise((_resolve,reject)=>{options.signal.addEventListener('abort',()=>{aborted=true;reject(Error('Cancelled'));},{once:true});});

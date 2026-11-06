@@ -34,10 +34,19 @@ Bakım aralığında yeni yedek alın. Çalışan eski süreci durdurduktan sonr
 - **İlk açılış hatası, henüz yeni operasyon yok:** Uygulamayı durdurup eski kod + eşleşen veri yedeği + aynı anahtarları birlikte geri alın. Önce başarısız kurulumun verisini ayrıca koruyun.
 - **Yeni rezervasyon/ödeme alındıktan sonra:** Eski veritabanını körlemesine geri yüklemeyin. Son veriyi yedekleyin; operasyonları ve sağlayıcı kayıtlarını mutabakatla koruyan düzeltme/geçiş uygulayın. Kod geri dönüşü, tahsilat geri alma işlemi değildir.
 
+Normal kod geri alma güncel veritabanını korur. Additive migration tek başına N-1 uyumu kanıtlamaz; önceki kodun okuma/yazma sözleşmeleri tam sürüm/commit ile test edilmelidir. 0.2'nin V2 sitelerini yönetebildiği varsayılmaz. Bu N-1 tatbikatı henüz tamamlanmadığından otomatik kod downgrade önerilmez. Eski kolonlar ve pet uyumluluk girdileri bu pencere bitmeden kaldırılmaz.
+
+Veri bozulması veya felaket kurtarmada yedek/PITR kullanılabilir; seçilen kurtarma noktası, sonradan oluşan işlemler ve sağlayıcı mutabakatı ayrıca ele alınır. Mevcut kapalı uygulama yedeği anahtarları veriyle birlikte kopyalar. Ayrı şifreli anahtar yedeği, online nesne/veritabanı tutarlılığı ve hosted PITR bu araçta uygulanmış değildir (D-02).
+
+İçerik geri yükleme güncel şema, alan/sözlük politikası ve kaynak eşleştirmesini doğrular. Uyumsuzlukta alan yollarıyla hata döner; aktif belge, sürüm sayısı ve operasyonlar değişmez. Otomatik şema dönüşümü uygulanmaz.
+
 ## Sonraki dilimler
 
-1. Loft'un mevcut yetkili kaynağına doğrudan bağlanan tam V2 editör adaptörü; kopya içerik deposu oluşturulmadan eşleme.
-2. Gerçek WordPress köprüsü, Gutenberg/page-builder kapsamı, Git'e PR tabanlı geri yazma ve birden fazla aktif bağlantı. Kaynak koşullu yazma kabul testleri zorunlu.
-3. İç içe bileşen ağaçları, yeni sayfa/silme politikaları, import sözlük eşleştirme arayüzü, tam alan şeması tasarımcısı ve erişilebilirlik denetimi.
-4. Bağımsız sitede canlı rezervasyon/gadget bağlama, operasyon olay sözleşmeleri ve takvim sağlayıcı adaptörleri.
-5. PostgreSQL tenant politikaları, nesne depolama, dış iş kuyruğu, kısıtlı derleme yürütücüsü, kota/retention ve yedek geri yükleme tatbikatı. Bunlar tamamlanmadan bu yerel ön sürümü genel erişimli çok kiracılı SaaS olarak dağıtmayın.
+0. Güvenlik sertleştirmesi: import/yetki/geçmiş kontrolleri, tehdit modeli, güvenli yedek/anahtar ve AI yetki tasarımı. Eski 54 ve V2 26 test korunur.
+1. Hosted temel: ortak repository, PostgreSQL tenant politikaları, nesne deposu, dayanıklı kuyruk, kimlik/kota ve operasyon rol ayrımı. Loft/statik Kademe 1 kabulü; Loft'un yetkili kaynağını çoğaltmadan bağlama.
+2. Kaynak sapması, yeniden eşleme, Git'e PR tabanlı geri yazma, üç yönlü çakışma çözümü ve site korpusu.
+3. İzole runner ve gerçek React kabulü. Script'li önizleme yalnızca ilgili izolasyon/messaging kabulüyle.
+4. Gerçek WordPress/API köprüsü, birden fazla aktif bağlantı ve manifestte bildirilen bileşen bölgeleri.
+5. İş modülleri, tema/şablon geçişi, uygun adaptörlerde serbest yerleşim; erişilebilirlik ve işletim kabulü.
+
+Mevcut React/WP fixture, rezervasyon, tema ve yerleşim işlevleri bu sıralama nedeniyle kaldırılmaz. Yeni hosted kabulü tamamlanmadan yerel alfa genel erişimli çok kiracılı SaaS olarak dağıtılmaz. Güncel madde durumu [delta kaydındadır](../delta-durum.md).

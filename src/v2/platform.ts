@@ -4,8 +4,9 @@ import {randomUUID,randomBytes,createCipheriv,createDecipheriv} from 'node:crypt
 import {zipSync,strToU8} from 'fflate';
 import {fail} from '../util.mjs';
 import {createRegistry,discover} from './adapters.ts';
-import {digest,readZip,inspectFiles,mediaAsset,limits} from './import.ts';
+import {digest,readZip,inspectFiles,mediaAsset,limits,claimSourcePath} from './import.ts';
 import {safeRequest} from './network.ts';
+import {assertSnapshot,assertRestorable} from './snapshots.ts';
 import {fixture} from './fixtures.ts';
 import {bookingDefaults} from '../booking.mjs';
 import {permissions} from '../../shared/v2/model.ts';
@@ -50,6 +51,22 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
  function getVersion(site:any,revision:number){const row=store.get('SELECT * FROM studio_versions WHERE site_id=? AND revision=?',site.id,revision);if(!row)fail(404,'Sürüm bulunamadı.');return row;}
  function recordVersion(site:any,user:any,note:string,actorType:string){const id=randomUUID();store.run('INSERT INTO studio_versions VALUES (?,?,?,?,?,?,?,?,?)',id,site.id,site.revision,encode(site.document),encode(site.source),user.user_id,actorType,note,now());return id;}
  function assertRevision(site:any,expected:unknown){if(!Number.isInteger(expected)||site.revision!==expected)fail(409,'Başka bir oturum kaynak sürümünü değiştirdi. Yerel düzenlemeleriniz korunuyor; farkları inceleyin.',{currentRevision:site.revision});}
+ function authorizeImport(user:any,job:any){
+  const current=store.get('SELECT * FROM studio_imports WHERE id=? AND owner=?',job.id,user.user_id);
+  if(!current||!['queued','analyzing'].includes(current.status))fail(409,'Import artık çalıştırılamaz.');
+  if(current.org_id!==job.org_id||current.site_id!==job.site_id)fail(403,'Import kapsamı değişmiş.');
+  if(!job.site_id){organization(user,job.org_id);return null;}
+  const site=access(user,job.site_id,'import');
+  if(site.org_id!==job.org_id)fail(404,'Import kurumu uyuşmuyor.');
+  assertRevision(site,job.expected);return site;
+ }
+ function revokeImports(siteId:string,userId:string){
+  const jobs=store.all("SELECT id FROM studio_imports WHERE site_id=? AND owner=? AND status IN ('queued','analyzing','review')",siteId,userId);
+  for(const job of jobs){
+   store.run("UPDATE studio_imports SET status='failed',result=NULL,error='Import yetkisi kaldırıldı.' WHERE id=?",job.id);
+   controllers.get(job.id)?.abort();
+  }
+ }
  function save(user:any,id:string,input:any){
   const site=access(user,id,'content');assertRevision(site,input.revision);
   if(!['human','ai'].includes(input.actorType||'human'))fail(422,'Değişiklik kaynağı geçersiz.');
@@ -61,11 +78,16 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');return{...summary(site),document:after,changed:true};});
  }
  async function analyze(user:any,job:any,input:any){
-  if(closed||store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status==='cancelled')return;
-  store.run("UPDATE studio_imports SET status='analyzing',progress=15 WHERE id=?",job.id);
+  if(closed||store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status!=='queued')return;
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),60_000);controllers.set(job.id,controller);
-  const remote=(url:string,options:any={})=>transport(url,{...options,signal:controller.signal});
+  const remote=async(url:string,options:any={})=>{
+   authorizeImport(user,job);
+   const response=await transport(url,{...options,signal:controller.signal});
+   authorizeImport(user,job);return response;
+  };
   try{
+   authorizeImport(user,job);
+   store.run("UPDATE studio_imports SET status='analyzing',progress=15 WHERE id=?",job.id);
    let source:Source,report:any={accepted:[],rejected:[],warnings:[],bytes:0},connection:any=null;
    if(input.kind==='example'){if(!['static','react-sdk','wordpress'].includes(input.example))fail(422,'Örnek adaptör geçersiz.');source=fixture(input.example);report.warnings.push('Yerel sözleşme örneği; gerçek sağlayıcı bağlantısı değildir.');}
    else if(input.kind==='zip'){
@@ -85,19 +107,21 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
     const headers:Record<string,string>={Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(input.token?{Authorization:'Bearer '+input.token}:{})},base='https://api.github.com/repos/'+input.repository;
     const treeResult=await remote(base+'/git/trees/'+encodeURIComponent(input.ref)+'?recursive=1',{headers,maxBytes:2*1024*1024});if(treeResult.status!==200)fail(422,'GitHub kaynağı okunamadı.');const tree=parse(treeResult.body.toString());
     if(tree.truncated||!Array.isArray(tree.tree)||tree.tree.length>limits.count)fail(422,'GitHub ağacı fazla büyük; daraltılmış ZIP kullanın.');
+    const sourceNames=new Set<string>();
+    for(const item of tree.tree){if(!item||typeof item.path!=='string')fail(422,'GitHub kaynak yolu geçersiz.');claimSourcePath(item.path,sourceNames);}
     const files:Record<string,Buffer>=Object.create(null);let total=0,processed=0;for(const item of tree.tree){if(item.type==='tree')continue;if(item.type!=='blob'||item.mode==='120000'||item.mode==='160000'||!Number.isInteger(item.size)||item.size>limits.file)fail(422,'GitHub ağacında bağlantı veya sınır dışı dosya.');total+=item.size;if(total>limits.expanded)fail(422,'GitHub kaynak boyutu sınırı aşıldı.');if(controller.signal.aborted)fail(422,'Import süresi aşıldı veya iptal edildi.');if(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status==='cancelled')return;const response=await remote(base+'/git/blobs/'+item.sha,{headers,maxBytes:Math.ceil(limits.file*1.4)});if(response.status!==200)fail(422,'GitHub dosyası okunamadı.');const blob=parse(response.body.toString());if(blob.encoding!=='base64')fail(422,'GitHub blob kodlaması geçersiz.');files[item.path]=Buffer.from(blob.content,'base64');if(files[item.path].length!==item.size)fail(422,'GitHub dosya boyutu uyuşmuyor.');store.run('UPDATE studio_imports SET progress=? WHERE id=?',15+Math.floor(++processed/tree.tree.length*45),job.id);}
     const scan=inspectFiles(files);source=scan.source;report=scan.report;source.manifest.connections=[{id:'git',kind:'github',authority:['code','content','design']}];connection={kind:'github',config:{endpoint:base+'/git/trees/'+encodeURIComponent(input.ref),remoteRevision:tree.sha},secrets:{token:input.token}};report.warnings.push('GitHub anlık görüntüsü alındı. Geri yazma kapalı; sürümü ZIP ile dışa aktarın. Kaynak ref: '+tree.sha);
    }else fail(422,'Import kaynağı desteklenmiyor.');
    if(input.kind!=='wordpress')source!.manifest.publish.mode='export';
    if(input.name){if(!name(input.name))fail(422,'Site adı 1–120 karakter olmalı.');source!.manifest.name=input.name.trim();}
    store.run('UPDATE studio_imports SET progress=65 WHERE id=?',job.id);const result=discover(source!,registry);
-   report.warnings.push(...result.warnings);report.accepted=Object.keys(result.source.files);const previous=job.site_id?access(user,job.site_id,'import'):null;
+   report.warnings.push(...result.warnings);report.accepted=Object.keys(result.source.files);const previous=authorizeImport(user,job);
    const paths=new Set([...Object.keys(previous?.source.files||{}),...Object.keys(result.source.files)]);
    const changes=[...paths].map(p=>({path:p,action:!previous?.source.files[p]?'added':!result.source.files[p]?'removed':digest(previous.source.files[p])!==digest(result.source.files[p])?'changed':'unchanged'}));
    if(previous&&previous.adapter!==result.source.manifest.adapter.id)fail(422,'Yeniden import adaptör türünü değiştiremez.');
    if(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status==='cancelled')return;
    store.run("UPDATE studio_imports SET status='review',progress=100,result=? WHERE id=?",encode({...result,report,changes,connection:connection?{...connection,secrets:undefined,sealed:seal(connection.secrets)}:null}),job.id);
-  }catch(error:any){if(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status!=='cancelled')store.run("UPDATE studio_imports SET status='failed',error=? WHERE id=?",error.status?error.message:'Import tamamlanamadı; dosya biçimini kontrol edin.',job.id);}finally{clearTimeout(timeout);controllers.delete(job.id);}
+  }catch(error:any){if(['queued','analyzing'].includes(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status))store.run("UPDATE studio_imports SET status='failed',result=NULL,error=? WHERE id=?",error.status?error.message:'Import tamamlanamadı; dosya biçimini kontrol edin.',job.id);}finally{clearTimeout(timeout);controllers.delete(job.id);}
  }
  async function route({req,res,url,method,user,body,json}:{req:any;res:any;url:URL;method:string;user:any;body:any;json:any}):Promise<boolean>{
   if(!url.pathname.startsWith('/api/v2/'))return false;
@@ -157,7 +181,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(action===''&&method==='GET')return send({...summary(site),document:site.document,manifest:site.source.manifest,media:Object.entries(site.source.assets).map(([path,a]:any)=>({path,...a})),sourceFiles:Object.keys(site.source.files),sourceHash:digest(encode(site.source.files))});
    if(action==='document'&&method==='PUT')return send(save(user,id,await body(req)));
    if(action==='validate'&&method==='POST'){const input=await body(req);access(user,id,'content');return send({issues:adapter.validate(site.document,input.document,site.source)});}
-   if(action==='preview'&&method==='GET'){return send({html:adapter.preview(site.document,site.source,url.searchParams.get('page')||site.document.pages[0].id),revision:site.revision});}
+   if(action==='preview'&&method==='GET'){assertSnapshot(adapter,site.document,site.source);return send({html:adapter.preview(site.document,site.source,url.searchParams.get('page')||site.document.pages[0].id),revision:site.revision});}
    if(action==='preview'&&method==='POST'){access(user,id,'content');const input=await body(req),issues=adapter.validate(site.document,input.document,site.source);if(issues.length)fail(422,'Önizleme doğrulanamadı.',issues);const source=adapter.write(site.document,input.document,site.source);return send({html:adapter.preview(input.document,source,input.page),revision:site.revision});}
    if(action==='source'&&method==='GET'){const file=url.searchParams.get('path')||'';if(!Object.hasOwn(site.source.files,file))fail(404,'Kaynak bulunamadı.');return send({path:file,text:site.source.files[file],readOnly:true});}
    if(action==='connection/check'&&method==='GET'){
@@ -168,19 +192,46 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(action==='history'&&method==='GET')return send({versions:store.all('SELECT id,revision,actor,actor_type,note,created FROM studio_versions WHERE site_id=? ORDER BY revision DESC LIMIT 100',id),releases:store.all('SELECT id,version_id,created FROM studio_releases WHERE site_id=? ORDER BY created DESC LIMIT 100',id)});
    if(action==='audit'&&method==='GET'){access(user,id,'members');return send({events:store.all('SELECT actor,actor_type,action,revision,created,detail FROM studio_audit WHERE site_id=? ORDER BY created DESC LIMIT 100',id)});}
    if(action==='diff'&&method==='GET'){const revision=Number(url.searchParams.get('revision'));if(!Number.isInteger(revision))fail(422,'Sürüm gerekli.');const v=getVersion(site,revision);return send({before:parse(v.document),after:site.document,revision});}
-   if(action==='restore'&&method==='POST'){access(user,id,'publish');access(user,id,'design');access(user,id,'content');const input=await body(req);assertRevision(site,input.revision);const version=getVersion(site,input.target);return send(store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.document=parse(version.document);site.source=parse(version.source);site.revision++;store.run('UPDATE studio_sites SET revision=?,document=?,source=?,name=? WHERE id=?',site.revision,version.document,version.source,site.document.name,id);recordVersion(site,user,'İçerik sürümü geri yüklendi: '+input.target,'human');audit(site,user,'content.restored',site.revision,{target:input.target});return{revision:site.revision};}));}
-   if(action==='releases'&&method==='POST'){access(user,id,'publish');const input=await body(req);assertRevision(site,input.revision);const version=getVersion(site,site.revision),release=randomUUID();store.run('INSERT INTO studio_releases VALUES (?,?,?,?,?)',release,id,version.id,user.user_id,now());audit(site,user,'release.created',site.revision,{release});return send({id:release,url:'/api/v2/sites/'+id+'/releases/'+release+'/download'},201);}
+   if(action==='restore'&&method==='POST'){
+    access(user,id,'publish');access(user,id,'design');access(user,id,'content');const input=await body(req);
+    return send(store.transaction(()=>{
+     const current=access(user,id,'content');access(user,id,'design');access(user,id,'publish');assertRevision(current,input.revision);
+     const version=getVersion(current,input.target),document=parse(version.document),source=parse(version.source);
+     assertRestorable(adapter,current.document,document,source);
+     current.document=document;current.source=source;current.revision++;
+     store.run('UPDATE studio_sites SET revision=?,document=?,source=?,name=? WHERE id=?',current.revision,version.document,version.source,document.name,id);
+     recordVersion(current,user,'İçerik sürümü geri yüklendi: '+input.target,'human');audit(current,user,'content.restored',current.revision,{target:input.target});return{revision:current.revision};
+    }));
+   }
+   if(action==='releases'&&method==='POST'){
+    access(user,id,'publish');const input=await body(req),current=access(user,id,'publish');assertRevision(current,input.revision);
+    const version=getVersion(current,current.revision);assertSnapshot(adapter,parse(version.document),parse(version.source));
+    const release=randomUUID();store.run('INSERT INTO studio_releases VALUES (?,?,?,?,?)',release,id,version.id,user.user_id,now());audit(current,user,'release.created',current.revision,{release});return send({id:release,url:'/api/v2/sites/'+id+'/releases/'+release+'/download'},201);
+   }
    const download=action.match(/^releases\/([a-f0-9-]{36})\/download$/);
-   if(download&&method==='GET'){access(user,id,'publish');const release=store.get('SELECT v.* FROM studio_releases r JOIN studio_versions v ON v.id=r.version_id WHERE r.id=? AND r.site_id=?',download[1],id);if(!release)fail(404,'Yayın paketi bulunamadı.');const source=parse(release.source),doc=parse(release.document),files=adapter.export(doc,source);const bytes=zipSync({...Object.fromEntries(Object.entries(files).map(([p,t])=>[p,strToU8(t)])),...Object.fromEntries(Object.entries(source.assets).map(([p,a]:any)=>[p,Buffer.from(a.base64,'base64')]))},{level:6});res.writeHead(200,{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="studio-release-'+release.revision+'.zip"'});res.end(bytes);return true;}
+   if(download&&method==='GET'){access(user,id,'publish');const release=store.get('SELECT v.* FROM studio_releases r JOIN studio_versions v ON v.id=r.version_id WHERE r.id=? AND r.site_id=?',download[1],id);if(!release)fail(404,'Yayın paketi bulunamadı.');const source=parse(release.source),doc=parse(release.document);assertSnapshot(adapter,doc,source);const files=adapter.export(doc,source);const bytes=zipSync({...Object.fromEntries(Object.entries(files).map(([p,t])=>[p,strToU8(t)])),...Object.fromEntries(Object.entries(source.assets).map(([p,a]:any)=>[p,Buffer.from(a.base64,'base64')]))},{level:6});res.writeHead(200,{'Content-Type':'application/zip','Content-Disposition':'attachment; filename="studio-release-'+release.revision+'.zip"'});res.end(bytes);return true;}
    if(action==='media'&&method==='POST'){access(user,id,'content');const input=await body(req,6*1024*1024);if(typeof input.base64!=='string'||input.base64.length>6*1024*1024||typeof input.name!=='string')fail(422,'Görsel verisi geçersiz.');const {key,asset}=mediaAsset(Buffer.from(input.base64,'base64'),input.name,input.mime);return send(store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);if(Object.keys(current.source.assets).length>=200&&!current.source.assets[key])fail(422,'En çok 200 medya dosyası.');if(Object.values(current.source.assets).reduce((n:number,a:any)=>n+a.size,0)+asset.size>64*1024*1024)fail(422,'Site medya kotası doldu.');current.source.assets[key]=asset;current.revision++;store.run('UPDATE studio_sites SET revision=?,source=? WHERE id=?',current.revision,encode(current.source),id);recordVersion(current,user,'Medya eklendi','human');audit(current,user,'media.added',current.revision,{size:asset.size});return{path:key,revision:current.revision};}),201);}
    if(action==='members'&&method==='GET'){access(user,id,'members');return send({members:store.all('SELECT u.email,m.user_id,m.permissions FROM studio_members m JOIN users u ON u.id=m.user_id WHERE m.site_id=?',id).map((r:any)=>({...r,permissions:parse(r.permissions)})),available:permissions});}
-   if(action==='members'&&method==='PUT'){access(user,id,'members');const input=await body(req);if(!Array.isArray(input.permissions)||input.permissions.some((p:string)=>!permissions.includes(p as any))||new Set(input.permissions).size!==input.permissions.length||typeof input.email!=='string')fail(422,'Üye veya izin listesi geçersiz.');const target=store.get('SELECT id FROM users WHERE email=?',input.email.trim().toLowerCase());if(!target)fail(422,'Kullanıcı önce Studio üzerinde oluşturulmalı.');if(target.id===site.owner)fail(422,'Kurum sahibinin izinleri buradan değiştirilemez.');store.run('INSERT INTO studio_members VALUES (?,?,?) ON CONFLICT(site_id,user_id) DO UPDATE SET permissions=excluded.permissions',id,target.id,encode(input.permissions));audit(site,user,'member.permissions',site.revision,{userId:target.id,permissions:input.permissions});return send({ok:true});}
-   if(action==='members'&&method==='DELETE'){access(user,id,'members');const input=await body(req);store.run('DELETE FROM studio_members WHERE site_id=? AND user_id=?',id,input.userId);audit(site,user,'member.removed',site.revision);return send({ok:true});}
+   if(action==='members'&&method==='PUT'){
+    access(user,id,'members');const input=await body(req);access(user,id,'members');
+    if(!Array.isArray(input.permissions)||input.permissions.some((p:string)=>!permissions.includes(p as any))||new Set(input.permissions).size!==input.permissions.length||typeof input.email!=='string')fail(422,'Üye veya izin listesi geçersiz.');
+    const target=store.get('SELECT id FROM users WHERE email=?',input.email.trim().toLowerCase());if(!target)fail(422,'Kullanıcı önce Studio üzerinde oluşturulmalı.');if(target.id===site.owner)fail(422,'Kurum sahibinin izinleri buradan değiştirilemez.');
+    store.run('INSERT INTO studio_members VALUES (?,?,?) ON CONFLICT(site_id,user_id) DO UPDATE SET permissions=excluded.permissions',id,target.id,encode(input.permissions));
+    if(!input.permissions.includes('import'))revokeImports(id,target.id);
+    audit(site,user,'member.permissions',site.revision,{userId:target.id,permissions:input.permissions});return send({ok:true});
+   }
+   if(action==='members'&&method==='DELETE'){
+    access(user,id,'members');const input=await body(req);access(user,id,'members');
+    if(typeof input.userId!=='string')fail(422,'Üye kimliği gerekli.');
+    if(input.userId===site.owner)fail(422,'Kurum sahibinin izinleri buradan değiştirilemez.');
+    store.run('DELETE FROM studio_members WHERE site_id=? AND user_id=?',id,input.userId);revokeImports(id,input.userId);
+    audit(site,user,'member.removed',site.revision);return send({ok:true});
+   }
    if(action==='publish'&&method==='POST'){
-    access(user,id,'publish');const input=await body(req);assertRevision(site,input.revision);const conn=store.get('SELECT * FROM studio_connections WHERE site_id=?',id);
+    access(user,id,'publish');const input=await body(req),current=access(user,id,'publish');assertRevision(current,input.revision);assertSnapshot(adapter,current.document,current.source);const conn=store.get('SELECT * FROM studio_connections WHERE site_id=?',id);
     if(!conn||!adapter.publish)fail(422,'Canlı yayın adaptörü yapılandırılmamış.');const config=parse(conn.config);
-    const result=await adapter.publish!(site.document,site.source,{kind:conn.kind,config,secrets:unseal(conn.sealed),request:transport});
-    store.run('UPDATE studio_connections SET config=?,revision=revision+1 WHERE site_id=?',encode({...config,remoteRevision:result.remoteRevision}),id);audit(site,user,'provider.published',site.revision);return send({ok:true,revision:site.revision,...result});
+    const result=await adapter.publish!(current.document,current.source,{kind:conn.kind,config,secrets:unseal(conn.sealed),request:transport});
+    store.run('UPDATE studio_connections SET config=?,revision=revision+1 WHERE site_id=?',encode({...config,remoteRevision:result.remoteRevision}),id);audit(current,user,'provider.published',current.revision);return send({ok:true,revision:current.revision,...result});
    }
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;

@@ -43,7 +43,7 @@ function rememberSourceState(document:Document,source:Source){
 function restoreSourceState(input:Source){
  const source=structuredClone(input);checkManifest(source.manifest);let state:any;
  try{state=JSON.parse(source.files['studio/source-state.json']);}catch{fail(422,'Kaynak eşleştirme dosyası geçersiz.');}
- if(state?.version!==1||validateDocument(state.document).length||!state.hashes||typeof state.hashes!=='object')fail(422,'Kaynak eşleştirme şeması geçersiz.');
+ if(state?.version!==1||validateDocument(state.document,state.document).length||!state.hashes||typeof state.hashes!=='object')fail(422,'Kaynak eşleştirme şeması geçersiz.');
  const doc=state.document as Document;source.bindings=[];
  for(const page of doc.pages){
   const html=source.files[page.path];if(typeof html!=='string'||state.hashes[page.path]!==digest(html))fail(409,'HTML dışarıda değişmiş; studio/source-state.json eşleştirmesi eski. Dosyayı kaldırıp yeni eşleştirme raporunu inceleyin.');
@@ -146,7 +146,7 @@ class StaticAdapter implements Adapter{
 class ReactSdkAdapter implements Adapter{
  id='react-sdk';version=1 as const;
  capabilities(){return{...common,preview:cap('partial','Studio SDK bileşenlerinin şema önizlemesi. İçe alınan JSX çalıştırılmaz.')}};
- discover(input:Source){const source=structuredClone(input);checkManifest(source.manifest);const file=source.manifest.contentPath||'studio/content.json';if(!source.files[file])fail(422,'Manifest içerik dosyası bulunamadı.');let doc;try{doc=JSON.parse(source.files[file]);}catch{fail(422,'SDK içerik JSON biçimi geçersiz.');}const errors=validateDocument(doc);if(errors.length)fail(422,'SDK belgesi doğrulanamadı.',errors);return{document:doc as Document,source,warnings:['Özel React bileşenleri bu önizlemede çalıştırılmaz. Kaynak kod değişmeden korunur.']};}
+ discover(input:Source){const source=structuredClone(input);checkManifest(source.manifest);const file=source.manifest.contentPath||'studio/content.json';if(!source.files[file])fail(422,'SDK içerik dosyası bulunamadı.');let doc;try{doc=JSON.parse(source.files[file]);}catch{fail(422,'SDK içerik JSON biçimi geçersiz.');}const errors=validateDocument(doc,doc);if(errors.length)fail(422,'SDK belgesi doğrulanamadı.',errors);return{document:doc as Document,source,warnings:['Özel React bileşenleri bu önizlemede çalıştırılmaz. Kaynak kod değişmeden korunur.']};}
  validate=policy;
  write(before:Document,after:Document,input:Source){const errors=this.validate(before,after,input);if(errors.length)fail(422,'Alanları kontrol edin.',errors);const source=structuredClone(input);source.files[source.manifest.contentPath||'studio/content.json']=JSON.stringify(after,null,2);source.files['studio/design.css']='body{margin:0;font:18px/1.6 system-ui}main{padding:32px}section{padding:28px;background:var(--studio-surface)}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}'+designCss(after);source.manifest.name=after.name;source.manifest.locales=after.locales;source.files['studio.manifest.json']=JSON.stringify(source.manifest,null,2);return source;}
  preview(doc:Document,source:Source,page:string){return inertPreview(sdkHtml(doc,page),source,doc.pages.find(p=>p.id===page)?.path||'index.html');}
