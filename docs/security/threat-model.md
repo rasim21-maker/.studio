@@ -16,7 +16,7 @@ hatalı/zararlı AI aracı ve kaynak tüketimini hedefleyen istemci.
 ```mermaid
 flowchart LR
   U[İnsan / editör] -->|oturum + CSRF| A[Çekirdek API]
-  AI[AI aracı: henüz bağlı değil] -.->|dar kapsamlı kimlik hedefi| A
+  AI[AI aracı] -->|siteye sınırlı süreli bearer: oku/öner| A
   A -->|yetki + revision + şema| D[(Site içeriği / sürümler)]
   A --> Q[Import kuyruğu ve karantina]
   Q -->|başlangıç ve her istek yetkisi| N[Kontrollü HTTPS]
@@ -51,10 +51,10 @@ Hosted nesne deposu, ayrı preview origin'i, KMS ve worker kesikli/hedef sınır
 | Geçmiş → restore/render/export | Güncel şema/alan kontrolü, adaptörle yeniden keşif, parmak izi ve belge eşitliği | snapshots.test.mjs; corrupted history HTTP testi | Otomatik şema dönüşümü yok; uyumsuzluk reddedilir |
 | Editör ↔ dış yazar | Revision CAS, stale source reddi, WP koşullu yazma | concurrency, reimport ve WP HTTP testleri | Üç yönlü birleştirme, re-anchoring |
 | İçerik geçmişi → operasyon | Restore yalnızca studio_sites/studio_versions/audit yazar | restore preserves booking HTTP testi | Ayrı DB rolü; gerçek N-1 geri alma denemesi |
-| Sır → yayın/istemci | AES-GCM bağlantı saklama, API'de sır dışlama | WP credentials HTTP testi | KMS/rotasyon, log/backup/geniş sızıntı korpusu |
-| AI → çekirdek | AI olarak işaretlenen kayıtlar da aynı alan doğrulaması | manual/AI XSS, field schema testleri | Etiket yetki değildir; ayrı AI kimliği/araç allowlist ve veri politikası yok |
-| Bağımlılık → uygulama | Lockfile, sürüm sabitleme, lisans envanteri | npm run licenses; audit komutu | CI/SBOM ve runner paket proxy'si |
-| Yedek → geri dönüş | Durdurulmuş kaynak, SQLite backup, bütünlük ve kopya testi | migration.test.mjs | Anahtarları ayrı şifreleme, PITR, tutarlı nesne snapshot |
+| Sır → yayın/istemci | Kurum/türe bağlı AES-GCM zarfı, DEK wrapping, eski kayıt uyumu, API'de sır dışlama | envelope ve WP/legacy credentials HTTP testleri | Gerçek KMS, toplu rotasyon, log/geniş sızıntı korpusu |
+| AI → çekirdek | Hash'i saklanan süreli/siteye sınırlı anahtar; oku/öner allowlist; insan fark/onayı; aynı save/validation | E-16 HTTP yetki/iptal/süre/kötü çıktı; tarayıcı onay denemesi | Sağlayıcı veri politikası yok; eski actorType kullanıcı beyanıdır |
+| Bağımlılık → uygulama | Lockfile, lisans, scriptsiz kurulum, CycloneDX ve commit'e sabit CI | licenses; sbom; audit; verify.yml | Uzak CI sonucu ayrıca doğrulanmalı; runner paket proxy'si |
+| Yedek → geri dönüş | Offline SQLite, ayrı şifreli anahtar parçası, set/hash eşleşmesi, yeni hedefe restore | migration ve secure-backup testleri | Veri parçası araçta şifrelenmez; hosted PITR, tutarlı online nesne snapshot |
 | Sınırsız iş → kaynak tükenmesi | Dosya/yanıt/iş süre-boyut limitleri | contracts ZIP; network stream bound | Kurum kotası, adil kuyruk, CPU/bellek/disk worker limiti |
 
 Her hedef kontrol tamamlanana kadar açık kabul edilir; yalnızca belgeye yazılması

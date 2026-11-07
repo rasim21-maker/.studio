@@ -1,12 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {randomUUID,randomBytes,createCipheriv,createDecipheriv} from 'node:crypto';
+import {randomUUID,randomBytes,createDecipheriv} from 'node:crypto';
 import {zipSync,strToU8} from 'fflate';
 import {fail} from '../util.mjs';
 import {createRegistry,discover} from './adapters.ts';
 import {digest,readZip,inspectFiles,mediaAsset,limits,claimSourcePath} from './import.ts';
 import {safeRequest} from './network.ts';
 import {assertSnapshot,assertRestorable} from './snapshots.ts';
+import {sealSecret,openSecret} from '../security/envelope.mjs';
+import {openLocalKeyProvider} from '../security/local-keys.mjs';
+import {createAgentAccess} from './agent-access.mjs';
+import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
 import {bookingDefaults} from '../booking.mjs';
 import {permissions} from '../../shared/v2/model.ts';
@@ -18,7 +22,7 @@ const parse=(v:string)=>JSON.parse(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9-]{36}$/.test(v);
 const name=(v:unknown)=>typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[<>\u0000-\u001f]/.test(v);
 const packed=(row:any)=>({...row,document:parse(row.document),source:parse(row.source)});
-export async function createPlatform({store,dataDir,legacyAdapter,features,transport=safeRequest}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;transport?:typeof safeRequest}){
+export async function createPlatform({store,dataDir,legacyAdapter,features,transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;transport?:typeof safeRequest;secretProvider?:any}){
  store.db.exec(`
  CREATE TABLE IF NOT EXISTS studio_migrations(version INTEGER PRIMARY KEY, applied TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS studio_orgs(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner TEXT NOT NULL REFERENCES users(id));
@@ -37,8 +41,13 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
  const registry=createRegistry();let closed=false,active=0;const pending:(()=>Promise<void>)[]=[],running=new Set<Promise<void>>(),controllers=new Map<string,AbortController>();
  const pump=()=>{if(closed||active||!pending.length)return;active++;const task=pending.shift()!;const promise=new Promise<void>(resolve=>setImmediate(()=>void task().finally(()=>{active--;running.delete(promise);resolve();pump();})));running.add(promise);};
  const keyFile=path.join(dataDir,'studio-key');let key:Buffer;try{key=await fs.readFile(keyFile);}catch(e:any){if(e.code!=='ENOENT')throw e;key=randomBytes(32);await fs.writeFile(keyFile,key,{mode:0o600,flag:'wx'});}if(key!.length!==32)throw Error('Studio key is invalid.');
- const seal=(value:unknown)=>{const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',key!,iv),body=Buffer.concat([cipher.update(encode(value)),cipher.final()]);return Buffer.concat([iv,cipher.getAuthTag(),body]).toString('base64');};
- const unseal=(value:string)=>{const bytes=Buffer.from(value,'base64'),decipher=createDecipheriv('aes-256-gcm',key!,bytes.subarray(0,12));decipher.setAuthTag(bytes.subarray(12,28));return parse(Buffer.concat([decipher.update(bytes.subarray(28)),decipher.final()]).toString());};
+ const wrapping=secretProvider||await openLocalKeyProvider(dataDir);
+ const secretContext=(orgId:string,kind:string)=>'org:'+orgId+':connector:'+kind;
+ const seal=async(value:unknown,orgId:string,kind:string)=>'envelope:'+await sealSecret(value,secretContext(orgId,kind),wrapping);
+ const unseal=async(value:string,orgId:string,kind:string)=>{
+  if(value.startsWith('envelope:'))return openSecret(value.slice(9),secretContext(orgId,kind),wrapping);
+  const bytes=Buffer.from(value,'base64'),decipher=createDecipheriv('aes-256-gcm',key!,bytes.subarray(0,12));decipher.setAuthTag(bytes.subarray(12,28));return parse(Buffer.concat([decipher.update(bytes.subarray(28)),decipher.final()]).toString());
+ };
  function audit(site:any,user:any,action:string,revision:number|null,detail:unknown={},actorType='human'){store.run('INSERT INTO studio_audit VALUES (?,?,?,?,?,?,?,?,?)',randomUUID(),site.id||null,site.org_id,user.user_id,actorType,action,revision,now(),encode(detail));}
  function personal(user:any){let org=store.get('SELECT * FROM studio_orgs WHERE owner=? ORDER BY rowid LIMIT 1',user.user_id);if(!org){const id=randomUUID();store.run('INSERT INTO studio_orgs VALUES (?,?,?)',id,'Kişisel çalışma alanı',user.user_id);org={id,name:'Kişisel çalışma alanı',owner:user.user_id};}return org;}
  function organization(user:any,id:string){const org=store.get('SELECT * FROM studio_orgs WHERE id=? AND owner=?',id,user.user_id);if(!org)fail(404,'Kurum bulunamadı veya işlem yetkiniz yok.');return org;}
@@ -67,16 +76,19 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    controllers.get(job.id)?.abort();
   }
  }
- function save(user:any,id:string,input:any){
+ function save(user:any,id:string,input:any,onSaved?:()=>void){
   const site=access(user,id,'content');assertRevision(site,input.revision);
   if(!['human','ai'].includes(input.actorType||'human'))fail(422,'Değişiklik kaynağı geçersiz.');
   const after=input.document as Document,adapter=registry.get(site.adapter),issues=adapter.validate(site.document,after,site.source);if(issues.length)fail(422,'Belgedeki alanları kontrol edin.',issues);
   const design=(doc:Document)=>encode({theme:doc.theme,pages:doc.pages.map(p=>({id:p.id,layout:p.layout,sections:p.sections.map(s=>({id:s.id,kind:s.kind,enabled:s.enabled,layout:s.layout}))}))});
   if(design(site.document)!==design(after)&&!site.allowed.includes('design'))fail(403,'Yerleşim değişikliği için design yetkisi gerekli.');
-  if(encode(after)===encode(site.document))return{...summary(site),document:site.document,changed:false};
+  if(encode(after)===encode(site.document)){if(onSaved)fail(422,'Öneri içerik değişikliği içermiyor.');return{...summary(site),document:site.document,changed:false};}
   const source=adapter.write(site.document,after,site.source);
-  return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');return{...summary(site),document:after,changed:true};});
+  return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
+ const agentAccess=createAgentAccess({store,access,registry,save,audit});
+ const regional=createRegionalSettings({store,access,audit});
+ store.run('INSERT OR IGNORE INTO studio_migrations VALUES (2,?)',now());
  async function analyze(user:any,job:any,input:any){
   if(closed||store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status!=='queued')return;
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),60_000);controllers.set(job.id,controller);
@@ -120,7 +132,9 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    const changes=[...paths].map(p=>({path:p,action:!previous?.source.files[p]?'added':!result.source.files[p]?'removed':digest(previous.source.files[p])!==digest(result.source.files[p])?'changed':'unchanged'}));
    if(previous&&previous.adapter!==result.source.manifest.adapter.id)fail(422,'Yeniden import adaptör türünü değiştiremez.');
    if(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status==='cancelled')return;
-   store.run("UPDATE studio_imports SET status='review',progress=100,result=? WHERE id=?",encode({...result,report,changes,connection:connection?{...connection,secrets:undefined,sealed:seal(connection.secrets)}:null}),job.id);
+   const sealed=connection?await seal(connection.secrets,job.org_id,connection.kind):null;
+   authorizeImport(user,job);
+   store.run("UPDATE studio_imports SET status='review',progress=100,result=? WHERE id=?",encode({...result,report,changes,connection:connection?{...connection,secrets:undefined,sealed}:null}),job.id);
   }catch(error:any){if(['queued','analyzing'].includes(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status))store.run("UPDATE studio_imports SET status='failed',result=NULL,error=? WHERE id=?",error.status?error.message:'Import tamamlanamadı; dosya biçimini kontrol edin.',job.id);}finally{clearTimeout(timeout);controllers.delete(job.id);}
  }
  async function route({req,res,url,method,user,body,json}:{req:any;res:any;url:URL;method:string;user:any;body:any;json:any}):Promise<boolean>{
@@ -163,6 +177,12 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
   const match=route.match(/^sites\/([a-f0-9-]{36})(?:\/(.*))?$/);
   if(match){
    const [,id,action='']=match,site=access(user,id),adapter=registry.get(site.adapter);
+   if(action==='regional'||action==='regional-options'){
+    if(await regional.route({req,user,siteId:id,action,method,url,body,send}))return true;
+   }
+   if(action==='agent-tokens'||action.startsWith('ai-proposals')){
+    if(await agentAccess.humanRoute({req,url,method,user,siteId:id,action,body,send}))return true;
+   }
    if(action==='modules'&&method==='GET'){if(!site.allowed.includes('operations')&&!site.allowed.includes('integrations'))fail(403,'İş modülü yetkisi gerekli.');return send({enabled:!!store.get('SELECT id FROM sites WHERE id=?',id),views:['bookings','calendar','bookingSettings','connect']});}
    if(action==='modules/enable'&&method==='POST'){
     access(user,id,'operations');access(user,id,'integrations');
@@ -186,7 +206,8 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(action==='source'&&method==='GET'){const file=url.searchParams.get('path')||'';if(!Object.hasOwn(site.source.files,file))fail(404,'Kaynak bulunamadı.');return send({path:file,text:site.source.files[file],readOnly:true});}
    if(action==='connection/check'&&method==='GET'){
     access(user,id,'import');const conn=store.get('SELECT * FROM studio_connections WHERE site_id=?',id);if(!conn)return send({status:'snapshot',message:'Dosya anlık görüntüsü bağlı. Dış değişiklikleri karşılaştırmak için yeniden import edin.'});
-    const config=parse(conn.config),secret=unseal(conn.sealed),headers:Record<string,string>=conn.kind==='wordpress'?{Authorization:'Basic '+Buffer.from(secret.username+':'+secret.password).toString('base64')}:{Accept:'application/vnd.github+json',...(secret.token?{Authorization:'Bearer '+secret.token}:{})};
+    const config=parse(conn.config),secret=await unseal(conn.sealed,site.org_id,conn.kind),headers:Record<string,string>=conn.kind==='wordpress'?{Authorization:'Basic '+Buffer.from(secret.username+':'+secret.password).toString('base64')}:{Accept:'application/vnd.github+json',...(secret.token?{Authorization:'Bearer '+secret.token}:{})};
+    access(user,id,'import');
     const response=await transport(config.endpoint,{headers});if(response.status!==200)fail(502,'Kaynak sürümü okunamadı.');const result=parse(response.body.toString()),revision=conn.kind==='wordpress'?result.revision:result.sha;if(typeof revision!=='string')fail(502,'Kaynak sürüm yanıtı geçersiz.');return send({status:revision===config.remoteRevision?'current':'changed',message:revision===config.remoteRevision?'Kaynak bağlantısından bu yana değişiklik yok.':'Kaynak dışarıda değişmiş. Yeniden import raporuyla karşılaştırın.',importedRevision:config.remoteRevision,remoteRevision:revision});
    }
    if(action==='history'&&method==='GET')return send({versions:store.all('SELECT id,revision,actor,actor_type,note,created FROM studio_versions WHERE site_id=? ORDER BY revision DESC LIMIT 100',id),releases:store.all('SELECT id,version_id,created FROM studio_releases WHERE site_id=? ORDER BY created DESC LIMIT 100',id)});
@@ -230,11 +251,12 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(action==='publish'&&method==='POST'){
     access(user,id,'publish');const input=await body(req),current=access(user,id,'publish');assertRevision(current,input.revision);assertSnapshot(adapter,current.document,current.source);const conn=store.get('SELECT * FROM studio_connections WHERE site_id=?',id);
     if(!conn||!adapter.publish)fail(422,'Canlı yayın adaptörü yapılandırılmamış.');const config=parse(conn.config);
-    const result=await adapter.publish!(current.document,current.source,{kind:conn.kind,config,secrets:unseal(conn.sealed),request:transport});
+    const secrets=await unseal(conn.sealed,current.org_id,conn.kind);access(user,id,'publish');assertRevision(access(user,id),input.revision);
+    const result=await adapter.publish!(current.document,current.source,{kind:conn.kind,config,secrets,request:transport});
     store.run('UPDATE studio_connections SET config=?,revision=revision+1 WHERE site_id=?',encode({...config,remoteRevision:result.remoteRevision}),id);audit(current,user,'provider.published',current.revision);return send({ok:true,revision:current.revision,...result});
    }
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;
  }
- return{route,registry,save,access,async close(){closed=true;pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);}};
+ return{route,registry,save,access,agentRoute:agentAccess.agentRoute,async close(){closed=true;pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);}};
 }

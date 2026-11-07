@@ -42,9 +42,14 @@ npm.cmd test
 npm.cmd run test:v2
 npm.cmd run check
 npm.cmd run licenses
+npm.cmd run sbom
 npm.cmd audit
 ```
 
 `scripts/qa-preview.mjs`, yalnızca `test-results/ui-preview` altında sahte veriler ve bilinen bir test hesabı oluşturan, loopback üzerinde 4321 portunda çalışan geliştirme yardımcısıdır. Üretim başlatıcısı olarak kullanılmaz. Testler gerçek ödeme veya gerçek müşteri kaydı oluşturmaz.
 
-Belgeler: [mimari](ARCHITECTURE.md), [adaptör ve veri modeli](ADAPTERS.md), [import güvenliği](SECURITY.md), [geçiş/geri dönüş](MIGRATION.md), [bileşen kararları](COMPONENTS.md), [doğrulama ve kalan kapsam](VERIFICATION.md).
+Site editörünün sol panelindeki **Ülke ve bölgesel ayarlar**, ülkeye göre dil/para/saat önerilerini kaydeder. Bu tercihler mevcut rezervasyonları veya fiziksel veri konumunu değiştirmez.
+
+**AI erişimi ve öneriler** süreli site anahtarı, öneri farkı ve insan onayı akışını açar. Bir AI sağlayıcısına kendiliğinden bağlanmaz. API ve iptal adımları [işletim belgesindedir](OPERATIONS.md).
+
+Belgeler: [mimari](ARCHITECTURE.md), [ürün/modül/ülke kararları](PRODUCT_MODEL.md), [adaptör ve veri modeli](ADAPTERS.md), [import güvenliği](SECURITY.md), [geçiş/geri dönüş](MIGRATION.md), [işletim](OPERATIONS.md), [bileşen kararları](COMPONENTS.md), [doğrulama ve kalan kapsam](VERIFICATION.md).

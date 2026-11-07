@@ -1,5 +1,47 @@
 # V2 doğrulama raporu
 
+## 2026-11-07 — Anahtar, AI, ülke tercihleri ve CI dilimi
+
+54 baseline + 61 V2 testi başarılı: toplam **115**. İlk 80 testin tamamı korunur;
+bu dilimde 15 test, önceki güvenlik diliminde 20 test eklenmiştir.
+
+| Kontrol | Gözlenen sonuç |
+|---|---|
+| npm test | 54/54 geçti |
+| npm run test:v2 | 61/61 geçti; son çalıştırma 2026-11-07 |
+| npm run typecheck / build | Başarılı |
+| npm run check | 200 kaynak hash'i, 11 dil ve 286 alan/dil doğrulandı |
+| npm run licenses | 120 kilitli / 95 kurulu paket, inceleme bekleyen 0 |
+| npm run sbom | CycloneDX 1.5, kilit dosyasındaki 120 bileşenin tamamı |
+| npm kurulum audit'i | 2026-11-06: 0 bildirilen açık |
+| Temiz scriptsiz kurulum | 2026-11-07: ayrı test klasöründe npm ci --ignore-scripts, 95 paket / 0 açık; esbuild 0.28.2 dönüşümü başarılı |
+| GitHub Actions | Ubuntu/Windows workflow eklendi; uzak run sonucu ayrıca kaydedilecek |
+
+Yeni kanıtlar: kuruma bağlı zarf şifreleme, wrapping anahtarı değiştirme
+primitive'i, eski sırların okunması, büyük payload reddi; ayrı şifreli anahtar
+yedeği/restore ve bozuk/karışık/eksik/büyük yedek reddi; siteye sınırlı AI anahtarı,
+süre/iptal/üyelik kontrolü, yayın ve başka API'lere erişim reddi, kötü AI çıktısı,
+insan onayıyla ortak save; ülke sözlüğü, IANA saat dilimi, revision ve tenant
+kontrolü, operasyon tutar/tarihlerinin korunması.
+
+Ayrı QA hesabı/veritabanında tarayıcı gözlemi: Türkiye → tr/TRY/Europe/Istanbul
+önerisi, ABD → açık saat dilimi seçimi, başarılı bölgesel kayıt; örnek AI önerisi
+farkı → insan onayı → editörde değişen açıklama → “Uygulandı” durumu.
+390 px genişlikte öneri penceresi 370 px, iç scroll genişliği 353 px olarak
+gözlendi ve onay eylemi çalıştı. Tam erişilebilirlik sertifikası iddia edilmez.
+
+![Bölgesel ayarlar](regional-preview.png)
+
+SBOM ilk çalıştırmada Tiptap'ın eksik @floating-ui/dom peer bağımlılığını buldu;
+MIT lisanslı 1.8.0 sabitlenince SBOM geçti. Son sınır testinde bulunan rewrap
+değişken gölgelemesi düzeltildi; bütün 61 V2 test tekrar geçti.
+
+Üretim verisi, gerçek ödeme veya LLM sağlayıcısı kullanılmadı. Gerçek KMS,
+toplu rotasyon, hosted altyapı/MFA, online yedek/PITR, kaynak üç yönlü birleştirme,
+20 gerçek site korpusu ve otomatik ülke mevzuat motoru tamamlanmış değildir.
+Ürün kararı açık çekirdek + isteğe bağlı ticari modüllerdir; kesin lisans
+ve ticari entitlement sistemi bu dilimin tamamlanmış özelliği değildir.
+
 ## 2026-11-06 — Delta güvenlik dilimi
 
 Mevcut 54 baseline + 26 V2 testin tamamı korundu. 20 yeni test eklendi; toplam 100 test başarılı:
@@ -68,6 +110,6 @@ Yerel çok kurum/site erişim modeli; TypeScript çekirdek ve sürümlü manifes
 6. **Hosted altyapı:** SQLite, sınırlı JSON medya/snapshot depolama, bir uzak bağlantı/site ve tek süreçli sınırlı import kuyruğu kullanılır. PostgreSQL/RLS, nesne depolama, dış worker kuyruğu, izolasyonlu genel derleme ve uzun dönem saklama politikaları kurulmadı. Kesilen import başarısız iş olarak geri gelir; byte düzeyinde kaldığı yerden devam etmez.
 7. **Doğrulama ve sözlük:** V2 içerik alanları ortak şemayı kullanır; mevcut iş modülü formları mevcut sunucu doğrulamalarını kullanır. Tam alan şeması tasarımcısı, tüm modüllerin tek şemadan form üretimi, yazım/terminoloji servisi ve import sözlük eşleştirme ekranı sonraki dilimdedir.
 8. **Erişilebilirlik ve güvenlik:** Klavye alternatifleri, native modal odağı, hata durumları ve responsive görünüm denenmiştir. Tam WCAG 2.2 AA denetimi, ekran okuyucu matrisi veya penetrasyon testi yapılmamıştır. Medya denetimi imza/boyut üzerinden yapılır; antivirüs veya tam görsel decode garantisi değildir. IPv6 uzak hedefler ihtiyatlı olarak kapalıdır.
-9. **AI:** JSON değişiklik önerisi aynı API'den geçer; bir LLM sağlayıcısı bağlanmadı. `actorType=ai` istemci tarafından bildirilen taslak kaynağıdır; bağımsız kimlik/ispat mekanizması değildir.
+9. **AI:** Süreli/siteye sınırlı bearer erişimi ve insan onaylı öneri akışı eklendi. Bir LLM sağlayıcısı bağlanmadı. Eski JSON taslağındaki `actorType=ai` istemci beyanı olarak kalır; doğrulanmış credential/proposal olaylarından ayrı değerlendirilir.
 
 Sonraki iş sırası [geçiş planında](MIGRATION.md) kayıtlıdır. Canlı sağlayıcı kapsamları, bağlandıktan sonra kendi kabul testleri tamamlanmadan destekleniyor diye genişletilmemelidir.

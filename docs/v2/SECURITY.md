@@ -10,6 +10,8 @@ Controls must be enforced at the server boundary:
 - Common secret path/content detection. Rejected entries and warnings are reported without logging their contents. Scanning is heuristic, not a malware or secret-free certificate.
 - HTTPS only for live remote connectors. Check every resolved address, pin the connection to a checked address, reject unsafe ports/private/link-local/metadata targets and do not forward authorization through redirects.
 - Scoped encrypted credentials, bounded response streams, explicit timeouts and cancellation.
+- New V2 credentials use per-secret AES-GCM data keys wrapped through an async provider contract and authenticated tenant/type context. The default provider is a local versioned key file, not a hosted KMS. Old records remain readable. Separate encrypted key backup and verified restore are available through secure-backup-v2; the data backup is not encrypted by that tool.
+- Expiring, revocable site-scoped AI bearer tokens permit only read/propose operations. Proposals must pass human acceptance, current membership/revision and the normal save validation. Bearer authentication cannot fall through to an administrator cookie on unrelated API routes. No automatic LLM provider access is enabled.
 - JSON schema validation plus semantic constraints, strict component properties, safe rich markup and bounded responsive layout values.
 - Preview has no scripts, forms or same-origin privilege; it cannot obtain administrator cookies. Unknown scripts survive in source exports but are not executed by Studio.
 - Expected revisions and source fingerprints; atomic local transactions; remote conditional writes where supported.
@@ -18,4 +20,4 @@ Controls must be enforced at the server boundary:
 
 No blanket claims of WCAG compliance, penetration-test certification, arbitrary website support or sandboxed arbitrary builds are made without corresponding evidence. Remaining limitations belong in the verification report and capability UI.
 
-The full boundary/actor/control matrix is in [the threat model](../security/threat-model.md). Scripts remain disabled in V2 previews. The legacy preview route must be evaluated separately before hosted deployment. Original source scripts/styles are preserved in source artifacts; field sanitation is not a blanket source-code rewrite. The client actorType label is not a restricted AI identity.
+The full boundary/actor/control matrix is in [the threat model](../security/threat-model.md). Scripts remain disabled in V2 previews. The legacy preview route must be evaluated separately before hosted deployment. Original source scripts/styles are preserved in source artifacts; field sanitation is not a blanket source-code rewrite. The legacy client actorType label is not a restricted AI identity; verified agent credentials are identified by dedicated credential/proposal audit events.

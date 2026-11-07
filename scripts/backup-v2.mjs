@@ -4,7 +4,7 @@ import {DatabaseSync,backup} from 'node:sqlite';
 import {parseArgs} from 'node:util';
 import {createHash} from 'node:crypto';
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
-export async function backupData(source,target,{offline=false}={}){
+export async function backupData(source,target,{offline=false,excludeRoots=[]}={}){
  if(!offline)throw Error('Stop the application first and pass --offline. No service is stopped automatically.');
  const from=await fs.realpath(source),parent=await fs.realpath(path.dirname(path.resolve(target))),to=path.join(parent,path.basename(target));
  const relative=path.relative(from,to);if(!relative||relative!=='..'&&!relative.startsWith('..'+path.sep)&&!path.isAbsolute(relative))throw Error('Backup must be outside the source directory.');
@@ -16,6 +16,7 @@ export async function backupData(source,target,{offline=false}={}){
   const entries=[];
   async function copy(dir,relativeDir=''){
    for(const entry of await fs.readdir(dir,{withFileTypes:true})){
+    if(!relativeDir&&excludeRoots.includes(entry.name))continue;
     if(!relativeDir&&['console.sqlite','console.sqlite-wal','console.sqlite-shm'].includes(entry.name))continue;
     if(entry.isSymbolicLink()||!entry.isDirectory()&&!entry.isFile())throw Error('Backup refuses links and special files.');
     const relativeFile=path.join(relativeDir,entry.name),destination=path.join(to,relativeFile);

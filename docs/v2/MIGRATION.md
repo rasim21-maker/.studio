@@ -11,10 +11,10 @@ Bu sürüm `v2` dalında, mevcut çalışan kurulumdan ayrı geliştirilir. Uygu
 Uygulamayı durdurun. Aşağıdaki araç uygulamayı durdurmaz ve var olan hedefin üstüne yazmaz. Kaynak dışında yeni bir hedef kullanın:
 
 ```powershell
-node scripts/backup-v2.mjs --source "C:/secure/loft-data" --target "C:/secure/backups/loft-before-v2" --offline
+node scripts/secure-backup-v2.mjs --mode backup --source "C:/secure/loft-data" --target "C:/backups/loft-before-v2" --keys "D:/key-backups/loft-before-v2.enc" --recovery-key-file "E:/recovery/studio.key" --offline
 ```
 
-Araç SQLite backup API'siyle tutarlı veritabanı kopyası oluşturur, bütünlük kontrolü yapar, diğer veri dosyalarını ve `integration-key` / `studio-key` anahtarlarını korur. Sembolik bağlantıları reddeder. Dosya hash'lerini `backup-manifest.json` içinde kaydeder. Başarısız/yarım hedefi geri yükleme kaynağı olarak kullanmayın; yeni hedefle yeniden deneyin.
+Önceden ayrı yerde 32 baytlık rastgele kurtarma anahtarı ve hedeflerin üst klasörlerini hazırlayın. Araç SQLite backup API'siyle tutarlı veritabanı kopyası oluşturur. Kök anahtar dosyaları ve .env* ayrı şifreli parçaya alınır; veri parçası araç tarafından şifrelenmez. Sembolik bağlantılar reddedilir; dosya hash'leri ve iki parçayı bağlayan kimlik doğrulanır. Başarısız/yarım hedefi geri yükleme kaynağı olarak kullanmayın. Verify/restore komutları ve sınırlar [işletim prosedüründedir](OPERATIONS.md).
 
 `.env` veri klasörü dışında bulunuyorsa ayrıca güvenli yedekleme sisteminizde koruyun. Windows'ta yedek klasörüne yalnızca işletim hesabının erişebildiği ACL uygulayın; POSIX dosya modu Windows erişim denetimi yerine geçmez. Yedek ve şifreleme anahtarları birlikte hassas veridir. Bunları kaynak deposuna veya yayın ZIP'ine koymayın.
 
@@ -36,7 +36,7 @@ Bakım aralığında yeni yedek alın. Çalışan eski süreci durdurduktan sonr
 
 Normal kod geri alma güncel veritabanını korur. Additive migration tek başına N-1 uyumu kanıtlamaz; önceki kodun okuma/yazma sözleşmeleri tam sürüm/commit ile test edilmelidir. 0.2'nin V2 sitelerini yönetebildiği varsayılmaz. Bu N-1 tatbikatı henüz tamamlanmadığından otomatik kod downgrade önerilmez. Eski kolonlar ve pet uyumluluk girdileri bu pencere bitmeden kaldırılmaz.
 
-Veri bozulması veya felaket kurtarmada yedek/PITR kullanılabilir; seçilen kurtarma noktası, sonradan oluşan işlemler ve sağlayıcı mutabakatı ayrıca ele alınır. Mevcut kapalı uygulama yedeği anahtarları veriyle birlikte kopyalar. Ayrı şifreli anahtar yedeği, online nesne/veritabanı tutarlılığı ve hosted PITR bu araçta uygulanmış değildir (D-02).
+Veri bozulması veya felaket kurtarmada doğrulanmış yedek kullanılabilir; seçilen kurtarma noktası, sonradan oluşan işlemler ve sağlayıcı mutabakatı ayrıca ele alınır. secure-backup-v2 ayrı şifreli anahtar yedeği ve yeni klasöre doğrulanmış geri yükleme sağlar. Eski backup-v2 komutu uyumluluk için anahtarları veriyle birlikte kopyalamaya devam eder. Online nesne/veritabanı tutarlılığı ve hosted PITR uygulanmış değildir (D-02).
 
 İçerik geri yükleme güncel şema, alan/sözlük politikası ve kaynak eşleştirmesini doğrular. Uyumsuzlukta alan yollarıyla hata döner; aktif belge, sürüm sayısı ve operasyonlar değişmez. Otomatik şema dönüşümü uygulanmaz.
 

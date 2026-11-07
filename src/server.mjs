@@ -39,7 +39,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   const store = new Store(path.join(dataDir, 'console.sqlite'));
   store.seed(adapter);
   const features = await createFeatures({store,dataDir,origin,security});
-  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,transport:security.studioTransport});
+  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,transport:security.studioTransport,secretProvider:security.studioSecretProvider});
   const captcha = new Recaptcha({ hostname: urlOrigin.hostname, siteKey: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET, required: process.env.AUTH_REQUIRE_CAPTCHA === '1' || !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname), ...security.captcha });
   const federation = new Federation({ store, origin, providers: security.providers || providerConfig(), ...(security.fetcher ? { fetcher: security.fetcher } : {}) });
   const setupToken = store.get('SELECT COUNT(*) AS count FROM users').count === 0 ? token() : null;
@@ -115,6 +115,10 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
       if (req.headers.host !== urlOrigin.host) fail(403, 'İstek kökeni geçersiz.');
       const url = new URL(req.url, origin), method = req.method;
       if (!['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'].includes(method)) fail(405, 'Yöntem desteklenmiyor.');
+      if ((url.pathname.startsWith('/api/') && req.headers.authorization) || url.pathname.startsWith('/api/v2/agent/')) {
+        if (req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site') fail(403, 'İstek kökeni geçersiz.');
+        return await platform.agentRoute({req,res,url,method,body,json});
+      }
       if (method !== 'GET' && !url.pathname.startsWith('/public/') && !url.pathname.startsWith('/payments/') && (req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site')) fail(403, 'İstek kökeni geçersiz.');
       const route = url.pathname;
       if (await features.publicRoute({req,res,url,method,body,rateLimit})) return;
