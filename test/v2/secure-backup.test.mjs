@@ -56,3 +56,15 @@ test('D-02: combined oversized key files fail before creating the data backup',a
  await assert.rejects(()=>fs.stat(f.target),{code:'ENOENT'});
  await assert.rejects(()=>fs.stat(f.keys),{code:'ENOENT'});
 });
+
+test('D-02 E-06: differently cased runtime keys never enter the unencrypted data copy',async()=>{
+ const f=await fixture();
+ // Rename via an intermediate path so the spelling changes on Windows too.
+ await fs.rename(path.join(f.source,'studio-key'),path.join(f.source,'case-intermediate'));
+ await fs.rename(path.join(f.source,'case-intermediate'),path.join(f.source,'STUDIO-KEY'));
+ await fs.rename(path.join(f.source,'.env'),path.join(f.source,'env-intermediate'));
+ await fs.rename(path.join(f.source,'env-intermediate'),path.join(f.source,'.ENV'));
+ const result=await secureBackupData(f.source,f.target,f.keys,f.recovery,{offline:true});assert.equal(result.keyFiles,4);
+ const entries=await fs.readdir(f.target);assert.ok(!entries.includes('STUDIO-KEY'));assert.ok(!entries.includes('.ENV'));
+ assert.equal((await verifySecureBackup(f.target,f.keys,f.recovery)).integrity,'ok');
+});

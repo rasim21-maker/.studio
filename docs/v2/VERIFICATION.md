@@ -1,5 +1,17 @@
 # V2 doğrulama raporu
 
+## 2026-11-08 — Uzak CI ve anahtar dosyası adı sertleştirmesi
+
+1ecad8d commit'i için [GitHub Actions çalışması](https://github.com/rasim21-maker/.studio/actions/runs/42454421094)
+Windows ve Ubuntu'da bütün adımları başarıyla tamamladı: scriptsiz temiz kurulum,
+typecheck/build/check, 54 baseline + 61 V2 testi, lisans, SBOM ve audit.
+Her iki işletim sisteminin dependency evidence artifact'ı üretildi.
+
+Son incelemede STUDIO-KEY / .ENV gibi harf büyüklüğü farklı anahtar dosyaları da
+şifrelenmeyen veri parçasından dışlandı; anahtar isim çakışmaları reddediliyor.
+Bu ek regresyonla yerel V2 paketi **62/62** geçti; toplam kapsam **116** test.
+Son düzeltmenin uzak CI sonucu, dalın Actions kaydından ayrıca izlenir.
+
 ## 2026-11-07 — Anahtar, AI, ülke tercihleri ve CI dilimi
 
 54 baseline + 61 V2 testi başarılı: toplam **115**. İlk 80 testin tamamı korunur;
@@ -15,7 +27,7 @@ bu dilimde 15 test, önceki güvenlik diliminde 20 test eklenmiştir.
 | npm run sbom | CycloneDX 1.5, kilit dosyasındaki 120 bileşenin tamamı |
 | npm kurulum audit'i | 2026-11-06: 0 bildirilen açık |
 | Temiz scriptsiz kurulum | 2026-11-07: ayrı test klasöründe npm ci --ignore-scripts, 95 paket / 0 açık; esbuild 0.28.2 dönüşümü başarılı |
-| GitHub Actions | Ubuntu/Windows workflow eklendi; uzak run sonucu ayrıca kaydedilecek |
+| GitHub Actions | 1ecad8d için 2026-11-08: Windows ve Ubuntu başarılı; yukarıdaki run bağlantısı |
 
 Yeni kanıtlar: kuruma bağlı zarf şifreleme, wrapping anahtarı değiştirme
 primitive'i, eski sırların okunması, büyük payload reddi; ayrı şifreli anahtar

@@ -44,7 +44,7 @@ Canlı 0.2 kurulumu, gerçek veri dizini ve anahtarları bu çalışma kapsamın
 | E-22 | KISMİ | traceability.md ve bu tablo | Her sonraki dilimde gereksinim/ADR/test kaydını güncelle |
 | E-23 | YOK | Statik/React/WP yerel fixture'ları | İzinli 20 site, sabit korpus ve ölçüm tanımı; Faz 2 |
 | E-24 | KISMİ | ZIP, XSS, tenant, sızıntı testleri; yeni Unicode ve ağ transport fixture'ları | Gerçek tarayıcı/ayrı origin, geniş SVG/arşiv korpusu ve hosted testleri |
-| E-25 | KISMİ | Sabit sürümler, lockfile, lisans envanteri, CycloneDX 1.5, scriptsiz kurulum ve iki OS CI workflow | Uzak CI sonucu ayrıca doğrulanmalı; runner/OS/action bağımlılık envanteri kapsam dışı; acil yamalara bekleme yok |
+| E-25 | KISMİ | Sabit sürümler, lockfile, lisans envanteri, CycloneDX 1.5, scriptsiz kurulum; 1ecad8d için Windows/Ubuntu CI başarılı (run 42454421094) | Runner/OS/action geçişli bağımlılık envanteri kapsam dışı; acil yamalara bekleme yok |
 | D-01 | KISMİ | ARCHITECTURE/MIGRATION geri dönüş politikası düzeltildi | Sürümü sabit N-1 koduyla gerçek yükseltme/geri alma testi |
 | D-02 | KISMİ | Ayrı şifreli anahtar parçası, yedek seti kimliği/hash doğrulaması, yeni klasöre restore; bozuk/yanlış anahtar/boyut testleri | Veri parçası araçta şifrelenmez; online object snapshot, hosted PITR ve gerçek işletim tatbikatı |
 | D-03 | KISMİ | V2 sandbox srcDoc; legacy önizleme ayrı yol | Ayrı çerezsiz origin + yanıt CSP; script'li mod Faz 3'e bağlı |
@@ -86,7 +86,10 @@ Bunlar sonuçlanana kadar ürün yeniden adlandırılmaz, üretim altyapısı ku
 ## 2026-11-06 — Anahtar / AI / bölgesel tercih / CI dilimi
 
 envelope, secure-backup ve regional testleri ile HTTP senaryoları eklendi.
-54 baseline + 61 V2 testi korunur; 15 yeni test bu dilime aittir. Ayrı QA verisiyle
+54 baseline + 62 V2 testi korunur; 16 yeni test bu dilime aittir. Ayrı QA verisiyle
 Türkiye/ABD önerileri, bölgesel kayıt ve mobil/masaüstü AI insan onayı denendi.
 [İşletim prosedürü](v2/OPERATIONS.md) ve [ürün kararları](v2/PRODUCT_MODEL.md)
 yeni sınırları açıklar. Gerçek sağlayıcı, hosted altyapı veya üretim yayını yapılmadı.
+
+2026-11-08: Uzak CI'nin ilk çalışması her iki işletim sisteminde başarılı;
+anahtar yedeğinde dosya adı harf büyüklüğü ve çakışma kontrolü ayrıca eklendi.

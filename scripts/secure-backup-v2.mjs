@@ -8,7 +8,7 @@ import {sealSecret,openSecret,localKeyProvider,maxSecretBytes} from '../src/secu
 import {safePath} from '../src/v2/import.ts';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-const keyName=name=>['studio-key','integration-key','studio-vault.json'].includes(name)||/^\.env(?:\.|$)/.test(name);
+const keyName=name=>['studio-key','integration-key','studio-vault.json'].includes(name.toLowerCase())||/^\.env(?:\.|$)/i.test(name);
 const inside=(parent,child)=>{const relative=path.relative(parent,child);return !relative||relative!=='..'&&!relative.startsWith('..'+path.sep)&&!path.isAbsolute(relative);};
 async function destination(value){
  const absolute=path.resolve(value),parent=await fs.realpath(path.dirname(absolute));
@@ -29,6 +29,7 @@ export async function secureBackupData(source,target,keyTarget,recoveryKey,{offl
  const wrapping=provider(recoveryKey),from=await fs.realpath(source),to=await destination(target),keysTo=await destination(keyTarget);
  if(inside(from,to)||inside(from,keysTo)||inside(to,keysTo)||inside(keysTo,to))throw Error('Data backup and encrypted key backup must be separate and outside the source.');
  const entries=await fs.readdir(from,{withFileTypes:true}),names=entries.filter(e=>keyName(e.name)).map(e=>e.name),keys={};
+ if(new Set(names.map(name=>name.normalize('NFC').toLowerCase())).size!==names.length)throw Error('Key backup filenames collide.');
  for(const name of names){
   if(!safePath(name)&&!/^\.env(?:\.[a-z0-9_-]+)?$/i.test(name))throw Error('Key backup filename is invalid.');
   const file=path.join(from,name),stat=await regular(file);if(stat.size>256*1024)throw Error('Key file exceeds backup limit.');keys[name]=(await fs.readFile(file)).toString('base64');
@@ -54,6 +55,7 @@ async function verified(dataDirectory,keyFile,recoveryKey){
  if(receipt.formatVersion!==1||keyEnvelope.formatVersion!==1||receipt.backupId!==keyEnvelope.backupId||hash(manifestBytes)!==receipt.manifestHash||keyEnvelope.manifestHash!==receipt.manifestHash||hash(keyBytes)!==receipt.keyEnvelopeHash)throw Error('Backup components do not match.');
  const bundle=await openSecret(keyEnvelope.sealed,'backup:'+receipt.backupId+':'+receipt.manifestHash,wrapping);
  if(bundle.backupId!==receipt.backupId||!bundle.files||typeof bundle.files!=='object'||Array.isArray(bundle.files)||Object.keys(bundle.files).length!==receipt.keyCount)throw Error('Key backup is invalid.');
+ const keyNames=Object.keys(bundle.files);if(new Set(keyNames.map(name=>name.normalize('NFC').toLowerCase())).size!==keyNames.length)throw Error('Key backup filenames collide.');
  for(const [name,value]of Object.entries(bundle.files)){
   if(!keyName(name)||!safePath(name)&&!/^\.env(?:\.[a-z0-9_-]+)?$/i.test(name)||name.includes('/')||name.includes('\\')||typeof value!=='string'||value.length>350000||Buffer.from(value,'base64').toString('base64')!==value)throw Error('Key backup path or value is invalid.');
  }

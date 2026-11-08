@@ -53,7 +53,7 @@ Hosted nesne deposu, ayrı preview origin'i, KMS ve worker kesikli/hedef sınır
 | İçerik geçmişi → operasyon | Restore yalnızca studio_sites/studio_versions/audit yazar | restore preserves booking HTTP testi | Ayrı DB rolü; gerçek N-1 geri alma denemesi |
 | Sır → yayın/istemci | Kurum/türe bağlı AES-GCM zarfı, DEK wrapping, eski kayıt uyumu, API'de sır dışlama | envelope ve WP/legacy credentials HTTP testleri | Gerçek KMS, toplu rotasyon, log/geniş sızıntı korpusu |
 | AI → çekirdek | Hash'i saklanan süreli/siteye sınırlı anahtar; oku/öner allowlist; insan fark/onayı; aynı save/validation | E-16 HTTP yetki/iptal/süre/kötü çıktı; tarayıcı onay denemesi | Sağlayıcı veri politikası yok; eski actorType kullanıcı beyanıdır |
-| Bağımlılık → uygulama | Lockfile, lisans, scriptsiz kurulum, CycloneDX ve commit'e sabit CI | licenses; sbom; audit; verify.yml | Uzak CI sonucu ayrıca doğrulanmalı; runner paket proxy'si |
+| Bağımlılık → uygulama | Lockfile, lisans, scriptsiz kurulum, CycloneDX ve commit'e sabit CI | licenses; sbom; audit; 1ecad8d Windows/Ubuntu başarılı | Runner paket proxy'si ve OS/action envanteri |
 | Yedek → geri dönüş | Offline SQLite, ayrı şifreli anahtar parçası, set/hash eşleşmesi, yeni hedefe restore | migration ve secure-backup testleri | Veri parçası araçta şifrelenmez; hosted PITR, tutarlı online nesne snapshot |
 | Sınırsız iş → kaynak tükenmesi | Dosya/yanıt/iş süre-boyut limitleri | contracts ZIP; network stream bound | Kurum kotası, adil kuyruk, CPU/bellek/disk worker limiti |
 
