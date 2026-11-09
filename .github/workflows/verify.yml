@@ -34,7 +34,10 @@ jobs:
       - run: npm run build
       - run: npm run check
       - run: npm test
-      - run: npm run test:v2
+      - name: V2 contracts and mandatory review regressions
+        run: npm run test:v2
+      - name: Packed SDK consumer and standalone booking lifecycle
+        run: npm run test:packages
       - run: npm run licenses
       - run: npm run sbom
       - name: Check known vulnerabilities

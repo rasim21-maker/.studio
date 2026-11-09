@@ -12,7 +12,7 @@ import {openLocalKeyProvider} from '../security/local-keys.mjs';
 import {createAgentAccess} from './agent-access.mjs';
 import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
-import {bookingDefaults} from '../booking.mjs';
+import {ModuleHost} from '@loft-studio/module-core';
 import {permissions} from '../../shared/v2/model.ts';
 import type {Document,Source,Adapter,SiteRecord} from '../../shared/v2/model.ts';
 type Store=any;
@@ -22,7 +22,7 @@ const parse=(v:string)=>JSON.parse(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9-]{36}$/.test(v);
 const name=(v:unknown)=>typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[<>\u0000-\u001f]/.test(v);
 const packed=(row:any)=>({...row,document:parse(row.document),source:parse(row.source)});
-export async function createPlatform({store,dataDir,legacyAdapter,features,transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;transport?:typeof safeRequest;secretProvider?:any}){
+export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];transport?:typeof safeRequest;secretProvider?:any}){
  store.db.exec(`
  CREATE TABLE IF NOT EXISTS studio_migrations(version INTEGER PRIMARY KEY, applied TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS studio_orgs(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner TEXT NOT NULL REFERENCES users(id));
@@ -87,6 +87,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
+ const moduleHost=new ModuleHost({store,modules,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
  const regional=createRegionalSettings({store,access,audit});
  store.run('INSERT OR IGNORE INTO studio_migrations VALUES (2,?)',now());
  async function analyze(user:any,job:any,input:any){
@@ -162,21 +163,41 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(method==='GET'){const result=job.result?parse(job.result):null;return send({id:job.id,status:job.status,progress:job.progress,error:job.error,siteId:job.site_id,report:result?.report,changes:result?.changes,document:result?.document,capabilities:result?registry.get(result.source.manifest.adapter.id).capabilities(result.source):null});}
    if(method==='POST'&&importMatch[2]==='cancel'){if(job.status==='committed')fail(409,'Tamamlanmış import iptal edilemez; içerik sürümünü geri yükleyin.');store.run("UPDATE studio_imports SET status='cancelled',result=NULL WHERE id=?",job.id);controllers.get(job.id)?.abort();return send({ok:true});}
    if(method==='POST'&&importMatch[2]==='commit'){
-    if(job.status==='committed')return send({siteId:job.site_id});
-    if(job.status!=='review')fail(409,'Import incelemeye hazır değil.');const input=await body(req);if(input.acceptRejected!==true&&parse(job.result).report.rejected.length)fail(422,'Reddedilen dosyaları inceleyip dışlamayı onaylayın.');
-    const result=parse(job.result);
-    return send(store.transaction(()=>{
+    const input=await body(req);
+    const committed=store.transaction(()=>{
+     // Re-read state and ownership inside the write transaction after body I/O.
+     const job=store.get('SELECT * FROM studio_imports WHERE id=? AND owner=?',importMatch[1],user.user_id);
+     if(!job)fail(404,'Import bulunamadı.');
+     if(job.site_id)access(user,job.site_id,'import');else organization(user,job.org_id);
+     if(job.status==='committed')return{data:{siteId:job.site_id},status:200};
+     if(job.status!=='review')fail(409,'Import incelemeye hazır değil.');
+     const result=parse(job.result);
+     if(input.acceptRejected!==true&&result.report.rejected.length)fail(422,'Reddedilen dosyaları inceleyip dışlamayı onaylayın.');
      let site:any;if(job.site_id){site=access(user,job.site_id,'import');assertRevision(site,job.expected);if(!site.allowed.includes('content')||!site.allowed.includes('design'))fail(403,'Yeniden import içerik ve tasarım yetkisi gerektirir.');site.document=result.document;site.source=result.source;site.revision++;store.run('UPDATE studio_sites SET revision=?,document=?,source=?,name=? WHERE id=?',site.revision,encode(site.document),encode(site.source),site.document.name,site.id);}
      else{if(store.get('SELECT COUNT(*) n FROM studio_sites WHERE org_id=?',job.org_id).n>=20)fail(422,'Yerel sürümde kurum başına en çok 20 site.');const workspace=randomUUID(),project=randomUUID();store.run('INSERT INTO studio_workspaces VALUES (?,?,?)',workspace,job.org_id,result.document.name);store.run('INSERT INTO studio_projects VALUES (?,?,?)',project,workspace,result.document.name);site={id:randomUUID(),org_id:job.org_id,workspace_id:workspace,project_id:project,environment:'development',adapter:result.source.manifest.adapter.id,name:result.document.name,revision:0,document:result.document,source:result.source};store.run('INSERT INTO studio_sites VALUES (?,?,?,?,?,?,?,?,?,?,?)',site.id,site.org_id,workspace,project,site.environment,site.adapter,site.name,0,encode(site.document),encode(site.source),now());}
      if(result.connection)store.run('INSERT INTO studio_connections VALUES (?,?,?,?,0) ON CONFLICT(site_id) DO UPDATE SET kind=excluded.kind,config=excluded.config,sealed=excluded.sealed,revision=studio_connections.revision+1',site.id,result.connection.kind,encode(result.connection.config),result.connection.sealed);
      else if(job.site_id)store.run('DELETE FROM studio_connections WHERE site_id=?',site.id);
-     recordVersion(site,user,'Import tamamlandı','human');audit(site,user,'import.committed',site.revision,{jobId:job.id});store.run("UPDATE studio_imports SET status='committed',site_id=?,result=NULL WHERE id=?",site.id,job.id);return{siteId:site.id};
-    }),201);
+     recordVersion(site,user,'Import tamamlandı','human');audit(site,user,'import.committed',site.revision,{jobId:job.id});store.run("UPDATE studio_imports SET status='committed',site_id=?,result=NULL WHERE id=?",site.id,job.id);return{data:{siteId:site.id},status:201};
+    });
+    return send(committed.data,committed.status);
    }
   }
   const match=route.match(/^sites\/([a-f0-9-]{36})(?:\/(.*))?$/);
   if(match){
    const [,id,action='']=match,site=access(user,id),adapter=registry.get(site.adapter);
+   if(action==='extensions'&&method==='GET')return send({packages:moduleHost.catalog(user,id)});
+   const extension=action.match(/^extensions\/([a-z][a-z0-9.-]+)\/(install|enable|disable|uninstall|upgrade|export|collections\/[a-zA-Z][a-zA-Z0-9_-]*|commands\/[a-zA-Z][a-zA-Z0-9_-]*)$/);
+   if(extension){
+    const [,moduleId,operation]=extension;
+    if(operation==='export'&&method==='GET')return send(moduleHost.export(user,id,moduleId));
+    if(operation.startsWith('collections/')){
+     const input=method==='GET'?{...(url.searchParams.has('id')?{id:url.searchParams.get('id')}:{limit:Number(url.searchParams.get('limit')||100),offset:Number(url.searchParams.get('offset')||0),search:url.searchParams.get('search')||''})}:await body(req);
+     return send(moduleHost.collection(user,id,moduleId,operation.slice(12),method,input));
+    }
+    if(operation.startsWith('commands/')&&method==='POST')return send(await moduleHost.execute(user,id,moduleId,operation.slice(9),await body(req)));
+    if(['install','enable','disable','uninstall','upgrade'].includes(operation)&&method==='POST'){const input=await body(req);return send(moduleHost.lifecycle(user,id,moduleId,operation,input.revision));}
+    fail(405,'Modül yöntemi desteklenmiyor.');
+   }
    if(action==='regional'||action==='regional-options'){
     if(await regional.route({req,user,siteId:id,action,method,url,body,send}))return true;
    }
@@ -187,11 +208,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,trans
    if(action==='modules/enable'&&method==='POST'){
     access(user,id,'operations');access(user,id,'integrations');
     if(!features)fail(503,'İş modülü bulunamadı.');
-    if(!store.get('SELECT id FROM sites WHERE id=?',id))store.transaction(()=>{
-     store.run('INSERT INTO sites VALUES (?,?)',id,encode({id,name:site.name,adapter:'studio-operations',studioSite:id}));
-     const config={...bookingDefaults(),participantMode:'generic'};config.services=config.services.map((s:any,i:number)=>({...s,id:i?'appointment':'overnight',name:i?'Randevu':'Konaklama',resource:i?'appointments':'rooms',enabled:false}));
-     store.run('INSERT INTO booking_settings VALUES (?,0,?)',id,encode(config));audit(site,user,'modules.enabled',site.revision);
-    });return send({enabled:true});
+    if(!store.get('SELECT id FROM sites WHERE id=?',id)){features.enableSite(site);audit(site,user,'modules.enabled',site.revision);}return send({enabled:true});
    }
    if(action.startsWith('modules/')){
     const tail=action.slice(8),required=/^(integrations|payments)|\/checkout$/.test(tail)?'integrations':'operations';

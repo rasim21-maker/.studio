@@ -1,5 +1,93 @@
 # V2 doğrulama raporu
 
+## 2026-11-09 — Dokuz code review bulgusunun düzeltmesi
+
+R01–R09 düzeltildi. Kalıcı kabul matrisi ve güncellenmiş geliştirme/CI
+prosedürü [TESTING.md](TESTING.md) belgesindedir. İlk 14 regresyon testi
+düzeltmeden önce ilgili ürün hataları nedeniyle başarısız oldu, düzeltmelerden
+sonra geçti. Body okunurken rezervasyon alımının kapanması için eklenen
+15. test de önce hatayı gösterdi; güncel durum denetimiyle düzeltildi.
+
+| Kontrol | Gözlenen sonuç |
+| --- | --- |
+| `npm run test:review` | 15/15 geçti; dokuz bulgu ve bekleyen işlem kapanışı |
+| `npm test` | 54/54 geçti; son operasyon route değişikliğinden sonra ilgili 21 HTTP/özellik testi ayrıca yeniden geçti |
+| `npm run test:v2` | 88/88 geçti; toplam 142 ayrı test, skip/iptal yok |
+| `npm run test:packages` | Altı tarball temiz tüketicide geçti; SDK harici modülü ve ödeme tablosu olmadan randevu oluşturma/taşıma/takvim/iptal akışı |
+| `npm run typecheck`, `build`, `check` | Başarılı; 200 kaynak hash'i, 11 dil ve 286 alan/dil korundu |
+| `npm run licenses` | 120 kilitli üçüncü taraf bağımlılık; inceleme bekleyen 0 |
+| `npm run sbom` | CycloneDX 1.5, 126 kilitli bileşen |
+| `npm audit --json` | 2026-11-09: bildirilen açık 0 |
+
+Sır dosyası adı politikası import, snapshot doğrulama ve şifreli yedek
+işleminde ortaklaştırıldı. Müşteri iptal yanıtı publicView alanlarıyla
+sınırlandı. Operasyon yetkisi body okumasından sonra yeniden denetleniyor;
+import commit güncel iş durumunu aynı yazma işlemi içinde okuyor.
+
+Randevu motoru ödeme tablosuna doğrudan bağımlı değil; ödeme kilidi uygulama
+tarafından enjekte ediliyor ve mevcut Stripe HTTP testi kilidin çalışmasını
+doğruluyor. Modül kapatma yeni işleri engellerken token ile geçmiş erişimi,
+iptal ve mevcut ödeme doğrulamasını koruyor. Kapalı katalogda yeni checkout
+formu da gösterilmiyor. Aynı istek kimliği farklı rezervasyon içeriğiyle
+yeniden kullanılamıyor. Alt dizindeki statik/SDK sayfalarının medya yolları
+gerçek export konumuna göre hesaplanıyor. SDK ve arayüzde sıfır değerli
+maxLength/maxItems sınırları korunuyor.
+
+Veri geçişi yalnızca booking_requests.fingerprint kolonu ekler. Eski
+özetsiz istekler yeniden gönderilirse 409 döner; mevcut rezervasyonlar
+silinmez. Geri dönüş ve daha önce import edilmiş sır dosyaları için
+[geçiş notlarını](MIGRATION.md) uygulayın. Üretim verisine bu çalışma
+sırasında geçiş uygulanmadı.
+
+Sonuçlar yerel Windows/Node 24.13.0 doğrulamasıdır. Build, paket tüketici ve
+SBOM komutları Windows sandbox alt süreç kısıtı (EPERM) nedeniyle izinli
+çalıştırmayla tamamlandı. CI yapılandırması Ubuntu ve Windows'ta aynı
+regresyon/paket kapılarını çalıştıracak şekilde güncellendi; bu kayıt uzak
+CI çalışması veya yayın kanıtı değildir. Ödeme sağlayıcıları kontrollü
+yanıtlarla test edildi; canlı sağlayıcı veya yeni tarayıcı kabul testi
+yapıldığı iddia edilmez.
+
+## 2026-11-09 — Modüler çekirdek, SDK ve dört iş paketi
+
+`v2` dalında altı yerel npm workspace paketi eklendi: SDK, module-core,
+booking, SEO, CRM ve commerce. Mevcut rezervasyon motoru bağımsız pakete
+taşındı; eski veri tabloları ve çağrılar uyumluluk katmanıyla korunuyor.
+Paket sözleşmesi, geliştirici akışı ve sınırlar [MODULES.md](MODULES.md)
+belgesindedir. Bu sonuçlar yerel doğrulamadır; bu değişikliklerin uzak CI
+çalışması veya npm yayını olarak değerlendirilmemelidir.
+
+| Kontrol | Gözlenen sonuç |
+| --- | --- |
+| `npm test` | 54/54 geçti |
+| `npm run test:v2` | 73/73 geçti; toplam 127 regresyon/sözleşme testi |
+| `npm run test:packages` | Altı tarball temiz tüketici projesine kuruldu; harici SDK modülü uygulama kaynaklarına erişmeden çalıştı |
+| `npm run typecheck`, `build`, `check` | Başarılı; 200 kaynak hash'i, 11 dil, 286 alan/dil korundu |
+| `npm run licenses` | 120 kilitli üçüncü taraf bağımlılık, 95 kurulu paket; inceleme bekleyen 0 |
+| `npm run sbom` | CycloneDX 1.5; kilitli 126 bileşen, altı birinci taraf paket dahil |
+| `npm audit --json` | 2026-11-09: bildirilen açık 0; güvenlik garantisi değildir |
+
+Yeni test kanıtları: yetki/kurum sınırları, ortak alan doğrulaması, tekillik,
+ilişki ve sürüm çakışmaları; paket bağımlılıkları ve sıfır ana sürümlü
+bağımlı paketi kapatma koruması; veri kaybetmeden kapatma/kaldırma ve tekrar
+kurma; atomik veri geçişi geri dönüşü; salt okunur komuttan yazmanın reddi;
+eşzamanlı son stok satışı, sipariş tekrarı ve iptalinde tek stok iadesi;
+rezervasyon isteği tekrarında aynı kaydın korunması; SEO değişikliğinin gerçek
+kaynağa ve yayın ZIP'ine yansıması; HTTP/CSRF ve yeniden açılış sonrası kalıcılık.
+
+Tarayıcıda ayrı QA hesabı/veritabanıyla CRM kişisi oluşturuldu. İki adet ürün
+içeren sipariş kaydedildi, sunucu toplamı 50000 TRY alt birimi ve stok 8→6
+olarak görüldü. 390×844 görünümde modül penceresi yatay taşmadı; konsol
+hata kaydı boştu. Tam erişilebilirlik veya penetrasyon denetimi yapılmadı.
+
+![Mobil modül merkezi](modules-preview.png)
+
+E-ticaret bu aşamada yönetici siparişleri içindir; ziyaretçi sepeti, canlı
+tahsilat, vergi/kargo/iade motoru yoktur. SEO dosyaları indirilip ayrıca
+yayınlanır. CRM kampanya veya dış servis eşitlemesi yapmaz. Paketler güvenilir
+sunucu kodudur; kötü niyetli eklentiler için sandbox değildir. Kesin ürün
+lisansı ve ticari modül yetkilendirme sistemi bu dilimde değiştirilmedi.
+Üçüncü taraf çalışma zamanı bağımlılığı veya üretim verisi eklenmedi.
+
 ## 2026-11-08 — Uzak CI ve anahtar dosyası adı sertleştirmesi
 
 1ecad8d commit'i için [GitHub Actions çalışması](https://github.com/rasim21-maker/.studio/actions/runs/42454421094)

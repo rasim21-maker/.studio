@@ -1,4 +1,5 @@
 import {parse,serialize} from 'parse5';
+import {posix} from 'node:path';
 import type {Document,Layout,Source,Section,Responsive} from '../../shared/v2/model.ts';
 import {themes} from '../../shared/v2/model.ts';
 export const escape=(v:unknown)=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
@@ -21,17 +22,17 @@ export function designCss(doc:Document):string{
  }
  return css;
 }
-export function sectionHtml(s:Section,locale?:string):string{
+export function sectionHtml(s:Section,locale?:string,outputPath='index.html'):string{
  const val=(id:string)=>{const f=s.fields.find(f=>f.id===id);return f?locale&&f.translations?.[locale]||f.value:'';};
  let body=`<h2>${escape(val('heading'))}</h2><div>${val('body')}</div>`;
- if(s.kind==='image')body+=`<img src="${escape(val('image'))}" alt="${escape(val('alt'))}">`;
+ if(s.kind==='image'){const asset=String(val('image'));body+=`<img src="${escape(asset?posix.relative(posix.dirname(outputPath),asset):'')}" alt="${escape(val('alt'))}">`;}
  if(s.kind==='cta')body+=`<a href="${escape(val('href'))}">${escape(val('label'))}</a>`;
  if(s.kind==='booking'||s.kind==='gadget')body+='<p role="status">Bu bileşenin canlı sitede çalışması için yayın adresi ve operasyon bağlantısı gereklidir.</p>';
  return `<section data-studio-id="${s.id}" data-studio-section${s.enabled?'':' hidden'}>${body}</section>`;
 }
-export function sdkHtml(doc:Document,pageId:string):string{
+export function sdkHtml(doc:Document,pageId:string,outputPath?:string):string{
  const p=doc.pages.find(p=>p.id===pageId)||doc.pages[0];
- return `<!doctype html><html lang="${doc.locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(p.title)}</title><meta name="description" content="${escape(p.description)}"><style>body{margin:0;font:18px/1.6 system-ui;background:var(--studio-bg);color:var(--studio-fg)}main{padding:32px;max-width:1200px;margin:auto}section{padding:28px;background:var(--studio-surface);margin-bottom:24px}h1,h2{line-height:1.15}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}img{max-width:100%}${designCss(doc)}</style></head><body><main data-studio-page="${p.id}">${p.sections.map(s=>sectionHtml(s,doc.locale)).join('')}</main></body></html>`;
+ return `<!doctype html><html lang="${doc.locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(p.title)}</title><meta name="description" content="${escape(p.description)}"><style>body{margin:0;font:18px/1.6 system-ui;background:var(--studio-bg);color:var(--studio-fg)}main{padding:32px;max-width:1200px;margin:auto}section{padding:28px;background:var(--studio-surface);margin-bottom:24px}h1,h2{line-height:1.15}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}img{max-width:100%}${designCss(doc)}</style></head><body><main data-studio-page="${p.id}">${p.sections.map(s=>sectionHtml(s,doc.locale,outputPath??p.path)).join('')}</main></body></html>`;
 }
 export function inertPreview(html:string,source:Source,file:string):string{
  const tree:any=parse(html);const base=file.split('/').slice(0,-1);

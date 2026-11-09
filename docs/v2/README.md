@@ -27,6 +27,13 @@ Başka port/veri klasörü için `.env.example` dosyasından yerel `.env` oluşt
 
 ## İş modülleri
 
+Yeni **Modül merkezi**, site editörünün sol alt menüsündedir. Randevu, SEO, CRM ve
+e-ticaret paketleri burada siteye kurulabilir, kapatılabilir ve verileri korunarak
+kaldırılabilir. Şemadan üretilen formlar ve komutlar pakete göre görünür.
+[SDK, paket geliştirme ve kapsam belgesi](MODULES.md) kurulum ve dış geliştirici
+örneğini içerir. Eski **İş modülleri** ekranı ayrıntılı rezervasyon, takvim ve
+ödeme sağlayıcısı ayarları için korunur.
+
 Site içinde **İş modülleri → İş modüllerini kur** rezervasyon, takvim ve entegrasyon ayarlarını açar. Gecelik konaklama ve süreli randevu hizmetleri başlangıçta kapalıdır. Kapasite, ücret, para birimi, saat dilimi, çalışma saatleri, açık günler, bekleme süresi ve iptal sınırlarını ayarlayın. Genel sitelerde katılımcılar kişi olarak kaydedilir; Loft'ta pet alanları korunur.
 
 İyzico, Stripe ve PayPal adaptörleri ayrı yapılandırılır. Anahtar olmadan hazır sayılmazlar. Takvim aylık/ajanda görünümü, kapalı zamanlar, tekrarlanan etkinlik ve ICS dışa aktarmayı destekler. ICS, çift yönlü Google/Outlook eşitlemesi değildir. Hava durumu, haber, hisse, endeks ve trafik ayarları kendi sağlayıcılarıyla çalışır; kota, lisans ve canlı kullanım hesabı işletmeciye aittir.
@@ -35,11 +42,15 @@ Yeni V2 tasarım bileşenlerindeki rezervasyon/canlı veri yer tutucuları henü
 
 ## Geliştirme
 
+[Test prosedürü](TESTING.md), review bulgularının kalıcı regresyon matrisini
+ve CI teslim kapılarını içerir. Hızlı kontrol: `npm.cmd run test:review`.
+
 ```powershell
 npm.cmd run typecheck
 npm.cmd run build
 npm.cmd test
 npm.cmd run test:v2
+npm.cmd run test:packages
 npm.cmd run check
 npm.cmd run licenses
 npm.cmd run sbom

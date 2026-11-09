@@ -130,9 +130,11 @@ class StaticAdapter implements Adapter{
    }
    const title=findNodes(tree,n=>n.tagName==='title')[0];if(title?.sourceCodeLocation?.endTag)patches.push({start:title.sourceCodeLocation.startTag.endOffset,end:title.sourceCodeLocation.endTag.startOffset,text:escape(p.title)});
    const desc=findNodes(tree,n=>n.tagName==='meta'&&attr(n,'name')==='description')[0];if(desc?.sourceCodeLocation)patches.push({start:desc.sourceCodeLocation.startTag.startOffset,end:desc.sourceCodeLocation.startTag.endOffset,text:tagAttribute(html,desc,'content',p.description)});
+   const missingHead=(!title?'<title>'+escape(p.title)+'</title>':'')+(!desc?'<meta name="description" content="'+escape(p.description)+'">':'');
+   if(missingHead){const head=findNodes(tree,n=>n.tagName==='head')[0],htmlNode=findNodes(tree,n=>n.tagName==='html')[0],doctype=(tree.childNodes||[]).find((n:any)=>n.nodeName==='#documentType');const at=head?.sourceCodeLocation?.endTag?.startOffset??htmlNode?.sourceCodeLocation?.startTag?.endOffset??doctype?.sourceCodeLocation?.endOffset??0;patches.push({start:at,end:at,text:head?.sourceCodeLocation?.endTag?missingHead:'<head>'+missingHead+'</head>'});}
    html=patch(html,patches);tree=parseSource(html);const main=findNodes(tree,n=>attr(n,'data-studio-page')===p.id)[0];if(!main?.sourceCodeLocation?.endTag)fail(409,'Ana alan eşleştirmesi bulunamadı.');
    const managed=(main.childNodes||[]).filter((n:any)=>attr(n,'data-studio-id')&&n.sourceCodeLocation?.endTag),sourceNodes=new Map(managed.map((n:any)=>[attr(n,'data-studio-id'),n]));
-   const chunks=p.sections.map(s=>{if(s.kind!=='source')return sectionHtml(s,after.locale);const node:any=sourceNodes.get(s.id);if(!node)fail(409,'Bölüm kaynağı değişmiş.');const loc=node.sourceCodeLocation;let raw=html.slice(loc.startOffset,loc.endOffset),tag=html.slice(loc.startTag.startOffset,loc.startTag.endOffset).replace(/\s+hidden(?:=(?:"[^"]*"|'[^']*'|[^\s>]*))?/gi,'');if(!s.enabled)tag=tag.replace(/>$/,' hidden>');return tag+raw.slice(loc.startTag.endOffset-loc.startOffset);});
+   const chunks=p.sections.map(s=>{if(s.kind!=='source')return sectionHtml(s,after.locale,p.path);const node:any=sourceNodes.get(s.id);if(!node)fail(409,'Bölüm kaynağı değişmiş.');const loc=node.sourceCodeLocation;let raw=html.slice(loc.startOffset,loc.endOffset),tag=html.slice(loc.startTag.startOffset,loc.startTag.endOffset).replace(/\s+hidden(?:=(?:"[^"]*"|'[^']*'|[^\s>]*))?/gi,'');if(!s.enabled)tag=tag.replace(/>$/,' hidden>');return tag+raw.slice(loc.startTag.endOffset-loc.startOffset);});
    const changes:Patch[]=managed.map((node:any,index:number)=>({start:node.sourceCodeLocation.startOffset,end:node.sourceCodeLocation.endOffset,text:chunks[index]||''}));
    if(chunks.length>managed.length)changes.push({start:main.sourceCodeLocation.endTag.startOffset,end:main.sourceCodeLocation.endTag.startOffset,text:chunks.slice(managed.length).join('\n')});
    html=patch(html,changes);
@@ -150,7 +152,7 @@ class ReactSdkAdapter implements Adapter{
  validate=policy;
  write(before:Document,after:Document,input:Source){const errors=this.validate(before,after,input);if(errors.length)fail(422,'Alanları kontrol edin.',errors);const source=structuredClone(input);source.files[source.manifest.contentPath||'studio/content.json']=JSON.stringify(after,null,2);source.files['studio/design.css']='body{margin:0;font:18px/1.6 system-ui}main{padding:32px}section{padding:28px;background:var(--studio-surface)}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}'+designCss(after);source.manifest.name=after.name;source.manifest.locales=after.locales;source.files['studio.manifest.json']=JSON.stringify(source.manifest,null,2);return source;}
  preview(doc:Document,source:Source,page:string){return inertPreview(sdkHtml(doc,page),source,doc.pages.find(p=>p.id===page)?.path||'index.html');}
- export(doc:Document,source:Source){return{...source.files,...Object.fromEntries(doc.pages.map(p=>['studio-preview/'+p.path,sdkHtml(doc,p.id)]))};}
+ export(doc:Document,source:Source){return{...source.files,...Object.fromEntries(doc.pages.map(p=>['studio-preview/'+p.path,sdkHtml(doc,p.id,'studio-preview/'+p.path)]))};}
 }
 class WordpressAdapter extends StaticAdapter{
  id='wordpress';

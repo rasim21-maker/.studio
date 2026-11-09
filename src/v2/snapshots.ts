@@ -1,4 +1,5 @@
 import {isDeepStrictEqual} from 'node:util';
+import {isRuntimeSecretName} from '../security/runtime-files.mjs';
 import {fail} from '../util.mjs';
 import {claimSourcePath} from './import.ts';
 import {validateDocument} from '../../shared/v2/validation.ts';
@@ -11,7 +12,7 @@ export function assertSnapshot(adapter:Adapter,document:Document,source:Source):
  if(issues.length)fail(422,'Sürüm güncel içerik kurallarına uymuyor; etkin içerik değiştirilmedi.',issues);
  if(!source||!source.files||!source.assets||!Array.isArray(source.bindings)||source.manifest?.adapter?.id!==adapter.id||source.manifest.adapter.version!==adapter.version)fail(422,'Sürümün kaynak veya adaptör sözleşmesi geçersiz.');
  const names=new Set<string>();
- for(const [file,text]of Object.entries(source.files)){claimSourcePath(file,names);if(typeof text!=='string')fail(422,'Sürüm kaynak metni geçersiz.');}
+ for(const [file,text]of Object.entries(source.files)){claimSourcePath(file,names);if(isRuntimeSecretName(file.split('/').at(-1)))fail(422,'Sürüm çalışma zamanı sırrı içeriyor; güvenli import ile kaynağı yeniden eşleyin.');if(typeof text!=='string')fail(422,'Sürüm kaynak metni geçersiz.');}
  for(const file of Object.keys(source.assets))claimSourcePath(file,names);
  const policy=adapter.validate(document,document,source);
  if(policy.length)fail(422,'Sürüm güncel alan kurallarına uymuyor.',policy);

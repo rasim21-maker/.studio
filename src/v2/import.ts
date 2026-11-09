@@ -1,4 +1,5 @@
 import path from 'node:path';
+import {isRuntimeSecretName} from '../security/runtime-files.mjs';
 import {inflateRawSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {fail} from '../util.mjs';
@@ -67,7 +68,7 @@ export function inspectFiles(input:Record<string,Buffer>):{source:Source;report:
  for(const [filename,bytes]of Object.entries(input)){
   claimSourcePath(filename,names);report.bytes+=bytes.length;if(report.bytes>limits.expanded||bytes.length>limits.file)fail(422,'Import boyut sınırı aşıldı.');
   const reject=(reason:string)=>report.rejected.push({path:filename,reason});
-  if(secretPath.test(filename)||/(^|\/)(studio-vault\.json|studio-key|integration-key)$/.test(filename)){reject('Sır, çalışma zamanı verisi veya bağımlılık dizini dışlandı.');continue;}
+  if(secretPath.test(filename)||isRuntimeSecretName(filename.split('/').at(-1))){reject('Sır, çalışma zamanı verisi veya bağımlılık dizini dışlandı.');continue;}
   if(/\.(zip|gz|tar|7z|rar|exe|dll|bat|cmd|ps1|sh)$/i.test(filename)){reject('Arşiv veya çalıştırılabilir dosya dışlandı.');continue;}
   if(/\.(png|jpg|jpeg|webp|gif)$/i.test(filename)){try{const {asset}=mediaAsset(bytes,filename);assets[filename]=asset;report.accepted.push(filename);}catch{reject('Görsel içeriği veya ölçüleri doğrulanamadı.');}continue;}
   if(!/\.(html?|css|[cm]?js|tsx?|jsx|json|md|txt|xml|svg)$/i.test(filename)&&!['LICENSE','NOTICE','.gitignore'].includes(path.basename(filename))){reject('Desteklenmeyen dosya türü.');continue;}

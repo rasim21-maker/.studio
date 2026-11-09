@@ -6,9 +6,9 @@ import {parseArgs} from 'node:util';
 import {backupData} from './backup-v2.mjs';
 import {sealSecret,openSecret,localKeyProvider,maxSecretBytes} from '../src/security/envelope.mjs';
 import {safePath} from '../src/v2/import.ts';
+import {isRuntimeSecretName as keyName} from '../src/security/runtime-files.mjs';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
-const keyName=name=>['studio-key','integration-key','studio-vault.json'].includes(name.toLowerCase())||/^\.env(?:\.|$)/i.test(name);
 const inside=(parent,child)=>{const relative=path.relative(parent,child);return !relative||relative!=='..'&&!relative.startsWith('..'+path.sep)&&!path.isAbsolute(relative);};
 async function destination(value){
  const absolute=path.resolve(value),parent=await fs.realpath(path.dirname(absolute));

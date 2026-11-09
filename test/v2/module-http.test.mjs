@@ -1,0 +1,44 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import {randomUUID} from 'node:crypto';
+import {createApp} from '../../src/server.mjs';
+import {passwordHash} from '../../src/auth.mjs';
+import {readZip} from '../../src/v2/import.ts';
+const root=path.resolve(import.meta.dirname,'../..');
+test('module HTTP: authenticated catalog, CRUD, source SEO export, CSRF and persistent installation',async t=>{
+ const dataDir=path.join(root,'test-results','module-http-'+randomUUID()),password='Module-test-only-2026!';
+ // Obtain an ephemeral port, then restart with the matching origin.
+ const net=await import('node:net'),probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
+ const origin='http://127.0.0.1:'+port;let app=await createApp({projectRoot:root,dataDir,origin});t.after(async()=>app?.close());await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
+ const client=()=>{let cookie='',csrf='';return async(route,method='GET',input,extra={})=>{const res=await fetch(origin+route,{method,headers:{Origin:origin,Cookie:cookie,'Content-Type':'application/json','X-CSRF-Token':csrf,...extra},...(input===undefined?{}:{body:JSON.stringify(input)})});if(res.headers.get('set-cookie'))cookie=res.headers.get('set-cookie').split(';')[0];const bytes=Buffer.from(await res.arrayBuffer());let data;try{data=JSON.parse(bytes);}catch{data=bytes;}if(data.csrf)csrf=data.csrf;return {status:res.status,data,bytes};};};
+ const admin=client(),other=client(),viewer=client();assert.equal((await admin('/api/setup','POST',{token:app.setupToken,email:'modules@test.example',password})).status,201);
+ for(const [id,email]of[['other','other@test.example'],['viewer','viewer@test.example']])app.store.run('INSERT INTO users VALUES (?,?,?,?)',id,email,await passwordHash(password),new Date().toISOString());
+ await other('/api/login','POST',{email:'other@test.example',password});await viewer('/api/login','POST',{email:'viewer@test.example',password});
+ const org=(await admin('/api/v2/workspace')).data.organizations[0].id;
+ const job=(await admin('/api/v2/imports','POST',{kind:'example',example:'static',orgId:org,requestId:randomUUID()})).data;
+ for(let n=0;n<100;n++){const state=(await admin('/api/v2/imports/'+job.id)).data;if(state.status==='review')break;await new Promise(r=>setTimeout(r,10));}
+ const committed=await admin('/api/v2/imports/'+job.id+'/commit','POST',{});assert.equal(committed.status,201,JSON.stringify(committed.data));const base='/api/v2/sites/'+committed.data.siteId;
+ const catalog=await admin(base+'/extensions');assert.equal(catalog.status,200);assert.equal(catalog.data.packages.length,4);
+ assert.equal((await other(base+'/extensions')).status,404);assert.equal((await client()(base+'/extensions')).status,401);
+ assert.equal((await admin(base+'/extensions/studio.crm/install','POST',{revision:-1},{'X-CSRF-Token':''})).status,403);
+ for(const id of ['studio.crm','studio.commerce','studio.booking','studio.seo'])assert.equal((await admin(base+'/extensions/'+id+'/install','POST',{revision:-1})).status,200,id);
+ const contact=await admin(base+'/extensions/studio.crm/collections/contacts','PUT',{data:{name:'Persistent contact',status:'lead'}});assert.equal(contact.status,200,JSON.stringify(contact.data));
+ assert.equal((await admin(base+'/members','PUT',{email:'viewer@test.example',permissions:['content']})).status,200);
+ assert.equal((await viewer(base+'/extensions/studio.crm/collections/contacts')).status,403);
+ assert.equal((await viewer(base+'/extensions/studio.seo/disable','POST',{revision:0})).status,403);
+ assert.equal((await admin(base+'/extensions/studio.crm/collections/contacts','PUT',{id:contact.data.id,revision:999,data:contact.data.data})).status,409);
+ const pages=(await admin(base+'/extensions/studio.seo/collections/pages')).data.items,page=pages[0];
+ assert.equal((await admin(base+'/extensions/studio.seo/collections/pages','PUT',{id:page.id,revision:page.revision,data:{...page.data,title:'Module SEO title',description:'Applied through the normal versioned source write.'}})).status,200);
+ const before=(await admin(base)).data;
+ const applied=await admin(base+'/extensions/studio.seo/commands/applyPage','POST',{recordId:page.id,siteRevision:before.revision});assert.equal(applied.status,200,JSON.stringify(applied.data));
+ const sourcePage=applied.data.document.pages.find(p=>p.id===page.data.pageId);
+ const source=await admin(base+'/source?path='+encodeURIComponent(sourcePage.path));assert.match(JSON.stringify(source.data),/Module SEO title/);
+ const release=await admin(base+'/releases','POST',{revision:applied.data.revision});assert.equal(release.status,201,JSON.stringify(release.data));
+ const released=await admin(base+'/releases/'+release.data.id+'/download');assert.equal(released.status,200);assert.match(Buffer.from(readZip(released.bytes)[sourcePage.path]).toString('utf8'),/Module SEO title/);
+ assert.equal((await admin(base+'/extensions/studio.booking/disable','POST',{revision:0})).status,200);
+ assert.equal((await admin(base+'/modules/bookings','POST',{})).status,409);
+ await app.close();app=await createApp({projectRoot:root,dataDir,origin});await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
+ const rows=await admin(base+'/extensions/studio.crm/collections/contacts');assert.equal(rows.status,200);assert.equal(rows.data.items[0].id,contact.data.id);
+ assert.equal((await admin(base+'/extensions/studio.booking/export')).data.operational.settings.values.participantMode,'generic');
+});

@@ -1,0 +1,5 @@
+{
+  "name":"@loft-studio/booking", "version":"0.1.0", "private":true, "type":"module",
+  "exports": {".":"./index.mjs", "./engine":"./engine.mjs"}, "files":["index.mjs","engine.mjs","README.md"],
+  "dependencies":{"@loft-studio/sdk":"0.1.0"}, "engines":{"node":">=24.13.0 <25"}
+}

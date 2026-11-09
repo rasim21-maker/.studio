@@ -5,7 +5,9 @@ const lock=JSON.parse(await fs.readFile('package-lock.json','utf8'));
 const root=JSON.parse(await fs.readFile('package.json','utf8'));
 const allowed=new Set(['MIT','BSD-2-Clause','BSD-3-Clause','0BSD','Apache-2.0']);
 const entries=[],notices=[],problems=[];
+const firstParty=new Set(Object.entries(lock.packages).filter(([location,item])=>location.startsWith('packages/')&&item.name?.startsWith('@loft-studio/')&&root.dependencies?.[item.name]===item.version).map(([location])=>location));
 for(const [location,item] of Object.entries(lock.packages).filter(([key])=>key).sort(([a],[b])=>a.localeCompare(b))){
+ if(firstParty.has(location)||item.link&&firstParty.has(item.resolved))continue; // Own workspace code is inventoried separately, not relicensed as a dependency.
  let pkg,files=[];try{pkg=JSON.parse(await fs.readFile(path.join(location,'package.json'),'utf8'));files=await fs.readdir(location);}catch(error){if(error.code!=='ENOENT')throw error;}
  const name=pkg?.name||location.split('node_modules/').at(-1),license=pkg?.license||item.license;
  if(!allowed.has(license))problems.push(name+': review license '+license);

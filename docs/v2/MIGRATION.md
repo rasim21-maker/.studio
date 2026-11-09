@@ -4,6 +4,27 @@ Bu sürüm `v2` dalında, mevcut çalışan kurulumdan ayrı geliştirilir. Uygu
 
 ## 1. Mevcut durumu kaydet
 
+### 2026-11-09 — Review düzeltmelerinin veri etkisi
+
+Booking açılışında booking_requests tablosuna yoksa nullable fingerprint
+kolonu eklenir. Rezervasyon, ödeme, müşteri veya istek kimlikleri taşınmaz;
+mevcut satırlar korunur. Yeni isteklerde içerik özeti kaydedilir. Eski
+isteklerde bu kolon NULL kalır: özgün istek gövdesi güvenilir biçimde
+yeniden kurulamayacağı için aynı requestId ile tekrar oluşturma 409 verir.
+Bu durumda yeni istek göndermeden önce mevcut rezervasyonu kontrol edin.
+Görüntüleme, normal güncelleme, iptal ve ödeme doğrulaması korunur.
+
+Eski motor kolon adlarını belirtmeden üç değerle INSERT yaptığı için, bu
+kolon eklendikten sonra eski uygulama koduna tek başına dönmeyin. Tercih
+uyumlu kodla ileri düzeltmedir. Yedekten tam geri dönüş gerekiyorsa servisi
+durdurun ve yükseltme sonrasındaki rezervasyon/ödeme hareketlerini önce
+uzlaştırın; eski yedeği aktif operasyonların üzerine doğrudan koymayın.
+
+Önceden import edilmiş bir sürüm çalışma zamanı anahtar dosyası içeriyorsa
+artık önizleme/geri yükleme/yayın doğrulaması bunu reddeder. Sürüm geçmişi
+silinmez; güvenli import ile temiz kaynak eşleştirin. Geçmişte gerçekten
+dışarı aktarılmış bir anahtar varsa ilgili anahtarı ayrıca döndürün.
+
 Çalışan kodun commit'ini, Node sürümünü, `DATA_DIR` yolunu ve `.env` yapılandırmasının güvenli konumunu kaydedin. Anahtar değerlerini rapora veya Git'e yazmayın. Kullanıcı, taslak, yapı, rezervasyon ve ödeme sayılarıyla bir kontrol listesi oluşturun. Bekleyen tahsilatları sağlayıcıyla karşılaştırın.
 
 ## 2. Tutarlı yedek al
