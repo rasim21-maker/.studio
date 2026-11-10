@@ -1,5 +1,6 @@
 import {randomUUID, randomBytes} from 'node:crypto';
 import {fail} from '@loft-studio/sdk';
+import {installBookingEvents} from './events.mjs';
 import {createHash} from 'node:crypto';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const canonical = value => Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
@@ -59,6 +60,7 @@ export class Booking {
  CREATE TABLE IF NOT EXISTS booking_requests(site_id TEXT NOT NULL,request_id TEXT NOT NULL,booking_id TEXT NOT NULL,fingerprint TEXT,PRIMARY KEY(site_id,request_id));
  CREATE TABLE IF NOT EXISTS reservation_participants(booking_id TEXT NOT NULL REFERENCES reservations(id),position INTEGER NOT NULL,name TEXT NOT NULL,notes TEXT NOT NULL,extensions TEXT NOT NULL,PRIMARY KEY(booking_id,position));`);
  if(!store.all('PRAGMA table_info(booking_requests)').some(c=>c.name==='fingerprint'))store.db.exec('ALTER TABLE booking_requests ADD COLUMN fingerprint TEXT');
+ installBookingEvents(store);
  }
  settings(site){let r=this.store.get('SELECT * FROM booking_settings WHERE site_id=?',site);if(!r){this.store.run('INSERT INTO booking_settings VALUES (?,0,?)',site,JSON.stringify(bookingDefaults()));r=this.store.get('SELECT * FROM booking_settings WHERE site_id=?',site);}return{revision:r.revision,values:JSON.parse(r.content)};}
  saveSettings(site,input,actor){this.assertWritable(site);const c=validateBookingSettings(input.values);return this.store.transaction(()=>{

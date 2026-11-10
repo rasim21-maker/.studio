@@ -40,7 +40,8 @@
     "@loft-studio/booking": "0.1.0",
     "@loft-studio/seo": "0.1.0",
     "@loft-studio/crm": "0.1.0",
-    "@loft-studio/commerce": "0.1.0"
+    "@loft-studio/commerce": "0.1.0",
+    "@loft-studio/booking-crm": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

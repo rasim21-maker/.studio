@@ -1,5 +1,18 @@
 {
-  "name": "@loft-studio/module-core", "version": "0.1.0", "private": true,
-  "type": "module", "exports": "./index.mjs", "files": ["index.mjs", "README.md"],
-  "dependencies": {"@loft-studio/sdk": "0.1.0"}, "engines": {"node": ">=24.13.0 <25"}
+  "name": "@loft-studio/module-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.mjs",
+  "files": [
+    "index.mjs",
+    "README.md",
+    "integrations.mjs"
+  ],
+  "dependencies": {
+    "@loft-studio/sdk": "0.1.0"
+  },
+  "engines": {
+    "node": ">=24.13.0 <25"
+  }
 }

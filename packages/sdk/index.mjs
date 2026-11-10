@@ -72,7 +72,37 @@ export function defineModule(definition) {
     checkFields(command.fields || {});
   }
   for (const c of Object.values(definition.collections || {})) if (!m.permissions.includes(c.permission)) fail(422, 'Koleksiyon izni bildirilmemiş.');
+  for (const [type, event] of Object.entries(definition.events || {})) {
+    if (!/^[a-z][a-zA-Z0-9_.-]{0,99}$/.test(type) || !Number.isSafeInteger(event.version) || event.version < 1) fail(422, 'Olay sözleşmesi geçersiz.');
+    checkFields(event.fields);
+  }
+  if (definition.eventSource && typeof definition.eventSource.read !== 'function') fail(422, 'Olay kaynağı geçersiz.');
   const migrations = definition.migrations || [];
   if (migrations.length !== m.schemaVersion || migrations.some((v, i) => v.version !== i + 1 || typeof v.up !== 'function')) fail(422, 'Sıralı veri geçişleri gerekli.');
   return definition;
+}
+
+// Optional integrations activate only when every required module is enabled.
+export function defineIntegration(d) {
+  if (!d || !identifier.test(d.id) || !/^\d+\.\d+\.\d+$/.test(d.version) || typeof d.name !== 'string' || !d.requires || Object.keys(d.requires).length < 2) fail(422, 'Entegrasyon bildirimi geçersiz.');
+  for (const [id, major] of Object.entries(d.requires)) if (!identifier.test(id) || !Number.isSafeInteger(major) || major < 0) fail(422, 'Entegrasyon bağımlılığı geçersiz.');
+  if (!Array.isArray(d.permissions) || !d.permissions.length || d.permissions.some(p => typeof p !== 'string' || !/^\w[\w.-]*$/.test(p))) fail(422, 'Entegrasyon izinleri gerekli.');
+  if (!Array.isArray(d.subscriptions)) fail(422, 'Olay abonelikleri gerekli.');
+  const subscriptions = new Set();
+  for (const s of d.subscriptions) {
+    const id = s.module + ':' + s.type;
+    if (!Object.hasOwn(d.requires, s.module) || !/^[a-z][a-zA-Z0-9_.-]{0,99}$/.test(s.type) || !Number.isSafeInteger(s.version) || s.version < 1 || typeof s.run !== 'function' || subscriptions.has(id)) fail(422, 'Olay aboneliği geçersiz.');
+    subscriptions.add(id);
+  }
+  for (const [id, c] of Object.entries(d.collections || {})) {
+    if (!key.test(id)) fail(422, 'Entegrasyon koleksiyonu geçersiz.'); checkFields(c.fields);
+    const references=(fields,depth=0)=>{for(const f of Object.values(fields)){if(f.type==='reference'&&(depth>0||!Object.hasOwn(d.requires,f.module)))fail(422,'Entegrasyon ilişkisi üst düzeyde ve bildirilen modüle ait olmalı.');if(f.type==='items')references(f.fields,depth+1);}};
+    references(c.fields);
+  }
+  for (const [id, c] of Object.entries(d.commands || {})) {if (!key.test(id) || typeof c.run !== 'function') fail(422, 'Entegrasyon komutu geçersiz.');checkFields(c.fields || {});}
+  for (const v of d.views || []) {
+    if (!key.test(v.id) || !Object.hasOwn(d.requires, v.module) || !key.test(v.collection) || v.kind !== 'relatedTimeline' || typeof v.label !== 'string' || !d.commands?.[v.command] || d.commands[v.command].write !== false || !Object.hasOwn(d.commands[v.command].fields || {}, v.contextField)) fail(422, 'Entegrasyon görünümü geçersiz.');
+    for (const action of ['linkCommand','unlinkCommand']) if (v[action] && (!d.commands[v[action]] || !Object.hasOwn(d.commands[v[action]].fields || {}, v.contextField) || !Object.hasOwn(d.commands[v[action]].fields || {}, v.linkField))) fail(422, 'Görünüm işlemi geçersiz.');
+  }
+  return d;
 }

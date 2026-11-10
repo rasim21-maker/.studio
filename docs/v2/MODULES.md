@@ -1,6 +1,6 @@
 # Modüler çekirdek ve SDK — 0.1
 
-Tarih: 2026-11-09. Bu sürüm, V2 uygulamasına güvenilir sunucu paketlerinin
+Tarih: 2026-11-10. Bu sürüm, V2 uygulamasına güvenilir sunucu paketlerinin
 eklenmesini sağlar. Kurulum yerel/self-hosted çalışma içindir; indirilen keyfi
 kodu izole çalıştıran bir mağaza veya hosted sandbox değildir.
 
@@ -14,6 +14,7 @@ kodu izole çalıştıran bir mağaza veya hosted sandbox değildir.
 | `@loft-studio/seo` | Metadata kayıtları, normal sürümlü API üzerinden sayfaya uygulama, denetim, sitemap/robots üretimi |
 | `@loft-studio/crm` | Şirketler, kişiler, ilişkili fırsatlar/aktiviteler, para birimine göre satış özeti |
 | `@loft-studio/commerce` | Ürün, stok ve manuel sipariş; sunucu fiyatlandırması, tekil istek ve iptalde stok iadesi |
+| `@loft-studio/booking-crm` | İki modül etkinken kişi bağlantısı, rezervasyon hareketleri ve kalıcı olay teslimi |
 
 Paket sürümü `0.1.0`, ilk modül sözleşmesi `apiVersion:1`, başlangıç modül
 veri/işlev sürümü `1.0.0` olarak ayrıdır. Tam sürümler kilit dosyasında sabittir.
@@ -65,7 +66,7 @@ export default defineModule({
 ```
 
 Kendi paketini bu sözleşmeyle dışa aktar, yerel paket/bağımlılık olarak kur ve
-`studio.config.mjs` dizisine ekle. `npm run test:packages` altı paketi tarball
+`studio.config.mjs` dizisine ekle. `npm run test:packages` yedi paketi tarball
 olarak üretir, temiz bir tüketici klasörüne çevrimdışı kurar, SDK CLI ile farklı
 bir modül oluşturur ve çekirdeğin uygulama dosyalarını kullanmadan çalıştırır.
 Import çözümlemelerinin tüketici klasöründen çıktığını ayrıca denetler.
@@ -82,7 +83,8 @@ reddedilir. Tekil alanlar işlem kilidi altında denetlenir.
 `ctx.records` yalnızca modülün bildirdiği koleksiyonları sunar. Özel komutlar
 çoklu yazımlarını `ctx.transaction()` içinde yapmalıdır. İşlemler ve veri
 geçişleri senkrondur; ağ çağrısını SQLite işlemi içinde bekletmeyin. Olaylar
-kalıcı olarak kaydedilir; bu sürümde arka plan olay dağıtıcısı bulunmaz.
+kalıcı olarak kaydedilir; bildirilen iş olayları yerel outbox/teslim işleyicisiyle
+isteğe bağlı entegrasyonlara aktarılır. [Sözleşme ve sınırlar](INTEGRATIONS.md).
 `beforeSave` sonrasında alanlar ve ilişkiler yeniden doğrulanır.
 
 Güncelleme ve silmede `revision` zorunludur. İlişkili kaydı silme engellenir.
@@ -146,6 +148,8 @@ yönlendirmeler ve yapılandırılmış veri sonraki SEO sürümündedir.
 **CRM:** Tekil e-posta, şirket/kişi ilişkileri, fırsat aşamaları ve takip aktiviteleri
 kalıcıdır. Pazarlama izni bir kayıt alanıdır; e-posta gönderilmez. Kampanya,
 otomasyon, toplu import, görsel satış panosu ve harici CRM eşitlemesi yoktur.
+İki paket açıkken booking-crm kişi ekranına rezervasyon bağlantısı ve hareket
+geçmişi ekler; kişi eşleştirmesi kullanıcı seçimiyle yapılır.
 
 **E-ticaret:** Siparişler yönetici tarafından oluşturulur. Sunucu fiyatı ve para
 birimini katalogdan alır. Aynı istek anahtarı aynı sonucu döndürür; değiştirilmiş
@@ -170,7 +174,7 @@ paketleme için [npm workspaces](https://docs.npmjs.com/cli/v11/using-npm/worksp
 incelendi. Bu projelerden kaynak kod kopyalanmadı. Büyük bir CMS'yi bağımlılık
 olarak eklemek mevcut adaptör/operasyon verilerini ikinci bir çekirdeğe bağlayacağı
 için seçilmedi. Üçüncü taraf lisans denetimi 120 kilitli bağımlılığı korur;
-birinci taraf altı paket ayrıca SBOM'a dahildir.
+birinci taraf yedi paket ayrıca SBOM'a dahildir.
 
 ## Doğrulama
 

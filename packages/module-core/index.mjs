@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {defineModule, fail, parseFields} from '@loft-studio/sdk';
+import {IntegrationRuntime} from './integrations.mjs';
 
 const json = JSON.stringify;
 const now = () => new Date().toISOString();
@@ -9,7 +10,8 @@ const sync = result => {if (result && typeof result.then === 'function') fail(50
 
 /** Trusted server packages only. This host is not an arbitrary-code sandbox. */
 export class ModuleHost {
-  constructor({store, modules, authorize, services = {}}) {
+  /** @param {{store:any,modules:any[],authorize:Function,services?:Object,integrations?:any[]}} options */
+  constructor({store, modules, authorize, services = {}, integrations = []}) {
     this.store = store;
     this.authorize = authorize;
     this.services = services;
@@ -34,6 +36,7 @@ export class ModuleHost {
       CREATE TABLE IF NOT EXISTS studio_module_events(id TEXT PRIMARY KEY,site_id TEXT NOT NULL REFERENCES studio_sites(id),module_id TEXT NOT NULL,actor TEXT NOT NULL,type TEXT NOT NULL,data TEXT NOT NULL,created TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS studio_module_record_list ON studio_module_records(site_id,module_id,collection,updated);
     `);
+    this.integrations = new IntegrationRuntime(this, integrations);
   }
   definition(id) {const d = this.registry.get(id); if (!d) fail(404, 'Modül bulunamadı.'); return d;}
   installation(siteId, id) {return this.store.get('SELECT * FROM studio_module_installations WHERE site_id=? AND module_id=?', siteId, id);}
@@ -47,7 +50,7 @@ export class ModuleHost {
     const site = this.authorize(actor, siteId);
     return [...this.registry.values()].filter(d => d.manifest.permissions.some(p => site.allowed.includes(p))).map(d => {
       const installed = this.installation(siteId, d.manifest.id);
-      return {...d.manifest, installed: installed ? {version: installed.version, state: installed.state, revision: installed.revision, schemaVersion: installed.schema_version} : null,
+      return {...d.manifest, views:this.integrations.views(actor,siteId,d.manifest.id), installed: installed ? {version: installed.version, state: installed.state, revision: installed.revision, schemaVersion: installed.schema_version} : null,
         collections: Object.fromEntries(Object.entries(d.collections || {}).filter(([,c]) => site.allowed.includes(c.permission)).map(([id,c]) => [id, {label:c.label, fields:c.fields, singleton:!!c.singleton, readOnly:!!c.readOnly}])),
         commands: Object.fromEntries(Object.entries(d.commands || {}).filter(([,c]) => site.allowed.includes(c.permission)).map(([id,c]) => [id, {label:c.label, fields:c.fields || {}, write:c.write !== false, help:c.help}]))};
     });
@@ -83,8 +86,14 @@ export class ModuleHost {
     const context = {site, actor, records: {list, get, find},
       transaction: fn => store.transaction(() => sync(fn())),
       emit: (type, data) => {
+        if (!writable) fail(403, 'Salt okunur işlem olay yazamaz.');
         if (!/^[a-z][a-zA-Z0-9_.-]{0,99}$/.test(type) || Buffer.byteLength(json(data)) > 16000) fail(422, 'Olay biçimi geçersiz.');
-        store.run('INSERT INTO studio_module_events VALUES (?,?,?,?,?,?,?)', randomUUID(), siteId, moduleId, actor.user_id, type, json(data), now());
+        store.db.exec('SAVEPOINT studio_emit');
+        try {
+          store.run('INSERT INTO studio_module_events VALUES (?,?,?,?,?,?,?)', randomUUID(), siteId, moduleId, actor.user_id, type, json(data), now());
+          if (definition.events?.[type]) this.integrations.publish(siteId,moduleId,type,data,actor.user_id);
+          store.db.exec('RELEASE studio_emit');
+        } catch (e) {store.db.exec('ROLLBACK TO studio_emit');store.db.exec('RELEASE studio_emit');throw e;}
       },
       services: Object.fromEntries(Object.entries(this.services).filter(([name])=>definition.manifest.services?.includes(name)).map(([name, service]) => [name, (...args) => {if(!writable)fail(403,'Salt okunur komut servis yazamaz.');if(!migrating)this.requireInstalled(siteId,moduleId,true);return service({actor, siteId, moduleId}, ...args);}]))};
     context.records.put = (name, input) => {
@@ -111,6 +120,7 @@ export class ModuleHost {
       if(!migrating)this.requireInstalled(siteId,moduleId,true);
       const c = collection(name), old = get(name, id);
       if (revision !== old.revision) fail(409, 'Kayıt sürümü değişti.');
+      this.integrations.assertUnreferenced(siteId,moduleId,name,id);
       if (c.beforeDelete) sync(c.beforeDelete(context, old));
       // Referential integrity covers every declared collection, including nested items.
       const pointsAt = (fields, data) => Object.entries(fields).some(([key,f]) => f.type === 'reference' && f.collection === name && data[key] === id || f.type === 'items' && data[key]?.some(item => pointsAt(f.fields,item)));
@@ -174,6 +184,6 @@ export class ModuleHost {
     const d = this.definition(id); this.authorize(actor, siteId); this.requireInstalled(siteId, id);
     for (const permission of d.manifest.permissions) this.authorize(actor, siteId, permission);
     const records = this.store.all('SELECT * FROM studio_module_records WHERE site_id=? AND module_id=? ORDER BY collection,id', siteId, id).map(r => ({collection:r.collection, ...unpack(r)}));
-    return {format:'studio-module-data', version:1, module:d.manifest, installation:this.installation(siteId,id), siteId, records,...(d.exportData?{operational:sync(d.exportData(this.context(actor,siteId,id,false)))}:{})};
+    return {format:'studio-module-data', version:1, module:d.manifest, installation:this.installation(siteId,id), siteId, records, integrations:this.integrations.exportForModule(actor,siteId,id),...(d.exportData?{operational:sync(d.exportData(this.context(actor,siteId,id,false)))}:{})};
   }
 }

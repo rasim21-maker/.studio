@@ -1,6 +1,7 @@
 import {defineModule, field, fail} from '@loft-studio/sdk';
 export {Booking, bookingDefaults, validateBookingSettings, localEpoch, localParts} from './engine.mjs';
 import {bookingDefaults} from './engine.mjs';
+import {bookingEventFields, bookingEventSource} from './events.mjs';
 
 // Compatibility storage port: existing operational IDs and tables stay authoritative.
 export function ensureBookingSite(store, site) {
@@ -13,6 +14,8 @@ export function createBookingModule({booking, store}) {
   return defineModule({
     manifest:{id:'studio.booking', name:'Randevu ve konaklama', description:'Zaman, kapasite, katılımcı ve takvim yönetimi. Mevcut ziyaretçi rezervasyon akışı korunur.', version:'1.0.0', apiVersion:1, schemaVersion:1, permissions:['operations']},
     collections:{}, migrations:[{version:1, up(){}}],
+    events:{'booking.changed':{version:1,fields:bookingEventFields}},
+    eventSource:bookingEventSource(store),
     onInstall(ctx){ensureBookingSite(store, ctx.site);},
     exportData(ctx){return {settings:booking.settings(ctx.site.id), bookings:booking.list(ctx.site.id), calendar:booking.events(ctx.site.id)};},
     commands:{

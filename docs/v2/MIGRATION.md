@@ -4,6 +4,27 @@ Bu sürüm `v2` dalında, mevcut çalışan kurulumdan ayrı geliştirilir. Uygu
 
 ## 1. Mevcut durumu kaydet
 
+### 2026-11-10 — Rezervasyon–CRM iletişimi
+
+Yeni tablolar eklenir: booking_changes, booking_event_migrations,
+studio_event_cursors, studio_event_outbox, studio_event_deliveries,
+studio_integration_records, studio_integration_record_versions ve
+studio_integration_references. Rezervasyon INSERT/revision UPDATE trigger'ları
+olayı aynı SQL işlemi içinde kaydeder. Mevcut rezervasyon kolonları/kimlikleri,
+ödeme ve CRM verileri yeniden yazılmaz.
+
+Eski kayıtlar tek seferlik baseline anlık görüntüsüyle alınır; bundan önceki
+durum geçmişi uydurulmaz. İlk denemeyi yedek kopyasında yapın: satır/kimlik ve
+revision değerlerini karşılaştırın, iki modülü açın, kişi bağlantısı kurun,
+kapama/açma ve yeniden başlatma sonrası aynı bağlantı/hareketleri doğrulayın.
+Yeni entegrasyon export verilerini de kontrol edin.
+
+Eski kod sürümü çalıştırılırken yeni trigger/tablolara elle DROP uygulamayın;
+operasyonel veri kaybına yol açabilecek eski yedek geri yüklemesini normal
+kod geri alma yöntemi saymayın. Tam N-1 sürüm uyumluluğu bu dilimde ayrıca
+sertifikalandırılmadı. Modül kapatma veya içerik geri alma kuyruk/geçmişi silmez.
+Hosted veya canlı veri klasörüne bu çalışma tarafından geçiş yapılmadı.
+
 ### 2026-11-09 — Review düzeltmelerinin veri etkisi
 
 Booking açılışında booking_requests tablosuna yoksa nullable fingerprint

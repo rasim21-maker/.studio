@@ -2,6 +2,7 @@ import React,{useEffect,useState} from 'react';
 import {validateFields} from '@loft-studio/sdk';
 import type {Field} from '@loft-studio/sdk';
 import {Modal} from './editors.tsx';
+import {IntegrationPanel} from './integration-panel.tsx';
 import './modules.css';
 type Fields=Record<string,Field>;
 type Request=(url:string,method?:string,input?:unknown)=>Promise<any>;
@@ -66,6 +67,7 @@ export function ModulePanel({base,site,request,onClose}:{base:string;site:any;re
     </fieldset>
     {!command&&editing.id&&writable&&!pkg.collections[collection].readOnly&&<button type="button" disabled={busy} onClick={()=>{if(window.confirm('Kayıt kalıcı olarak silinsin mi? İlişkili kayıtlar varsa işlem engellenir.'))void run(async()=>{await request(url+'/collections/'+collection,'DELETE',{id:editing.id,revision:editing.revision});reset();await loadRefs();await loadRecords();setMessage('Kayıt silindi.');});}}>Kaydı sil</button>}
    </form>}
+   {!command&&editing?.id&&pkg.views?.filter((v:any)=>v.collection===collection).map((view:any)=><IntegrationPanel key={view.integrationId+':'+view.id+':'+editing.id} view={view} recordId={editing.id} base={base} request={request} canManage={site.permissions.includes('members')}/>)}
    {result&&<div className="module-result"><h3>İşlem sonucu</h3>{result.files?.map((file:any)=><button key={file.path} onClick={()=>download(file.path,file.content,file.mime)}>{file.path} indir</button>)}<pre tabIndex={0}>{JSON.stringify(result,null,2)}</pre></div>}
    {!collection&&!command&&<p className="hint">Kayıtları yönetmek veya işlem çalıştırmak için üstteki seçeneklerden birini seçin.</p>}
    </>}

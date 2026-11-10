@@ -7,7 +7,7 @@ import {zipSync,strToU8} from 'fflate';
 import {Store} from '../../src/store.mjs';
 import {createPlatform} from '../../src/v2/platform.ts';
 import {createFeatures} from '../../src/features.mjs';
-import studioModules from '../../studio.config.mjs';
+import studioModules, {studioIntegrations} from '../../studio.config.mjs';
 import {Booking,ensureBookingSite} from '@loft-studio/booking';
 import {field,validateFields,parseFields} from '@loft-studio/sdk';
 import {inspectFiles,readZip} from '../../src/v2/import.ts';
@@ -17,6 +17,25 @@ import {fixture} from '../../src/v2/fixtures.ts';
 import {newSection} from '../../shared/v2/model.ts';
 
 const root=path.resolve(import.meta.dirname,'../..');
+test('I08 HTTP: CRM slot, automatic delivery, deferred permission revocation and disabled integration routes',async t=>{
+ const f=await platformFixture(t),site=await f.site(),base='sites/'+site,bridge=base+'/extension-links/studio.booking-crm';
+ assert.equal((await f.call(base+'/extensions/studio.crm/install','POST',{revision:-1})).status,200);
+ const contact=(await f.call(base+'/extensions/studio.crm/collections/contacts','PUT',{data:{name:'Lead',email:'customer@example.test'}})).data;
+ const created=f.features.booking.create(site,bookingInput(),'owner');f.platform.deliverEvents();
+ assert.equal((await f.call(base+'/extensions')).data.packages.find(p=>p.id==='studio.crm').views.length,1);
+ assert.equal((await f.call(bridge+'/commands/link','POST',{contactId:contact.id,bookingId:created.id})).status,200);
+ assert.equal((await f.call(bridge+'/commands/timeline','POST',{contactId:contact.id})).data.items.length,1);
+ assert.equal((await f.call(base+'/members','PUT',{email:'editor@test.example',permissions:['operations']})).status,200);
+ const waiting=gate(),request=f.call(bridge+'/commands/unlink','POST',{},'editor',()=>waiting.read().then(()=>({contactId:contact.id,bookingId:created.id,revision:0})));
+ await waiting.entered;await f.call(base+'/members','PUT',{email:'editor@test.example',permissions:['content']});waiting.release();
+ assert.equal((await request).status,403);
+ assert.equal((await f.call(bridge+'/commands/timeline','POST',{contactId:contact.id})).data.links.length,1);
+ assert.equal((await f.call(base+'/extensions/studio.booking/disable','POST',{revision:0})).status,200);
+ assert.equal((await f.call(base+'/extensions')).data.packages.find(p=>p.id==='studio.crm').views.length,0);
+ for(const route of ['/commands/timeline','/commands/link','/commands/unlink'])assert.equal((await f.call(bridge+route,'POST',{contactId:contact.id,bookingId:created.id,revision:0})).status,409);
+ assert.equal((await f.call(bridge+'/status')).status,409);
+ assert.equal((await f.call(base+'/extensions/studio.crm/export')).data.integrations[0].records.filter(r=>r.collection==='links').length,1);
+});
 const html='<!doctype html><html><head><title>Review</title></head><body><main><section><h1>Review</h1><p>Text</p></section></main></body></html>';
 const day=()=>new Date(Date.now()+7*86400000).toISOString().slice(0,10);
 const bookingInput=()=>({requestId:randomUUID(),serviceId:'appointment',start:day()+'T10:00',quantity:1,customer:{name:'Test customer',email:'customer@example.test',phone:'123456789'},participants:[{name:'Participant'}],notes:'Customer note',consent:true,status:'confirmed'});
@@ -27,7 +46,7 @@ async function platformFixture(t){
  const dir=await fs.mkdtemp(path.join(root,'test-results','review-regression-')),store=new Store(':memory:'),origin='http://127.0.0.1:4999';
  for(const id of ['owner','editor'])store.run('INSERT INTO users VALUES (?,?,?,?)',id,id+'@test.example','unused-test-hash',new Date().toISOString());
  const features=await createFeatures({store,dataDir:dir,origin,security:{integrationFetcher:async()=>{throw Error('Unexpected provider call');}}});
- const platform=await createPlatform({store,dataDir:dir,features,modules:studioModules({store,features}),legacyAdapter:{metadata:()=>({name:'Test'})}});
+ const platform=await createPlatform({store,dataDir:dir,features,modules:studioModules({store,features}),integrations:studioIntegrations,legacyAdapter:{metadata:()=>({name:'Test'})}});
  t.after(async()=>{await platform.close();store.close();});
  const response=()=>{const result={};return {result,res:{setHeader(){},writeHead(status){result.status=status;},end(text){result.data=JSON.parse(text);}}};};
  async function call(tail,method='GET',value={},user='owner',body){const {result,res}=response();try{await platform.route({req:{},res,url:new URL('/api/v2/'+tail,origin),method,user:{user_id:user,email:user+'@test.example'},body:body||(()=>Promise.resolve(value)),json:(_r,status,data)=>Object.assign(result,{status,data})});}catch(e){Object.assign(result,{status:e.status||500,error:e.message});}return result;}

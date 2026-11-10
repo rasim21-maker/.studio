@@ -22,7 +22,7 @@ const parse=(v:string)=>JSON.parse(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9-]{36}$/.test(v);
 const name=(v:unknown)=>typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[<>\u0000-\u001f]/.test(v);
 const packed=(row:any)=>({...row,document:parse(row.document),source:parse(row.source)});
-export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];transport?:typeof safeRequest;secretProvider?:any}){
+export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],integrations=[],transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];integrations?:any[];transport?:typeof safeRequest;secretProvider?:any}){
  store.db.exec(`
  CREATE TABLE IF NOT EXISTS studio_migrations(version INTEGER PRIMARY KEY, applied TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS studio_orgs(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner TEXT NOT NULL REFERENCES users(id));
@@ -87,7 +87,10 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
- const moduleHost=new ModuleHost({store,modules,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
+ const moduleHost=new ModuleHost({store,modules,integrations,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
+ let eventSourceError=false;
+ const deliverEvents=()=>{if(closed)return;try{eventSourceError=moduleHost.integrations.ingest().failedSources.length>0;moduleHost.integrations.drain();}catch{eventSourceError=true;}};
+ const eventTimer=setInterval(deliverEvents,1000);eventTimer.unref();
  const regional=createRegionalSettings({store,access,audit});
  store.run('INSERT OR IGNORE INTO studio_migrations VALUES (2,?)',now());
  async function analyze(user:any,job:any,input:any){
@@ -186,6 +189,14 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   if(match){
    const [,id,action='']=match,site=access(user,id),adapter=registry.get(site.adapter);
    if(action==='extensions'&&method==='GET')return send({packages:moduleHost.catalog(user,id)});
+   const integration=action.match(/^extension-links\/([a-z][a-z0-9.-]+)\/(status|retry|commands\/[a-zA-Z][a-zA-Z0-9_-]*)$/);
+   if(integration){
+    const [,integrationId,operation]=integration;
+    if(operation==='status'&&method==='GET')return send({deliveries:moduleHost.integrations.status(user,id,integrationId),sourceError:eventSourceError});
+    if(operation==='retry'&&method==='POST'){await body(req);return send(moduleHost.integrations.retry(user,id,integrationId));}
+    if(operation.startsWith('commands/')&&method==='POST')return send(moduleHost.integrations.execute(user,id,integrationId,operation.slice(9),await body(req)));
+    fail(405,'Entegrasyon yöntemi desteklenmiyor.');
+   }
    const extension=action.match(/^extensions\/([a-z][a-z0-9.-]+)\/(install|enable|disable|uninstall|upgrade|export|collections\/[a-zA-Z][a-zA-Z0-9_-]*|commands\/[a-zA-Z][a-zA-Z0-9_-]*)$/);
    if(extension){
     const [,moduleId,operation]=extension;
@@ -275,5 +286,5 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;
  }
- return{route,registry,save,access,agentRoute:agentAccess.agentRoute,async close(){closed=true;pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);}};
+ return{route,registry,save,access,deliverEvents,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);}};
 }

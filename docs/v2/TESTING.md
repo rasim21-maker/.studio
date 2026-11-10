@@ -1,6 +1,6 @@
 # Test prosedürü ve code review regresyonları
 
-Son güncelleme: 2026-11-09. Bu prosedür insan ve AI tarafından yapılan
+Son güncelleme: 2026-11-10. Bu prosedür insan ve AI tarafından yapılan
 değişikliklere aynı şekilde uygulanır. Her test kendi sahte verisini kullanır;
 üretim DATA_DIR, müşteri kaydı veya gerçek ödeme anahtarı kullanılmaz.
 
@@ -47,14 +47,40 @@ okumayı serbest bırakır. Böylece hızlı veya yavaş makinelerde yarış ger
 üretilir. Test sonucunu yalnızca HTTP durumuna bağlama; kalıcı tablo sayıları,
 revision ve gizli alanların yokluğu da doğrulanmalıdır.
 
+## Modüller arası iletişim kabul matrisi
+
+`test/v2/module-integrations.test.mjs` ve review-regressions içindeki I08,
+normal test:v2 çalışmasına dahildir. Yeni bir entegrasyon aşağıdaki davranışları
+atlamadan aynı host sözleşmesini kullanmalıdır:
+
+| Kimlik | Zorunlu gözlem |
+| --- | --- |
+| I01 | Modüllerin açık/kapalı birleşimleri, açık kişi seçimi, otomatik hareket aktarımı, kapalıyken gizlenme ve yeniden açılışta geçmişin korunması |
+| I02 | SQL rollback olay bırakmaz; expiry ve ödeme kaynaklı durum yazımı da yakalanır; token, not ve özel iletişim alanları kuyruğa girmez |
+| I03 | Farklı site/kişiye bağlantı reddi; güncel izinler; kapalı veya kodu çıkarılmış entegrasyonun referans koruması; eski unlink isteği yeniden kurulmuş bağlantıyı silemez; yetkili arşiv export |
+| I04 | Handler hatası kısmi kayıt bırakmaz; beş deneme ve başarısız kuyruk, sır içermeyen hata, yetkili yeniden deneme, tekrar teslimde tek hareket |
+| I05 | Diskte yeniden açılışta bekleyen kaynak olayları ve bağlantılar korunur; yinelenmez |
+| I06 | Rezervasyon/CRM dışında örnek SDK entegrasyonu çekirdeğe koşul eklemeden çalışır; olay sürümü/şeması ve salt okunur işlem denetlenir |
+| I07 | Kapalı site aktif siteyi bekletmez; eski olayın tekrar teslimi güncel durumu geriletmez |
+| I08 | Gerçek platform route'larında panel kataloğu, komutlar, dışa aktarma ve body beklerken yetki kaldırılması |
+| I09 | Eski rezervasyonları kimlik/revision değiştirmeden bir kez baseline'a alma; olmayan geçmişi üretmeme |
+| I10 | Hatalı olay kaynağının cursor'ı ilerlemez; diğer kaynaklar ve önceden kuyruğa alınmış teslimler devam eder |
+
+Tarayıcı kabulü: V2 site → modülleri etkinleştir → CRM kişisini aç → klavyeyle
+rezervasyon bağla → oluşturma/durum hareketlerini gör → rezervasyonu kapatıp
+CRM panelinin yokluğunu doğrula → yeniden açıp aynı geçmişi gör.
+390×844 görünümünde panel taşması ve konsol hatalarını ayrıca denetle.
+
 ## Bağımsız paket teslimi
 
-`npm run test:packages` altı workspace'i gerçek tarball olarak paketler ve
+`npm run test:packages` yedi workspace'i gerçek tarball olarak paketler ve
 temiz tüketici dizinine çevrimdışı, lifecycle script çalıştırmadan kurar.
 Importların bu dizin dışına çıkmadığını denetler. SDK CLI ile üretilmiş
 harici modülün kayıt işlemleri ve ödeme altyapısı bulunmayan randevu paketinin
 ayar, oluşturma, aynı isteği tekrarlama, farklı isteği reddetme, taşıma,
 takvim oluşturma/silme ve iptal akışları zorunludur.
+Rezervasyon–CRM paketinin olay teslimi, açık kişi eşleştirmesi, hareket geçmişi
+ve modül kapatınca görünümün kalkması da aynı temiz tüketicide çalışmalıdır.
 
 Yeni bir paket eklenirse bu tüketici akışına gerçek bir kullanım senaryosu ekle.
 Yalnızca import etme, manifest okuma veya settings çağırma yeterli değildir.

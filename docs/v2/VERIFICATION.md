@@ -1,5 +1,48 @@
 # V2 doğrulama raporu
 
+## 2026-11-10 — İsteğe bağlı modül iletişimi ve rezervasyon–CRM
+
+İlk iletişim dilimi tamamlandı: sürümlü iş olayları, kalıcı yerel teslim ve
+yeniden deneme, ayrı booking-crm paketi, CRM kişi ekranına koşullu görünüm,
+açık kişi bağlantısı ve idempotent rezervasyon hareketleri.
+[Kullanım, mimari ve sınırlar](INTEGRATIONS.md).
+
+| Kontrol | Gözlenen sonuç |
+| --- | --- |
+| npm test | 54/54 geçti |
+| npm run test:v2 | 98/98 geçti; toplam 152 ayrı test, skip/iptal yok |
+| npm run typecheck | Başarılı |
+| npm run build | Başarılı; editör ve ortak şemalar derlendi |
+| npm run check | Sözdizimi, 200 vendor dosyası, 11 dil ve 286 alan/dil doğrulandı |
+| npm run test:packages | Yedi paket temiz tüketicide çalıştı; bağımsız booking–CRM teslimi/kişi bağlantısı ve harici SDK modülü dahil |
+| npm run licenses | 120 üçüncü taraf kilitli kayıt, inceleme bekleyen 0 |
+| npm run sbom | Yedi birinci taraf paket dahil 127 bileşen; CycloneDX üretildi |
+| npm audit --audit-level=moderate | Bildirilen açık 0 |
+| git diff --check | Başarılı |
+
+I01–I10 testleri iki modülün etkinlik birleşimlerini, site/izin sınırını,
+body beklerken yetki iptalini, atomik olay ve handler rollback'ini, diskten
+yeniden açılışı, tekrar teslimi, eski olayın güncel durumu geriletmemesini,
+eski unlink isteğinin yeni bağlantıyı silememesini, kapalı/bileşimden çıkarılmış
+paketin referans korumasını, eski veriden baseline geçişini ve hatalı kaynaktan
+yalıtımı kapsar. Kalıcı matris TESTING.md içine eklendi.
+
+Tarayıcı kontrolü gerçek müşteri verisinden ayrı test-results veritabanında,
+sahte Deniz Örnek kaydıyla yapıldı. CRM kişisini açma, rezervasyonu klavyeyle
+bağlama, iki hareketin görünmesi, modül kapalıyken panelin bulunmaması ve
+yeniden açıldığında aynı bağlantı/geçmişin dönmesi gözlendi. 390×844 görünümünde
+panel clientWidth ve scrollWidth aynı (315 px); yatay taşma ve konsol hatası yok.
+Geçici viewport ayarı geri alındı. Görsel kanıt: booking-crm-mobile.jpg.
+
+Yeni üçüncü taraf bağımlılık/kopya kod eklenmedi. Ürün lisansı değiştirilmedi;
+booking-crm private birinci taraf paketidir. Testler gerçek ödeme/CRM sağlayıcı
+hesaplarıyla yapılmadı. Ödeme doğrulamasının rezervasyon durumuna etkisi
+yakalanır; ayrı tahsilat/iade zaman çizelgesi, otomatik kişi birleştirme,
+bildirim/iş otomasyonu, genel entegrasyon şema migration API'si ve hosted worker
+henüz bu teslimde yoktur. Canlı veri geçişi yapılmadı. Bu rapor yerel doğrulamayı
+kaydeder; uzak depo eşitliği ve CI sonuçları ilgili Git commit'i üzerinden izlenir.
+
+
 ## 2026-11-09 — Dokuz code review bulgusunun düzeltmesi
 
 R01–R09 düzeltildi. Kalıcı kabul matrisi ve güncellenmiş geliştirme/CI

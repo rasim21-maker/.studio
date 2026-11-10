@@ -11,7 +11,7 @@ import { token, passwordHash, passwordMatches, passwordPolicy, normalizeEmail } 
 import { Recaptcha } from './captcha.mjs';
 import { Federation, providerConfig } from './federation.mjs';
 import { createPlatform } from './v2/platform.ts';
-import studioModules from '../studio.config.mjs';
+import studioModules, {studioIntegrations} from '../studio.config.mjs';
 
 const publicRoot = path.resolve(import.meta.dirname, '../public');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
@@ -29,7 +29,7 @@ async function body(req, maxBytes = 2 * 1024 * 1024) {
 }
 function safeEqual(a, b) { return typeof a === 'string' && typeof b === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b)); }
 
-export async function createApp({ projectRoot = path.resolve(import.meta.dirname, '..'), dataDir = path.join(projectRoot, 'data'), origin = 'http://127.0.0.1:4317', security = {}, moduleFactory = studioModules } = {}) {
+export async function createApp({ projectRoot = path.resolve(import.meta.dirname, '..'), dataDir = path.join(projectRoot, 'data'), origin = 'http://127.0.0.1:4317', security = {}, moduleFactory = studioModules, integrations = studioIntegrations } = {}) {
   const urlOrigin = new URL(origin);
   if (urlOrigin.origin !== origin) throw Error('APP_ORIGIN yalnızca köken içermeli (sonunda / olmadan).');
   if (urlOrigin.protocol !== 'https:' && !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname)) throw Error('Yerel ağ dışındaki köken HTTPS gerektirir.');
@@ -40,7 +40,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   const store = new Store(path.join(dataDir, 'console.sqlite'));
   store.seed(adapter);
   const features = await createFeatures({store,dataDir,origin,security});
-  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,modules:moduleFactory({store,features}),transport:security.studioTransport,secretProvider:security.studioSecretProvider});
+  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,modules:moduleFactory({store,features}),integrations,transport:security.studioTransport,secretProvider:security.studioSecretProvider});
   const captcha = new Recaptcha({ hostname: urlOrigin.hostname, siteKey: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET, required: process.env.AUTH_REQUIRE_CAPTCHA === '1' || !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname), ...security.captcha });
   const federation = new Federation({ store, origin, providers: security.providers || providerConfig(), ...(security.fetcher ? { fetcher: security.fetcher } : {}) });
   const setupToken = store.get('SELECT COUNT(*) AS count FROM users').count === 0 ? token() : null;
