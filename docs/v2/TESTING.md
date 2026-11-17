@@ -1,5 +1,11 @@
 # Test prosedürü ve code review regresyonları
 
+Depolama/güven değişiklikleri için `test/v2/storage.test.mjs` çalıştırılır:
+asenkron SQLite atomikliği, eşzamanlı işlem sırası, kapalı/nested işlem reddi,
+PostgreSQL aynı bağlantı/rollback/serialization sözleşmesi ve import öncesi
+paket onayı. PostgreSQL pool fixture'ı gerçek PostgreSQL kabul testi değildir.
+Paket tüketici testi storage/trust alt yollarını ayrıca doğrular.
+
 Son güncelleme: 2026-11-10. Bu prosedür insan ve AI tarafından yapılan
 değişikliklere aynı şekilde uygulanır. Her test kendi sahte verisini kullanır;
 üretim DATA_DIR, müşteri kaydı veya gerçek ödeme anahtarı kullanılmaz.

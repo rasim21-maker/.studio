@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {defineModule, fail, parseFields} from '@loft-studio/sdk';
 import {IntegrationRuntime} from './integrations.mjs';
+import {assertPackageTrust} from './trust.mjs';
 
 const json = JSON.stringify;
 const now = () => new Date().toISOString();
@@ -10,12 +11,16 @@ const sync = result => {if (result && typeof result.then === 'function') fail(50
 
 /** Trusted server packages only. This host is not an arbitrary-code sandbox. */
 export class ModuleHost {
-  /** @param {{store:any,modules:any[],authorize:Function,services?:Object,integrations?:any[]}} options */
-  constructor({store, modules, authorize, services = {}, integrations = []}) {
+  /** @param {{store:any,modules:any[],authorize:Function,services?:Object,integrations?:any[],trustPolicy?:{mode:string,packages?:Record<string,string>}}} options */
+  constructor({store, modules, authorize, services = {}, integrations = [], trustPolicy = {mode:'trusted-local'}}) {
     this.store = store;
     this.authorize = authorize;
     this.services = services;
     this.registry = new Map();
+    for (const candidate of [...modules, ...integrations]) {
+      const identity=candidate.manifest||candidate;
+      assertPackageTrust(identity.id,identity.version,trustPolicy);
+    }
     for (const candidate of modules) {
       const definition = defineModule(candidate), id = definition.manifest.id;
       if (this.registry.has(id)) fail(422, 'Tekrarlanan modül: ' + id);

@@ -1,5 +1,18 @@
 # V2 doğrulama raporu
 
+## 2026-11-17 — Depolama sözleşmesi ve modül güven politikası
+
+`module-core/storage` asenkron işlem sözleşmesi, ayrı SQLite bağlantısı ve
+enjekte edilen pool ile PostgreSQL uygulaması eklendi. Yedi odaklı sözleşme
+testi başarılı. Paket tüketicisine yeni alt yolların gerçek tarball testi eklendi.
+`security.moduleTrustPolicy` uygulamadan modül/entegrasyon kayıt kontrolüne geçer;
+reviewed-only yükleyici, onaysız paketin loader'ını çalıştırmaz.
+
+Mevcut SDK v1, uygulama tabloları ve audit trigger'ları senkron SQLite yolundadır.
+Gerçek PostgreSQL sunucusu testi yapılmadı: yerel Docker motoru çalışmıyor.
+Tam profil sonuçları `.dev-assist` altında tutulur. Kapsam ve sonraki geçiş
+kapıları [depoma ve güven sözleşmesinde](STORAGE_AND_TRUST.md) açıklanmıştır.
+
 ## 2026-11-11 — Bağımsız loglama modülü
 
 `@loft-studio/audit` 0.1.0 (şema 1) ve Loft bağlantısı eklendi. HTTP başlangıç/

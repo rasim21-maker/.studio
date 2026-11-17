@@ -1,5 +1,7 @@
 # Loft Studio 2 — yerel ön sürüm
 
+Başka bir AI veya geliştiriciye teknik devir için: [English technical architecture and codebase handoff](AI_TECHNICAL_HANDOFF.md).
+
 Bu dal ilk uçtan uca geçiş dilimini içerir. Mevcut Loft konsolu `/`, yeni çalışma alanı `/v2/` adresindedir. Canlı Loft veri klasörü bu geliştirmede değiştirilmemiştir.
 
 ## Başlatma

@@ -1,5 +1,8 @@
 # Modüler çekirdek ve SDK — 0.1
 
+17 Kasım eklemesi: [Asenkron SQLite/PostgreSQL depolama ve modül güven sözleşmesi](STORAGE_AND_TRUST.md).
+Mevcut SDK v1 senkron uyumluluk yolunda kalır; yeni depolama katmanı tüm uygulamanın PostgreSQL'e geçtiği anlamına gelmez.
+
 Tarih: 2026-11-10. Bu sürüm, V2 uygulamasına güvenilir sunucu paketlerinin
 eklenmesini sağlar. Kurulum yerel/self-hosted çalışma içindir; indirilen keyfi
 kodu izole çalıştıran bir mağaza veya hosted sandbox değildir.

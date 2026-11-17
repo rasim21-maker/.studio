@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": "./index.mjs",
+  "exports": {".": "./index.mjs", "./storage": {"types":"./storage.d.ts","import":"./storage.mjs"}, "./trust":"./trust.mjs"},
   "files": [
     "index.mjs",
     "README.md",
-    "integrations.mjs"
+    "integrations.mjs",
+    "storage.mjs",
+    "storage.d.ts",
+    "trust.mjs"
   ],
   "dependencies": {
     "@loft-studio/sdk": "0.1.0"

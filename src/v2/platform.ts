@@ -22,7 +22,7 @@ const parse=(v:string)=>JSON.parse(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9-]{36}$/.test(v);
 const name=(v:unknown)=>typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[<>\u0000-\u001f]/.test(v);
 const packed=(row:any)=>({...row,document:parse(row.document),source:parse(row.source)});
-export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],integrations=[],transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];integrations?:any[];transport?:typeof safeRequest;secretProvider?:any}){
+export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],integrations=[],trustPolicy,transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];integrations?:any[];trustPolicy?:any;transport?:typeof safeRequest;secretProvider?:any}){
  store.db.exec(`
  CREATE TABLE IF NOT EXISTS studio_migrations(version INTEGER PRIMARY KEY, applied TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS studio_orgs(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner TEXT NOT NULL REFERENCES users(id));
@@ -87,7 +87,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
- const moduleHost=new ModuleHost({store,modules,integrations,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
+ const moduleHost=new ModuleHost({store,modules,integrations,trustPolicy,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
  let eventSourceError=false;
  const deliverEvents=()=>{if(closed)return;try{eventSourceError=moduleHost.integrations.ingest().failedSources.length>0;moduleHost.integrations.drain();}catch{eventSourceError=true;}};
  const eventTimer=setInterval(deliverEvents,1000);eventTimer.unref();
