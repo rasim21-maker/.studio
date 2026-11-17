@@ -6,6 +6,12 @@ değişikliklere aynı şekilde uygulanır. Her test kendi sahte verisini kullan
 
 ## Hızlı düzeltme döngüsü
 
+Codex geliştirmesinde [yerel Python yardımcısı](LOCAL_DEVELOPMENT.md), mevcut
+kontrolleri çalıştırıp sınırlı JSON sonuç döndürebilir. `run --test` ve `quick`
+odaklı geliştirme içindir; teslim kapılarının yerine geçmez. `stale`, `not_run`,
+timeout ve log kesilmesi açıkça değerlendirilir. Yardımcı değişikliklerinde
+`npm.cmd run test:dev-assist` zorunludur; aynı regresyonlar Windows/Linux CI'dadır.
+
 1. Hatayı dışarıdan gözlenebilir davranışla yeniden üret: API yanıtı, kalıcı
    kayıt veya gerçek çıktı dosyası. Yalnızca fonksiyonun çağrıldığını denetleme.
 2. Düzeltmeden önce testi çalıştır ve beklenen nedenle başarısız olduğunu
@@ -71,9 +77,35 @@ rezervasyon bağla → oluşturma/durum hareketlerini gör → rezervasyonu kapa
 CRM panelinin yokluğunu doğrula → yeniden açıp aynı geçmişi gör.
 390×844 görünümünde panel taşması ve konsol hatalarını ayrıca denetle.
 
+## Loglama kabul matrisi
+
+`test/v2/audit.test.mjs` normal `test:v2` içinde çalışır. Kimlik, kapsam veya
+maskeleme değişikliğinde bu paketi odaklı çalıştırın; teslimde tüm kapıları koruyun.
+
+| Kimlik | Zorunlu gözlem |
+| --- | --- |
+| L01 | Gerçek önce/sonra değerleri; transaction rollback; log yazımı başarısızsa iş verisinin değişmemesi; sır maskeleme ve append-only koruma |
+| L02 | Eşzamanlı async işlerde kullanıcı/istek bağlamının birbirine geçmemesi |
+| L03 | Varsayılan socket IP, açık proxy güveni, sağdan sola zincir, bozuk XFF fallback; URL query'nin loga girmemesi |
+| L04 | Değer sınırlarının işaretlenmesi, CSV formül koruması, filtre doğrulama ve sabit üst sınırlı sayfalama |
+| L05 | Gerçek HTTP değişikliğinde doğrulanmış aktör, IP/cihaz, hedef, eski/yeni değer ve istek kimliği; 409'da hayali değişiklik olmaması |
+| L06 | 401, 404, statik ve okuma isteklerinin kaydı; parola/gizli query değerinin dışlanması |
+| L07 | Site/hesap sınırları, görüntüleme/export ayrımı, izni kaldırılan üyenin reddi |
+| L08 | 245 kayıtlık çok sayfalı JSON/CSV'nin eksiksiz oluşması; export olayının da kaydı |
+| L09 | Yeniden açılışta geçmişin korunması; bağlantıya yeniden takılan capture; tek şema geçişi ve daha yeni şemada güvenli ret |
+| L10 | İstemci bağlantısı koptuğunda tek aborted/499 kaydı |
+| L11 | Export sırasında yetki kaldırılınca tamamlanmamış dosyanın kesilmesi ve hatanın kaydı |
+| L12 | Ödeme sağlayıcı referansı, checkout token'ı ve rezervasyon token hash'inin logda bulunmaması; finansal farkın hedef kimliğiyle korunması |
+| L13 | AI kimliğinin geçerli bearer credential'dan gelmesi; credential değer/hash'inin dışlanması |
+| L14 | Büyük nesnede açık atlama işareti; geçersiz takvim tarihi ve saat dilimsiz aralığın reddi |
+
+Tarayıcı kontrolü: test hesabıyla `/v2/#audit` → kapsam/işlem filtresi → kaydı
+klavyeyle aç → eski/yeni/IP/aktörü gör → JSON indir. 390×844 görünümünde değerler
+alt alta ve yatay taşma olmadan görünmelidir. Gerçek kullanıcı verisi kullanmayın.
+
 ## Bağımsız paket teslimi
 
-`npm run test:packages` yedi workspace'i gerçek tarball olarak paketler ve
+`npm run test:packages` sekiz workspace'i gerçek tarball olarak paketler ve
 temiz tüketici dizinine çevrimdışı, lifecycle script çalıştırmadan kurar.
 Importların bu dizin dışına çıkmadığını denetler. SDK CLI ile üretilmiş
 harici modülün kayıt işlemleri ve ödeme altyapısı bulunmayan randevu paketinin
@@ -81,6 +113,8 @@ ayar, oluşturma, aynı isteği tekrarlama, farklı isteği reddetme, taşıma,
 takvim oluşturma/silme ve iptal akışları zorunludur.
 Rezervasyon–CRM paketinin olay teslimi, açık kişi eşleştirmesi, hareket geçmişi
 ve modül kapatınca görünümün kalkması da aynı temiz tüketicide çalışmalıdır.
+Loglama paketi de aynı tüketicide bağımsız SQLite tablosuna bağlanıp eski/yeni
+değerleri kaydeder ve sorgular; uygulama kaynaklarını import etmez.
 
 Yeni bir paket eklenirse bu tüketici akışına gerçek bir kullanım senaryosu ekle.
 Yalnızca import etme, manifest okuma veya settings çağırma yeterli değildir.
@@ -92,6 +126,7 @@ Windows komutları aşağıdadır; Linux'ta npm.cmd yerine npm kullanın:
 
 ```powershell
 npm.cmd ci --ignore-scripts
+npm.cmd run test:dev-assist
 npm.cmd run typecheck
 npm.cmd run build
 npm.cmd run check

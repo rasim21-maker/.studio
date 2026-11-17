@@ -4,6 +4,9 @@
 
 ## Mevcut Loft konsolu
 
+Geliştirme sırasında kısa proje/bağlam/test çıktıları için
+[yerel Python yardımcısı](docs/v2/LOCAL_DEVELOPMENT.md) kullanılabilir.
+
 Loft Pet House için çalışan yerel yönetim pilotu. İçerik, SEO, sayfa yapısı, menü ve tema değişiklikleri taslakta saklanır; kimlik doğrulamalı önizleme veya Natro’ya uygun statik ZIP üretilir. Konsol canlı siteye dosya göndermez.
 
 ## Başlatma

@@ -66,7 +66,7 @@ export default defineModule({
 ```
 
 Kendi paketini bu sözleşmeyle dışa aktar, yerel paket/bağımlılık olarak kur ve
-`studio.config.mjs` dizisine ekle. `npm run test:packages` yedi paketi tarball
+`studio.config.mjs` dizisine ekle. `npm run test:packages` sekiz paketi tarball
 olarak üretir, temiz bir tüketici klasörüne çevrimdışı kurar, SDK CLI ile farklı
 bir modül oluşturur ve çekirdeğin uygulama dosyalarını kullanmadan çalıştırır.
 Import çözümlemelerinin tüketici klasöründen çıktığını ayrıca denetler.
@@ -174,7 +174,9 @@ paketleme için [npm workspaces](https://docs.npmjs.com/cli/v11/using-npm/worksp
 incelendi. Bu projelerden kaynak kod kopyalanmadı. Büyük bir CMS'yi bağımlılık
 olarak eklemek mevcut adaptör/operasyon verilerini ikinci bir çekirdeğe bağlayacağı
 için seçilmedi. Üçüncü taraf lisans denetimi 120 kilitli bağımlılığı korur;
-birinci taraf yedi paket ayrıca SBOM'a dahildir.
+birinci taraf sekiz paket ayrıca SBOM'a dahildir. Bağımsız `@loft-studio/audit`
+bir altyapı modülüdür; iş modüllerinin etkin/pasif durumundan bağımsız çalışır.
+[Loglama sözleşmesi ve erişim sınırları](AUDIT.md).
 
 ## Doğrulama
 

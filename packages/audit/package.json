@@ -1,0 +1,9 @@
+{
+  "name": "@loft-studio/audit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": "./index.mjs",
+  "files": ["index.mjs", "README.md"],
+  "engines": {"node": ">=24.13.0 <25"}
+}

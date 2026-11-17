@@ -54,7 +54,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
  function access(user:any,id:string,permission?:string):any{
   const row=store.get('SELECT s.*,o.owner,m.permissions FROM studio_sites s JOIN studio_orgs o ON o.id=s.org_id LEFT JOIN studio_members m ON m.site_id=s.id AND m.user_id=? WHERE s.id=?',user.user_id,id);
   if(!row||row.owner!==user.user_id&&!row.permissions)fail(404,'Site bulunamadı veya erişiminiz yok.');
-  row.allowed=row.owner===user.user_id?[...permissions]:parse(row.permissions);if(permission&&!row.allowed.includes(permission))fail(403,'Bu işlem için '+permission+' yetkisi gerekli.');return packed(row);
+  row.allowed=row.owner===user.user_id?[...permissions]:parse(row.permissions);if(permission&&!row.allowed.includes(permission))fail(403,'Bu işlem için '+permission+' yetkisi gerekli.');store.audit?.setScope('site:'+id);return packed(row);
  }
  function summary(site:any){return{id:site.id,name:site.name,orgId:site.org_id,workspaceId:site.workspace_id,projectId:site.project_id,environment:site.environment,adapter:site.adapter,revision:site.revision,capabilities:{...registry.get(site.adapter).capabilities(site.source),operations:store.get('SELECT id FROM sites WHERE id=?',site.id)?{state:'partial',reason:'Rezervasyon, takvim ve sağlayıcı ayarları hazır. Canlı kullanım ayrıca etkinleştirilir.'}:{state:'unsupported',reason:'İş modülleri henüz kurulmadı.'}},permissions:site.allowed};}
  function getVersion(site:any,revision:number){const row=store.get('SELECT * FROM studio_versions WHERE site_id=? AND revision=?',site.id,revision);if(!row)fail(404,'Sürüm bulunamadı.');return row;}

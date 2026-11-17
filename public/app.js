@@ -184,6 +184,7 @@ async function navigate(view) {
   } catch (e) { toast(e.message, true); }
 }
 function bindShell() {
+  document.querySelector('nav[aria-label="Yönetim menüsü"]').insertAdjacentHTML('beforeend','<a class="nav-item" href="/v2/#audit"><span>☷</span>İşlem kayıtları</a>');
   if (state.site.role === 'admin') document.querySelector('[data-view="content"]').insertAdjacentHTML('afterend', `<button data-view="structure" class="nav-item ${state.view === 'structure' ? 'active' : ''}"><span>▧</span>Sayfalar & tasarım</button>`);
   document.querySelectorAll('[data-view]').forEach(el => el.onclick = () => navigate(el.dataset.view));
   $('#logout').onclick = logout; $('#account').onclick = () => navigate('account');

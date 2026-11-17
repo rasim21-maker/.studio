@@ -12,6 +12,7 @@ import { Recaptcha } from './captcha.mjs';
 import { Federation, providerConfig } from './federation.mjs';
 import { createPlatform } from './v2/platform.ts';
 import studioModules, {studioIntegrations} from '../studio.config.mjs';
+import {createAuditModule} from './audit.mjs';
 
 const publicRoot = path.resolve(import.meta.dirname, '../public');
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
@@ -41,6 +42,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   store.seed(adapter);
   const features = await createFeatures({store,dataDir,origin,security});
   const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,modules:moduleFactory({store,features}),integrations,transport:security.studioTransport,secretProvider:security.studioSecretProvider});
+  const audit = createAuditModule({store,platform,trustedProxies:security.audit?.trustedProxies||String(process.env.AUDIT_TRUSTED_PROXIES||'').split(',').filter(Boolean),operatorIds:security.audit?.operatorIds||String(process.env.AUDIT_OPERATOR_IDS||'').split(',').filter(Boolean)});
   const captcha = new Recaptcha({ hostname: urlOrigin.hostname, siteKey: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET, required: process.env.AUTH_REQUIRE_CAPTCHA === '1' || !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname), ...security.captcha });
   const federation = new Federation({ store, origin, providers: security.providers || providerConfig(), ...(security.fetcher ? { fetcher: security.fetcher } : {}) });
   const setupToken = store.get('SELECT COUNT(*) AS count FROM users').count === 0 ? token() : null;
@@ -51,14 +53,16 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   const cookieFlags = `Path=/; HttpOnly; SameSite=Strict${urlOrigin.protocol === 'https:' ? '; Secure' : ''}`;
   let authInFlight = 0, buildInFlight = false;
 
-  function session(req) {
+  function session(req,identify=true) {
     const raw = req.headers.cookie?.split(';').map(c => c.trim()).find(c => c.startsWith(`${cookieName}=`))?.slice(cookieName.length + 1);
     const row = raw && store.get('SELECT s.*,u.email FROM sessions s JOIN users u ON u.id=s.user_id WHERE token_hash=? AND expires>?', hash(raw), Date.now());
     if (!row) fail(401, 'Devam etmek için giriş yapın.');
+    if(identify)audit.log.identify(row);
     return row;
   }
   function csrf(req, user) { if (!safeEqual(req.headers['x-csrf-token'], user.csrf)) fail(403, 'İstek doğrulanamadı. Sayfayı yenileyin.'); }
   function createSession(res, user) {
+    audit.log.identify(user);
     const value = token(), csrfToken = token();
     store.run('DELETE FROM sessions WHERE expires<=?', Date.now());
     store.run('INSERT INTO sessions VALUES (?,?,?,?)', hash(value), user.id, csrfToken, Date.now() + ttl);
@@ -101,7 +105,9 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
     res.writeHead(200, { 'Content-Type': type }); res.end(data);
   }
 
-  const server = http.createServer(async (req, res) => {
+  const server = http.createServer((req, res) => {
+    let identity=null;try{identity=session(req,false);}catch{}
+    return audit.log.handle(req,res,async()=>{
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
@@ -157,10 +163,12 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
         if (!setupHash || Date.now() > setupExpires || typeof input.token !== 'string' || !safeEqual(hash(input.token), setupHash) || store.get('SELECT COUNT(*) AS count FROM users').count !== 0) fail(403, 'Kurulum bağlantısı geçersiz, süresi dolmuş veya kullanılmış.');
         const email = normalizeEmail(input.email), encoded = await authWork(() => passwordHash(input.password));
         const user = { id: randomUUID(), email };
+        audit.log.identify(user);
         store.transaction(() => {
           if (store.get('SELECT COUNT(*) AS count FROM users').count !== 0) fail(409, 'Kurulum tamamlanmış.');
           store.run('INSERT INTO users VALUES (?,?,?,?)', user.id, email, encoded, new Date().toISOString());
           store.run('INSERT INTO memberships VALUES (?,?,?)', user.id, 'loft', 'admin');
+          audit.grantInitialOperator(user.id);
           store.event('loft', email, 'setup');
         });
         return json(res, 201, createSession(res, user));
@@ -174,6 +182,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
         const user = store.get('SELECT * FROM users WHERE email=?', email);
         const valid = await authWork(() => passwordMatches(input.password, user?.password || dummyHash));
         if (!valid || !user) { store.event(null, email, 'login_failed'); fail(401, 'E-posta veya parola hatalı.'); }
+        audit.log.identify(user);
         store.run('DELETE FROM attempts WHERE key=?', hash(`login-email:${email}`));
         store.event(null, email, 'login');
         return json(res, 200, createSession(res, user));
@@ -181,6 +190,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
       if (route.startsWith('/api/')) {
         const user = session(req);
         if (method !== 'GET') csrf(req, user);
+        if (await audit.route({req,res,url,method,user,json})) return;
         if (await platform.route({req,res,url,method,user,body,json})) return;
         if (route === '/api/me' && method === 'GET') return json(res, 200, { user: { id: user.user_id, email: user.email }, csrf: user.csrf });
         if (route === '/api/identities' && method === 'GET') return json(res, 200, { providers: federation.publicConfig(), linked: store.all('SELECT DISTINCT provider FROM external_identities WHERE user_id=?', user.user_id).map(p => p.provider) });
@@ -342,9 +352,10 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
       if (!res.headersSent) json(res, error.status || 500, { error: error.status ? error.message : 'Beklenmeyen bir hata oluştu.', details: error.details });
       else res.end();
     }
+    },identity);
   });
   server.requestTimeout = 30_000;
   server.headersTimeout = 15_000;
   server.keepAliveTimeout = 5000;
-  return { server, store, adapter, features, platform, origin, setupToken, dataDir, close: async () => { await platform.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
+  return { server, store, adapter, features, platform, audit, origin, setupToken, dataDir, close: async () => { await platform.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
 }

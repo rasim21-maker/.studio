@@ -1,5 +1,53 @@
 # V2 doğrulama raporu
 
+## 2026-11-11 — Bağımsız loglama modülü
+
+`@loft-studio/audit` 0.1.0 (şema 1) ve Loft bağlantısı eklendi. HTTP başlangıç/
+sonuç/iptal kayıtları; atomik DB değişiklik farkları; doğrulanmış kullanıcı/AI,
+IP, istemci bilgisi, hedef kimliği ve istek korelasyonu; kapsam bazlı okuma ile
+ayrı export yetkisi; filtreli panel ve tam JSON/CSV aktarımı çalışır.
+[Kullanım, yetkiler ve işletim sınırları](AUDIT.md).
+
+- Loglama regresyonları: L01–L14. Gerçek HTTP/SQLite, eşzamanlılık, rollback,
+  yeniden açılış/şema uyumu, maskeleme, scope izolasyonu, export ve kopma senaryoları.
+- Mevcut 54 eski sürüm testi ile v2 paketi ve sekiz paketlik bağımsız tüketici
+  doğrulaması teslim kapılarıdır. Tam kontrol sonuçları yerel `.dev-assist/runs/`
+  raporlarında commit ve çalışma dosyası parmak iziyle tutulur.
+- Typecheck, build, check, licenses, SBOM ve bilinen açık taraması tam profile
+  dahildir. Yeni üçüncü taraf bağımlılığı eklenmedi.
+- 10 Kasım tarayıcı doğrulaması ayrı fixture hesabı/veritabanında yapıldı:
+  site/işlem filtresi, Enter ile ayrıntı açma, eski/yeni/aktör/IP gösterimi,
+  gerçek JSON indirme; 390×844 mobil görünümde sayfa ve tablo taşması yok.
+  Mobil tablo 291 px kapsayıcıya sığdı. Kontrol edilen konsolda hata yoktu.
+- [Ekran görüntüsü](audit-logging.jpg) sentetik test verisidir. Canlı kullanıcı
+  verisinde migration/deployment yapılmadı; uzak CI sonucu bu yerel rapordan
+  çıkarılamaz. Kod/GitHub eşitliği ayrıca commit üzerinden denetlenmelidir.
+
+Makine bilgileri istemci beyanıdır; donanım kimliği değildir. Eski istekler
+geriye dönük oluşturulmaz; gizli/binary/büyük değerler maskelenir veya açıkça
+atlanır. Harici WORM/kriptografik log arşivi ve otomatik retention silme yoktur.
+
+## 2026-11-10 — Yerel geliştirme yardımcısı
+
+Codex masaüstü sohbetinden çağrılabilen, standart kütüphane kullanan Python
+yardımcısı ve Node başlatıcısı eklendi. Proje özeti, sınırlı bağlam seçimi,
+sabit test profilleri, kısa sonuç raporu ve commit/çalışma dosyalarına bağlı
+checkpoint sağlanır. [Komutlar ve sınırlar](LOCAL_DEVELOPMENT.md).
+
+- Yardımcı regresyonları: 16 senaryo; yerel Windows'ta 15 geçti, symlink
+  oluşturma yetkisi gerektiren 1 senaryo açıkça skip edildi.
+- Gerçek Loft deposunda status ve dosya/satır seçimi Python üzerinden çalıştı.
+- Full profil üzerinden 54 eski sürüm + 98 v2 testi, bağımsız paket testleri,
+  typecheck, build, check, licenses, sbom ve audit başarılı çalıştı.
+- Node TAP/spec ve Python unittest rapor biçimleri; başarısız süreç,
+  zaman aşımı, başlatma hatası, log sınırı, sır maskeleme ve eski kanıt tespiti
+  regresyon kapsamındadır. Testler ayrı geçici depolar/veriler kullanır.
+- CI'a Windows/Linux yardımcı test adımı eklendi; bu kayıt yerel doğrulamadır,
+  yeni değişikliklerin uzak CI'da geçtiğini veya yayınlandığını belirtmez.
+
+Yardımcı LLM çağırmaz; tasarruf yüzdesi ölçülmedi. Genel semantik kod araması,
+tam bağımlılık analizi, uzak sohbet köprüsü veya kusursuz sır tespiti sağlamaz.
+
 ## 2026-11-10 — İsteğe bağlı modül iletişimi ve rezervasyon–CRM
 
 İlk iletişim dilimi tamamlandı: sürümlü iş olayları, kalıcı yerel teslim ve

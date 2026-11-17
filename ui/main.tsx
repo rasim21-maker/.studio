@@ -7,6 +7,7 @@ import {FieldEditor,LayoutEditor,CodeEditor,Modal} from './editors.tsx';
 import {AgentPanel} from './agent-panel.tsx';
 import {RegionalPanel} from './regional-panel.tsx';
 import {ModulePanel} from './module-panel.tsx';
+import {AuditPanel} from './audit-panel.tsx';
 import {mountFeatures} from '../public/features-ui.js';
 import '../public/features.css';
 import {themes,templates,newSection} from '../shared/v2/model.ts';
@@ -26,6 +27,7 @@ const date=(v:string)=>new Date(v).toLocaleString('tr-TR',{dateStyle:'short',tim
 const fileBase64=(file:File)=>new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('Dosya okunamadı.'));reader.readAsDataURL(file);});
 function Brand(){return <div className="brand"><span className="brand-mark">s</span><span>studio<span className="brand-version">2</span></span></div>;}
 function App(){
+ const [auditOpen,setAuditOpen]=useState(location.hash==='#audit');
  const [user,setUser]=useState<any>(null),[checking,setChecking]=useState(true),[workspace,setWorkspace]=useState<any>(null),[siteId,setSiteId]=useState<string|null>(null),[error,setError]=useState(''),[importing,setImporting]=useState(false),[search,setSearch]=useState(''),[org,setOrg]=useState(''),[orgDialog,setOrgDialog]=useState(false),[orgName,setOrgName]=useState('');
  const refresh=useCallback(async()=>{const data=await api('/api/v2/workspace');setWorkspace(data);setOrg(current=>current||data.organizations[0]?.id||'');},[]);
  useEffect(()=>{api('/api/me').then(data=>{csrf=data.csrf;setUser(data.user);return refresh();}).catch(e=>{if(e.status!==401)setError(e.message);}).finally(()=>setChecking(false));},[]);
@@ -33,7 +35,7 @@ function App(){
  if(checking)return <div className="loading"><Brand/><p>Çalışma alanınız hazırlanıyor…</p></div>;
  if(!user)return <Login onLogin={async(data:any)=>{csrf=data.csrf;setUser(data.user);await refresh();}}/>;
  if(siteId)return <Editor key={siteId} siteId={siteId} user={user} onBack={()=>{setSiteId(null);void run(refresh);}}/>;
- return <div className="workspace"><aside className="workspace-sidebar"><Brand/><div className="workspace-picker"><span className="avatar">{user.email[0].toUpperCase()}</span><div><strong>Çalışma alanım</strong><small>{user.email}</small></div></div><nav aria-label="Ana menü"><button className="nav-active">▦ <span>Sitelerim</span><span className="count">{workspace?.sites.length||0}</span></button><button onClick={()=>setImporting(true)}>＋ <span>Site bağla</span></button><button onClick={()=>setOrgDialog(true)}>◇ <span>Kurum oluştur</span></button>{workspace?.legacy&&<a href="/">↗ <span>Loft yönetimi</span></a>}</nav><div className="sidebar-bottom"><span className="status-dot"/>Yerel geliştirme ortamı<p>Bağlı siteler. Tek bir çalışma alanı.</p><button className="quiet" onClick={()=>run(async()=>{await api('/api/logout','POST',{});csrf='';setUser(null);})}>Oturumu kapat</button></div></aside>
+ return <div className="workspace"><aside className="workspace-sidebar"><Brand/><div className="workspace-picker"><span className="avatar">{user.email[0].toUpperCase()}</span><div><strong>Çalışma alanım</strong><small>{user.email}</small></div></div><nav aria-label="Ana menü"><button className="nav-active">▦ <span>Sitelerim</span><span className="count">{workspace?.sites.length||0}</span></button><button onClick={()=>setImporting(true)}>＋ <span>Site bağla</span></button><button onClick={()=>setAuditOpen(true)}>☷ <span>İşlem kayıtları</span></button><button onClick={()=>setOrgDialog(true)}>◇ <span>Kurum oluştur</span></button>{workspace?.legacy&&<a href="/">↗ <span>Loft yönetimi</span></a>}</nav><div className="sidebar-bottom"><span className="status-dot"/>Yerel geliştirme ortamı<p>Bağlı siteler. Tek bir çalışma alanı.</p><button className="quiet" onClick={()=>run(async()=>{await api('/api/logout','POST',{});csrf='';setUser(null);})}>Oturumu kapat</button></div></aside>
  <main id="main" className="workspace-main"><header className="workspace-top"><span>Çalışma alanı <span className="muted">/</span> Siteler</span><span className="tag">V2 · Ön sürüm</span></header><div className="workspace-content"><div className="page-heading"><div><div className="eyebrow">HER ŞEY BİR ARADA</div><h1>Siteleriniz için<br/><span>yeni bir alan.</span></h1><p>İçeriği düzenleyin, tasarımı şekillendirin, güvenle yayınlayın.</p></div><button className="primary" onClick={()=>setImporting(true)}>＋ Site bağla</button></div>
  {error&&<div role="alert" className="error-banner">{error}</div>}
  <section className="intro-panel"><div className="intro-symbol">↗</div><div><h2>Web siteniz nerede olursa olsun.</h2><p>Statik dosyalar, React içerikleri veya WordPress. Bağlantınızın izin verdiği işlemler, açıkça görünür.</p></div><button className="light-button" onClick={()=>setImporting(true)}>Bağlantıları keşfet →</button></section>
@@ -42,6 +44,7 @@ function App(){
  <button className="add-site-card" onClick={()=>setImporting(true)}><span>＋</span><h3>Yeni bir site bağlayın</h3><p>Kaynağınızı seçerek başlayın.</p></button></div>
  {workspace?.legacy&&<section className="legacy-card"><span className="legacy-icon">L</span><div><h3>Loft · Mevcut site</h3><p>İçerik, 12 tema, rezervasyon, takvim ve entegrasyon yönetimi uyumluluk arayüzünde kullanılabilir.</p></div><a className="button" href="/">Loft’u yönet ↗</a></section>}
  <p className="workspace-footnote">Yetenekler, sitenizin bağlantısına ve erişim izinlerinize göre belirlenir.</p></div></main>
+ {auditOpen&&<AuditPanel api={api} onClose={()=>setAuditOpen(false)}/>}
  {importing&&<ImportWizard organizations={workspace?.organizations||[]} orgId={org} onClose={()=>setImporting(false)} onComplete={id=>{setImporting(false);setSiteId(id);}}/>}
  {orgDialog&&<Modal title="Kurum oluştur" onClose={()=>setOrgDialog(false)}><form onSubmit={e=>{e.preventDefault();void run(async()=>{const data=await api('/api/v2/organizations','POST',{name:orgName});await refresh();setOrg(data.id);setOrgDialog(false);});}}><label>Kurum adı<input required minLength={1} maxLength={120} value={orgName} onChange={e=>setOrgName(e.target.value)}/></label><button className="primary">Oluştur</button></form></Modal>}
  </div>;

@@ -16,7 +16,9 @@
     "test:review": "node --test --experimental-test-isolation=none --test-concurrency=1 test/v2/review-regressions.test.mjs",
     "licenses": "node scripts/licenses.mjs",
     "sbom": "node scripts/sbom.mjs",
-    "test:packages": "node scripts/test-packages.mjs"
+    "test:packages": "node scripts/test-packages.mjs",
+    "dev:assist": "node scripts/dev-assist.mjs",
+    "test:dev-assist": "node scripts/dev-assist.mjs self-test"
   },
   "dependencies": {
     "@codemirror/lang-html": "6.4.12",
@@ -41,7 +43,8 @@
     "@loft-studio/seo": "0.1.0",
     "@loft-studio/crm": "0.1.0",
     "@loft-studio/commerce": "0.1.0",
-    "@loft-studio/booking-crm": "0.1.0"
+    "@loft-studio/booking-crm": "0.1.0",
+    "@loft-studio/audit": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

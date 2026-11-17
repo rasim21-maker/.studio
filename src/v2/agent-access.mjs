@@ -13,7 +13,7 @@ export function createAgentAccess({store,access,registry,save,audit}){
   const token=store.get('SELECT * FROM studio_agent_tokens WHERE token_hash=? AND revoked=0 AND expires>?',hash(raw.slice(7)),Date.now());
   if(!token)fail(401,'AI erişim anahtarı geçersiz veya süresi dolmuş.');
   if(token.site_id!==siteId)fail(403,'AI anahtarı bu site için yetkili değil.');
-  const site=access({user_id:token.user_id},siteId,'content');return{token,site};
+  const site=access({user_id:token.user_id},siteId,'content');store.audit?.identify({id:token.user_id,label:'AI credential '+token.id},'ai');return{token,site};
  }
  function limit(id){
   const key='studio-agent:'+id,now=Date.now(),row=store.get('SELECT * FROM attempts WHERE key=?',key);
