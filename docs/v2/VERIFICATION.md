@@ -1,5 +1,19 @@
 # V2 doğrulama raporu
 
+## 2026-11-19 — Asenkron modül kaydı ve gerçek PostgreSQL
+
+API 2 AsyncModuleHost, CRM/e-ticaret portları, atomik yaşam döngüsü/olay yazımı
+ve v1 export'tan kayıpsız kayıt aktarımı eklendi. Aynı kabul paketi SQLite ve
+Docker PostgreSQL 17.7 üzerinde 18/18 geçti; fixture sunucusu kullanılmadı.
+Yerel test verisi ve loopback 55432 kullanıldı. pg 8.23.1 geliştirme bağımlılığı,
+geçişli lisans bildirimleri ve ayrı PostgreSQL CI işi eklendi.
+Paket tüketici testi asenkron giriş noktalarını da kullanır.
+
+Bu sonuç uzak CI çalışmasının başarı iddiası değildir. Varsayılan uygulama API 1
+bileşiminde kaldı; canlı veri taşınmadı. Booking/SEO servisleri, entegrasyon teslimi
+ve audit yakalama portları tamamlanmadan genel uygulama PostgreSQL'e geçmiş sayılmaz.
+[Sözleşme, migration adımları ve sınırlar](ASYNC_MODULES.md).
+
 ## 2026-11-17 — Depolama sözleşmesi ve modül güven politikası
 
 `module-core/storage` asenkron işlem sözleşmesi, ayrı SQLite bağlantısı ve

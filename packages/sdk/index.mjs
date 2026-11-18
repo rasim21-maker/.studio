@@ -82,6 +82,14 @@ export function defineModule(definition) {
   return definition;
 }
 
+// Explicit API version: v1 callbacks must never silently receive Promise records.
+export function defineAsyncModule(definition) {
+  if(definition?.manifest?.apiVersion!==2)fail(422,'Async module API version 2 is required.');
+  if(definition.eventSource||definition.exportData||definition.manifest.services?.length)fail(422,'Async module requires transaction-scoped ports; legacy external services are unsupported.');
+  defineModule({...definition,manifest:{...definition.manifest,apiVersion:1}});
+  return definition;
+}
+
 // Optional integrations activate only when every required module is enabled.
 export function defineIntegration(d) {
   if (!d || !identifier.test(d.id) || !/^\d+\.\d+\.\d+$/.test(d.version) || typeof d.name !== 'string' || !d.requires || Object.keys(d.requires).length < 2) fail(422, 'Entegrasyon bildirimi geçersiz.');

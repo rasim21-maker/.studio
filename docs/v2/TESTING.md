@@ -1,5 +1,12 @@
 # Test prosedürü ve code review regresyonları
 
+API 2 kayıt/işlem değişikliklerinde `npm run test:postgres` zorunludur.
+`LOFT_TEST_POSTGRES_URL` yalnızca izole loopback test veritabanını göstermelidir.
+`test/v2/async-modules.test.mjs` aynı senaryoları SQLite ve gerçek PostgreSQL'de
+çalıştırır; URL yokken normal V2 grubunun açık skip'i gerçek PG kabulü sayılmaz.
+CI PostgreSQL servis işi URL olmadan geçemez. Kaynak kayıt kimliği/revision korunması,
+atomik migration/outbox, yetki kaybı ve son stok yarışı teslim gözlemleridir.
+
 Depolama/güven değişiklikleri için `test/v2/storage.test.mjs` çalıştırılır:
 asenkron SQLite atomikliği, eşzamanlı işlem sırası, kapalı/nested işlem reddi,
 PostgreSQL aynı bağlantı/rollback/serialization sözleşmesi ve import öncesi

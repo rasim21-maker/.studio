@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {".": "./index.mjs", "./storage": {"types":"./storage.d.ts","import":"./storage.mjs"}, "./trust":"./trust.mjs"},
+  "exports": {".": "./index.mjs", "./async": {"types":"./async-host.d.ts","import":"./async-host.mjs"}, "./storage": {"types":"./storage.d.ts","import":"./storage.mjs"}, "./trust":"./trust.mjs"},
   "files": [
     "index.mjs",
     "README.md",
     "integrations.mjs",
     "storage.mjs",
     "storage.d.ts",
-    "trust.mjs"
+    "trust.mjs",
+    "async-host.mjs",
+    "async-host.d.ts"
   ],
   "dependencies": {
     "@loft-studio/sdk": "0.1.0"

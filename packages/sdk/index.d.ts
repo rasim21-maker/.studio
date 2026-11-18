@@ -36,3 +36,28 @@ export interface IntegrationDefinition {
  views?:{id:string;label:string;module:string;collection:string;kind:'relatedTimeline';command:string;contextField:string;linkCommand?:string;unlinkCommand?:string;linkField?:string}[];
 }
 export function defineIntegration<T extends IntegrationDefinition>(definition:T):T;
+/** Version 2 context: all repository operations must be awaited. */
+export interface AsyncRecords {
+ list(collection:string,options?:{offset?:number;limit?:number;search?:string}):Promise<{items:ModuleRecord[];total:number}>;
+ get(collection:string,id:string):Promise<ModuleRecord>;
+ find(collection:string,field:string,value:unknown):Promise<ModuleRecord|undefined>;
+ put(collection:string,input:{id?:string;revision?:number;data:Record<string,unknown>}):Promise<ModuleRecord>;
+ remove(collection:string,id:string,revision:number):Promise<void>;
+}
+export interface AsyncContext {
+ site:Context['site'];actor:Context['actor'];records:AsyncRecords;
+ transaction<T>(work:(ctx:AsyncContext)=>Promise<T>|T):Promise<T>;
+ emit(type:string,data:Record<string,unknown>):Promise<void>;
+}
+export interface AsyncCollection extends Omit<Collection,'beforeSave'|'beforeDelete'> {
+ beforeSave?:(ctx:AsyncContext,value:any,before?:ModuleRecord)=>Promise<void>|void;
+ beforeDelete?:(ctx:AsyncContext,record:ModuleRecord)=>Promise<void>|void;
+}
+export interface AsyncCommand extends Omit<Command,'run'> {run:(ctx:AsyncContext,input:any)=>Promise<unknown>|unknown}
+export interface AsyncModuleDefinition {
+ manifest:Omit<ModuleDefinition['manifest'],'apiVersion'|'services'>&{apiVersion:2};
+ collections?:Record<string,AsyncCollection>;commands?:Record<string,AsyncCommand>;
+ migrations:{version:number;up:(ctx:AsyncContext)=>Promise<void>|void}[];
+ onInstall?:(ctx:AsyncContext)=>Promise<void>|void;events?:Record<string,EventContract>;
+}
+export function defineAsyncModule<T extends AsyncModuleDefinition>(definition:T):T;

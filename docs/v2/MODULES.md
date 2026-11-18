@@ -1,5 +1,9 @@
 # Modüler çekirdek ve SDK — 0.1
 
+19 Kasım: [API 2 asenkron modül çalıştırıcısı](ASYNC_MODULES.md), CRM/e-ticaret
+portları ve mevcut kayıt aktarımı SQLite ile gerçek PostgreSQL üzerinde doğrulandı.
+Varsayılan uygulama bileşimi API 1 uyumluluk yolundadır; otomatik canlı geçiş yapılmaz.
+
 17 Kasım eklemesi: [Asenkron SQLite/PostgreSQL depolama ve modül güven sözleşmesi](STORAGE_AND_TRUST.md).
 Mevcut SDK v1 senkron uyumluluk yolunda kalır; yeni depolama katmanı tüm uygulamanın PostgreSQL'e geçtiği anlamına gelmez.
 

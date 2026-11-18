@@ -7,6 +7,7 @@ export class StorageError extends Error {
 }
 const error=(code,message)=>new StorageError(code,message);
 function normalize(e) {
+  if(Number.isInteger(e?.status)&&e.status>=400&&e.status<500)return e;
   if(e instanceof StorageError)return e;
   const code=e?.code==='40001'||e?.code==='40P01'?'RETRY_TRANSACTION':
     e?.code==='23505'||String(e?.message).includes('UNIQUE constraint failed')?'CONFLICT':'STORAGE_FAILURE';

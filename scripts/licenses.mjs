@@ -3,7 +3,9 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 const lock=JSON.parse(await fs.readFile('package-lock.json','utf8'));
 const root=JSON.parse(await fs.readFile('package.json','utf8'));
-const allowed=new Set(['MIT','BSD-2-Clause','BSD-3-Clause','0BSD','Apache-2.0']);
+const allowed=new Set(['MIT','BSD-2-Clause','BSD-3-Clause','0BSD','Apache-2.0','ISC']);
+// Reviewed pinned packages include the complete MIT notice in README instead.
+const readmeNotices={'pg-types':'2.2.0',pgpass:'1.0.5'};
 const entries=[],notices=[],problems=[];
 const firstParty=new Set(Object.entries(lock.packages).filter(([location,item])=>location.startsWith('packages/')&&item.name?.startsWith('@loft-studio/')&&root.dependencies?.[item.name]===item.version).map(([location])=>location));
 for(const [location,item] of Object.entries(lock.packages).filter(([key])=>key).sort(([a],[b])=>a.localeCompare(b))){
@@ -17,10 +19,18 @@ for(const [location,item] of Object.entries(lock.packages).filter(([key])=>key).
  const licenseFiles=files.filter(f=>/^(licen[sc]e|copying|notice)(\.|$)/i.test(f));
  const evidence=[];
  for(const file of licenseFiles){const text=await fs.readFile(path.join(location,file),'utf8');evidence.push({file,sha256:createHash('sha256').update(text).digest('hex')});notices.push(`## ${name}@${item.version} — ${file}\n\n${text.trim()}\n`);}
+ if(pkg&&!licenseFiles.length&&readmeNotices[name]===item.version){
+  const readme=await fs.readFile(path.join(location,'README.md'),'utf8');
+  const text=readme.match(/^## License\s*\r?\n([\s\S]*)/im)?.[1]?.trim();
+  if(text?.includes('Permission is hereby granted')&&text.includes('THE SOFTWARE IS PROVIDED')&&text.includes('copyright notice')){
+   evidence.push({file:'README.md#license',sha256:createHash('sha256').update(text).digest('hex')});
+   notices.push(`## ${name}@${item.version} — README.md license\n\n${text}\n`);
+  }
+ }
  // Platform-specific esbuild packages use the same upstream MIT license. They are
  // lockfile entries, not installed or redistributed on this platform.
  if(!pkg&&!name.startsWith('@esbuild/'))problems.push(name+': package not installed; license text requires review');
- if(pkg&&!licenseFiles.length){
+ if(pkg&&!licenseFiles.length&&!evidence.length){
   if(name.startsWith('@esbuild/')&&lock.packages['node_modules/esbuild'].version===item.version){const text=await fs.readFile('node_modules/esbuild/LICENSE.md','utf8');evidence.push({file:'node_modules/esbuild/LICENSE.md (same upstream version)',sha256:createHash('sha256').update(text).digest('hex')});notices.push(`## ${name}@${item.version} — upstream esbuild license\n\n${text.trim()}\n`);}
   else problems.push(name+': no packaged license notice');
  }

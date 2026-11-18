@@ -1605,6 +1605,222 @@
       "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
     },
     {
+      "name": "pg",
+      "version": "8.23.1",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-postgres",
+      "location": "node_modules/pg",
+      "direct": true,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-cloudflare",
+      "version": "1.4.1",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-postgres",
+      "location": "node_modules/pg-cloudflare",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-connection-string",
+      "version": "2.14.1",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-postgres",
+      "location": "node_modules/pg-connection-string",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "2244b5486c4427001b6756a87b9a297d427c111dcc3ba64a097492a8979c23d0"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-int8",
+      "version": "1.0.1",
+      "license": "ISC",
+      "source": "https://github.com/charmander/pg-int8",
+      "location": "node_modules/pg-int8",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "4e8e87ccdfc7e4b47fd89015f78468aa53b6bf43ab6e6e12d43e8f55294911de"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-pool",
+      "version": "3.14.0",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-postgres",
+      "location": "node_modules/pg-pool",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "4f15ee7fc2a72082859d7e0d12dfa4bcdd70b1c744ad3850d07780730ac08557"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-protocol",
+      "version": "1.16.1",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-postgres",
+      "location": "node_modules/pg-protocol",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "192b8f5c96900f04a1271dec39688655d7416c1c6ea84a508e18b50d2b6751f3"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pg-types",
+      "version": "2.2.0",
+      "license": "MIT",
+      "source": "https://github.com/brianc/node-pg-types",
+      "location": "node_modules/pg-types",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==",
+      "evidence": [
+        {
+          "file": "README.md#license",
+          "sha256": "a3a081597284cb155888f951f1b74579d7ed3ceccc69ff5da66db24feb3d0597"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "pgpass",
+      "version": "1.0.5",
+      "license": "MIT",
+      "source": "https://github.com/hoegaarden/pgpass",
+      "location": "node_modules/pgpass",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==",
+      "evidence": [
+        {
+          "file": "README.md#license",
+          "sha256": "7a69666f39f8ad8b5574b60fb0443407abd3e2651b5cae8b559d640d5ff14e84"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "postgres-array",
+      "version": "2.0.0",
+      "license": "MIT",
+      "source": "bendrucker/postgres-array",
+      "location": "node_modules/postgres-array",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==",
+      "evidence": [
+        {
+          "file": "license",
+          "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "postgres-bytea",
+      "version": "1.0.1",
+      "license": "MIT",
+      "source": "bendrucker/postgres-bytea",
+      "location": "node_modules/postgres-bytea",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==",
+      "evidence": [
+        {
+          "file": "license",
+          "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "postgres-date",
+      "version": "1.0.7",
+      "license": "MIT",
+      "source": "bendrucker/postgres-date",
+      "location": "node_modules/postgres-date",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==",
+      "evidence": [
+        {
+          "file": "license",
+          "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "postgres-interval",
+      "version": "1.2.0",
+      "license": "MIT",
+      "source": "bendrucker/postgres-interval",
+      "location": "node_modules/postgres-interval",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==",
+      "evidence": [
+        {
+          "file": "license",
+          "sha256": "f057f36739d53d228a746de4440c1e0c644ecde06d6beab45337d39c9d12a393"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
       "name": "prosemirror-changeset",
       "version": "2.4.6",
       "license": "MIT",
@@ -1929,6 +2145,24 @@
       "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
     },
     {
+      "name": "split2",
+      "version": "4.2.0",
+      "license": "ISC",
+      "source": "https://github.com/mcollina/split2",
+      "location": "node_modules/split2",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "c372ef2fa1dfcb124ed807609751e75e3a009f108c5724916b489288fcb88a0c"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
       "name": "style-mod",
       "version": "4.1.4",
       "license": "MIT",
@@ -2032,6 +2266,24 @@
         {
           "file": "LICENSE",
           "sha256": "869c30f368eb08735e779027b9f4bc9fea2f39624351856aebe42741f0bc0884"
+        }
+      ],
+      "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."
+    },
+    {
+      "name": "xtend",
+      "version": "4.0.2",
+      "license": "MIT",
+      "source": "https://github.com/Raynos/xtend",
+      "location": "node_modules/xtend",
+      "direct": false,
+      "development": true,
+      "installed": true,
+      "integrity": "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==",
+      "evidence": [
+        {
+          "file": "LICENSE",
+          "sha256": "82e67379203d5794e7c44549847d8d64ae6904591381682360470898bd306821"
         }
       ],
       "obligations": "Retain copyright and license notices; BSD also preserves its disclaimer and non-endorsement terms."

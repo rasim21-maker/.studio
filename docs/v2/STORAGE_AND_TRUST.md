@@ -1,5 +1,11 @@
 # Asynchronous storage and module trust contracts
 
+2026-11-19 update: the [API 2 preview runtime](ASYNC_MODULES.md) now provides
+async records/lifecycle/commands and CRM/commerce ports, including legacy record
+migration and real PostgreSQL acceptance. The original foundation description
+below remains the API 1 compatibility boundary; default application cutover and
+transaction-aware booking/SEO/integration/audit ports are still outstanding.
+
 Date: 2026-11-17. Status: implemented storage foundation; existing application
 and module API v1 remain on the synchronous SQLite compatibility path.
 
