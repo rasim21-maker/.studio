@@ -1,6 +1,6 @@
 # Asynchronous module runtime and database acceptance
 
-Date: 2026-11-19. Module API 2 is an explicit preview contract; API 1 remains
+Date: 2026-11-20. Module API 2 is an explicit preview contract; API 1 remains
 available for existing applications. Storage API version remains 1.
 
 ## Implemented runtime
@@ -56,10 +56,13 @@ datasets; high-volume indexed query/unique/reference repositories are a later
 optimization. This is application-enforced tenant scoping, not PostgreSQL RLS.
 Authorization infrastructure must use the current authoritative memberships.
 
-The outbox is durable and transactional. API 2 does NOT yet provide a delivery
-worker, cross-module integration projection or independent before/after audit
-capture. Event insertion is not a claim that external delivery occurred.
-The previous API 1 booking-CRM worker and audit system continue unchanged.
+The outbox now has versioned event envelopes, awaited source ingestion and a
+durable integration delivery worker. Booking-CRM projections, delivery state,
+cross-module references and audit append share the transaction. Failed handlers
+roll back projections, retry with bounded backoff and store a fixed error code.
+Disabled modules hide related views and pause delivery without deleting history.
+Integration contexts expire and track submitted operations, like module contexts.
+This is local durable delivery, not a claim of external provider delivery.
 
 ## Migrating existing records
 
@@ -90,13 +93,57 @@ cutover remain explicit deployment steps.
 
 ## Application boundary
 
-The existing /v2/ application still composes the API 1 host. This delivery does
-not switch existing sites automatically, migrate production data, or declare
-the whole CMS PostgreSQL-ready. Booking's operational store, SEO's content-save
-service, booking-CRM delivery and audit capture need transaction-aware ports
-before the default application can switch safely. defineAsyncModule rejects
-legacy eventSource/exportData/services ports instead of pretending they share
-the new transaction.
+The default /v2/ panel now composes AsyncModuleHost. All catalog, lifecycle,
+collection, command, integration and export routes await it. The delivery timer
+coalesces overlapping runs, and shutdown waits for delivery/audit work.
+
+The local app keeps module state in DATA_DIR/modules.sqlite, on a dedicated
+connection, and keeps operational reservations/payments and source content in
+console.sqlite. The booking engine and content adapter remain authoritative;
+they are not rewritten as PostgreSQL repositories in this delivery. The real PG
+tests cover async module/integration/audit persistence with these explicit local
+domain ports. The entire CMS is **not** PostgreSQL-ready.
+
+Commands can declare an allowlisted `port` and module `ports`. Their async `run`
+prepares a payload with a read-only context. After that transaction commits, the
+host rechecks authorization, tenant and installation revision, then calls the
+deployment-supplied port outside SQL locks. A port owns its domain transaction,
+validation and idempotency. It must recheck domain preconditions at the write.
+There is no distributed transaction or automatic retry of side effects.
+
+`booking/async` provides the operational binding and awaited event source;
+`seo/async` awaits records and uses expected content revision on applyPage.
+`booking-crm/async` awaits every projection/link/timeline operation. Composition
+bindings (ports, source, provision and exportData) are trusted application code,
+not permissions granted to arbitrary modules. Booking provisioning is idempotent
+and runs after installation; a provisioning failure does not roll back the module
+database. Retry provisioning before serving that site's operational commands.
+
+`audit/async` appends sanitized before/after values and request provenance in the
+same transaction as module/integration changes. Failure aborts the mutation. A
+retryable bridge inserts those entries, using their stable IDs and timestamps,
+into the existing audit query/export store, then acknowledges the source. A crash
+between insert and acknowledgment cannot duplicate entries. Audit reads flush the
+bridge after authorization; old audit records remain available. SQL access is
+trusted infrastructure access; this is not a tamper-proof/WORM ledger.
+
+### Local cutover and recovery
+
+Before starting this release, stop all old processes and take the existing offline
+protected backup of the whole DATA_DIR (including keys through the protected key
+backup procedure). Startup freezes legacy module/integration writes, copies IDs,
+revisions, values, installations, references, cursors and delivery state into an
+empty target transaction, then records a paired database identity. Unknown package
+records remain retained. Incompatible installed schema versions require a legacy
+upgrade first. Failed copies can be retried; source writes remain frozen.
+
+Legacy source tables and operational data are not deleted. A restart does not
+recopy them. A missing modules.sqlite or a database paired with a different source
+fails closed. Keep console.sqlite and modules.sqlite in the same offline backup
+set; never restore just one after new writes. Rolling back requires the complete
+pre-cutover backup plus the matching application version, with a plan for any new
+operational data. Do not simply remove freeze triggers or delete modules.sqlite.
+No production data was migrated as part of development tests.
 
 The reusable API 2 runtime, CRM/commerce ports and migration are executable
 package entry points, verified on both engines. Their deployment is separate

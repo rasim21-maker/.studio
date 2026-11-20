@@ -21,7 +21,7 @@ test('I08 HTTP: CRM slot, automatic delivery, deferred permission revocation and
  const f=await platformFixture(t),site=await f.site(),base='sites/'+site,bridge=base+'/extension-links/studio.booking-crm';
  assert.equal((await f.call(base+'/extensions/studio.crm/install','POST',{revision:-1})).status,200);
  const contact=(await f.call(base+'/extensions/studio.crm/collections/contacts','PUT',{data:{name:'Lead',email:'customer@example.test'}})).data;
- const created=f.features.booking.create(site,bookingInput(),'owner');f.platform.deliverEvents();
+ const created=f.features.booking.create(site,bookingInput(),'owner');await f.platform.deliverEvents();
  assert.equal((await f.call(base+'/extensions')).data.packages.find(p=>p.id==='studio.crm').views.length,1);
  assert.equal((await f.call(bridge+'/commands/link','POST',{contactId:contact.id,bookingId:created.id})).status,200);
  assert.equal((await f.call(bridge+'/commands/timeline','POST',{contactId:contact.id})).data.items.length,1);

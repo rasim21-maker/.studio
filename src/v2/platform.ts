@@ -12,7 +12,7 @@ import {openLocalKeyProvider} from '../security/local-keys.mjs';
 import {createAgentAccess} from './agent-access.mjs';
 import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
-import {ModuleHost} from '@loft-studio/module-core';
+import {createAsyncRuntime} from './async-runtime.mjs';
 import {permissions} from '../../shared/v2/model.ts';
 import type {Document,Source,Adapter,SiteRecord} from '../../shared/v2/model.ts';
 type Store=any;
@@ -87,9 +87,11 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
- const moduleHost=new ModuleHost({store,modules,integrations,trustPolicy,authorize:access,services:{'site.document.save':({actor,siteId}:any,input:any)=>save(actor,siteId,{...input,actorType:'human'})}});
+ const moduleRuntime=await createAsyncRuntime({store,dataDir,modules,integrations,trustPolicy,authorize:access,save,features});
+ const moduleHost=moduleRuntime.host;
  let eventSourceError=false;
- const deliverEvents=()=>{if(closed)return;try{eventSourceError=moduleHost.integrations.ingest().failedSources.length>0;moduleHost.integrations.drain();}catch{eventSourceError=true;}};
+ let delivering:Promise<void>|undefined;
+ const deliverEvents=()=>{if(closed)return Promise.resolve();if(delivering)return delivering;delivering=(async()=>{try{eventSourceError=(await moduleHost.integrations.ingest()).failedSources.length>0;await moduleHost.integrations.drain();await moduleRuntime.flushAudit();}catch{eventSourceError=true;}})().finally(()=>{delivering=undefined;});return delivering;};
  const eventTimer=setInterval(deliverEvents,1000);eventTimer.unref();
  const regional=createRegionalSettings({store,access,audit});
  store.run('INSERT OR IGNORE INTO studio_migrations VALUES (2,?)',now());
@@ -188,25 +190,25 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   const match=route.match(/^sites\/([a-f0-9-]{36})(?:\/(.*))?$/);
   if(match){
    const [,id,action='']=match,site=access(user,id),adapter=registry.get(site.adapter);
-   if(action==='extensions'&&method==='GET')return send({packages:moduleHost.catalog(user,id)});
+   if(action==='extensions'&&method==='GET')return send({packages:await moduleHost.catalog(user,id)});
    const integration=action.match(/^extension-links\/([a-z][a-z0-9.-]+)\/(status|retry|commands\/[a-zA-Z][a-zA-Z0-9_-]*)$/);
    if(integration){
     const [,integrationId,operation]=integration;
-    if(operation==='status'&&method==='GET')return send({deliveries:moduleHost.integrations.status(user,id,integrationId),sourceError:eventSourceError});
-    if(operation==='retry'&&method==='POST'){await body(req);return send(moduleHost.integrations.retry(user,id,integrationId));}
-    if(operation.startsWith('commands/')&&method==='POST')return send(moduleHost.integrations.execute(user,id,integrationId,operation.slice(9),await body(req)));
+    if(operation==='status'&&method==='GET')return send({deliveries:await moduleHost.integrations.status(user,id,integrationId),sourceError:eventSourceError});
+    if(operation==='retry'&&method==='POST'){await body(req);return send(await moduleHost.integrations.retry(user,id,integrationId));}
+    if(operation.startsWith('commands/')&&method==='POST')return send(await moduleHost.integrations.execute(user,id,integrationId,operation.slice(9),await body(req)));
     fail(405,'Entegrasyon yöntemi desteklenmiyor.');
    }
    const extension=action.match(/^extensions\/([a-z][a-z0-9.-]+)\/(install|enable|disable|uninstall|upgrade|export|collections\/[a-zA-Z][a-zA-Z0-9_-]*|commands\/[a-zA-Z][a-zA-Z0-9_-]*)$/);
    if(extension){
     const [,moduleId,operation]=extension;
-    if(operation==='export'&&method==='GET')return send(moduleHost.export(user,id,moduleId));
+    if(operation==='export'&&method==='GET')return send(await moduleRuntime.export(user,id,moduleId));
     if(operation.startsWith('collections/')){
      const input=method==='GET'?{...(url.searchParams.has('id')?{id:url.searchParams.get('id')}:{limit:Number(url.searchParams.get('limit')||100),offset:Number(url.searchParams.get('offset')||0),search:url.searchParams.get('search')||''})}:await body(req);
-     return send(moduleHost.collection(user,id,moduleId,operation.slice(12),method,input));
+     return send(await moduleHost.collection(user,id,moduleId,operation.slice(12),method,input));
     }
     if(operation.startsWith('commands/')&&method==='POST')return send(await moduleHost.execute(user,id,moduleId,operation.slice(9),await body(req)));
-    if(['install','enable','disable','uninstall','upgrade'].includes(operation)&&method==='POST'){const input=await body(req);return send(moduleHost.lifecycle(user,id,moduleId,operation,input.revision));}
+    if(['install','enable','disable','uninstall','upgrade'].includes(operation)&&method==='POST'){const input=await body(req);return send(await moduleRuntime.lifecycle(user,id,moduleId,operation,input.revision));}
     fail(405,'Modül yöntemi desteklenmiyor.');
    }
    if(action==='regional'||action==='regional-options'){
@@ -286,5 +288,5 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;
  }
- return{route,registry,save,access,deliverEvents,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);}};
+ return{route,registry,save,access,deliverEvents,flushAudit:moduleRuntime.flushAudit,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);await delivering;await moduleRuntime.close();}};
 }

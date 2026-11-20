@@ -85,7 +85,9 @@ export function defineModule(definition) {
 // Explicit API version: v1 callbacks must never silently receive Promise records.
 export function defineAsyncModule(definition) {
   if(definition?.manifest?.apiVersion!==2)fail(422,'Async module API version 2 is required.');
-  if(definition.eventSource||definition.exportData||definition.manifest.services?.length)fail(422,'Async module requires transaction-scoped ports; legacy external services are unsupported.');
+  if(definition.eventSource||definition.exportData||definition.manifest.services?.length)fail(422,'Use explicit async ports, not legacy services.');
+  if(definition.ports && (!Array.isArray(definition.ports)||definition.ports.some(p=>!identifier.test(p))))fail(422,'Invalid async ports.');
+  for(const command of Object.values(definition.commands||{}))if(command.port&&!definition.ports?.includes(command.port))fail(422,'Undeclared command port.');
   defineModule({...definition,manifest:{...definition.manifest,apiVersion:1}});
   return definition;
 }

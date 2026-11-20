@@ -1,5 +1,18 @@
 # Test prosedürü ve code review regresyonları
 
+2026-11-20 ek kabul: `async-connections.test.mjs` hem SQLite hem gerçek
+PostgreSQL üzerinde rezervasyon portu/idempotency, SEO revision, entegrasyon
+rollback/retry, pasif modül görünürlüğü, kalıcı ilişkiler ve audit atomikliğini
+doğrular. Operasyonel rezervasyon motoru bu testte SQLite uyumluluk portudur;
+tüm CMS'nin PostgreSQL kabulü olarak raporlanmaz. `test:postgres` iki async
+test dosyasını da zorunlu çalıştırır.
+
+`async-cutover.test.mjs`: gerçek v1 kayıtları, bağlantıları ve bekleyen olayları
+yeni çalıştırıcıya taşır; audit öncesi/sonrası ve IP alanlarını sorgular; restart
+sonrası yinelenen kayıt olmadığını ve eksik yetkili veritabanında açılışın
+reddedildiğini doğrular. Panel HTTP regresyonları yeni API 2 bileşimini kullanır.
+Paket tüketicisi yeni async alt yolları ve `create-async` SDK çıktısını doğrular.
+
 API 2 kayıt/işlem değişikliklerinde `npm run test:postgres` zorunludur.
 `LOFT_TEST_POSTGRES_URL` yalnızca izole loopback test veritabanını göstermelidir.
 `test/v2/async-modules.test.mjs` aynı senaryoları SQLite ve gerçek PostgreSQL'de

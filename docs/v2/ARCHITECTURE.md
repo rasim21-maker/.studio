@@ -2,6 +2,13 @@
 
 Status: implementation in the separate v2 branch. The deployed 0.2 checkout and its database are not modified by development.
 
+2026-11-20: the default V2 panel uses the async API 2 module host. Module records,
+integration projections/delivery and atomic audit outbox use a dedicated local
+modules.sqlite database. Content, booking/payment operations and the audit query
+store remain in console.sqlite behind explicit ports. The portable module runtime
+is tested against PostgreSQL; this is not a whole-application PG deployment switch.
+See [cutover, transaction boundaries and paired-backup recovery](ASYNC_MODULES.md).
+
 ## Existing system
 
 The 0.2 application has HTTP authentication and site membership, SQLite versioned drafts, a trusted Loft build adapter, booking/payment modules, and 54 passing baseline tests. Its fixed page/language schema, pet-specific reservation input, and post-build HTML replacement do not describe arbitrary websites.

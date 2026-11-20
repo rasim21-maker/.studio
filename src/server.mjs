@@ -357,5 +357,5 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   server.requestTimeout = 30_000;
   server.headersTimeout = 15_000;
   server.keepAliveTimeout = 5000;
-  return { server, store, adapter, features, platform, audit, origin, setupToken, dataDir, close: async () => { await platform.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); store.close(); } };
+  return { server, store, adapter, features, platform, audit, origin, setupToken, dataDir, close: async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await platform.close(); store.close(); } };
 }

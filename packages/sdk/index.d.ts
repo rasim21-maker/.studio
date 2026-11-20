@@ -53,11 +53,22 @@ export interface AsyncCollection extends Omit<Collection,'beforeSave'|'beforeDel
  beforeSave?:(ctx:AsyncContext,value:any,before?:ModuleRecord)=>Promise<void>|void;
  beforeDelete?:(ctx:AsyncContext,record:ModuleRecord)=>Promise<void>|void;
 }
-export interface AsyncCommand extends Omit<Command,'run'> {run:(ctx:AsyncContext,input:any)=>Promise<unknown>|unknown}
+export interface AsyncCommand extends Omit<Command,'run'> {port?:string;run:(ctx:AsyncContext,input:any)=>Promise<unknown>|unknown}
 export interface AsyncModuleDefinition {
  manifest:Omit<ModuleDefinition['manifest'],'apiVersion'|'services'>&{apiVersion:2};
  collections?:Record<string,AsyncCollection>;commands?:Record<string,AsyncCommand>;
  migrations:{version:number;up:(ctx:AsyncContext)=>Promise<void>|void}[];
  onInstall?:(ctx:AsyncContext)=>Promise<void>|void;events?:Record<string,EventContract>;
+ ports?:string[];
 }
 export function defineAsyncModule<T extends AsyncModuleDefinition>(definition:T):T;
+export interface AsyncIntegrationContext {
+ siteId:string;actor:any;
+ records:{get(collection:string,id:string):Promise<IntegrationRecord|undefined>;list(collection:string,options?:Parameters<IntegrationContext['records']['list']>[1]):Promise<{items:IntegrationRecord[];total:number}>;put(collection:string,input:Parameters<Records['put']>[1]):Promise<IntegrationRecord>;remove(collection:string,id:string,revision:number):Promise<void>};
+ modules:{get(module:string,collection:string,id:string):Promise<ModuleRecord>};audit(action:string,data:Record<string,unknown>):Promise<void>;
+}
+export interface AsyncIntegrationDefinition extends Omit<IntegrationDefinition,'commands'|'subscriptions'> {
+ apiVersion:2;
+ commands:Record<string,{write?:boolean;fields?:Record<string,Field>;run(ctx:AsyncIntegrationContext,input:any):Promise<unknown>}>;
+ subscriptions:{module:string;type:string;version:number;run(ctx:AsyncIntegrationContext,event:Parameters<IntegrationDefinition['subscriptions'][number]['run']>[1]):Promise<void>}[];
+}

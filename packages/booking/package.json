@@ -6,13 +6,15 @@
   "exports": {
     ".": "./index.mjs",
     "./engine": "./engine.mjs",
-    "./events": "./events.mjs"
+    "./events": "./events.mjs",
+    "./async": "./async.mjs"
   },
   "files": [
     "index.mjs",
     "engine.mjs",
     "README.md",
-    "events.mjs"
+    "events.mjs",
+    "async.mjs"
   ],
   "dependencies": {
     "@loft-studio/sdk": "0.1.0"

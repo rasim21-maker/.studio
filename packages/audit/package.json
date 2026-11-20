@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": "./index.mjs",
-  "files": ["index.mjs", "README.md"],
-  "engines": {"node": ">=24.13.0 <25"}
+  "exports": {
+    ".": "./index.mjs",
+    "./async": "./async.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "README.md",
+    "async.mjs"
+  ],
+  "engines": {
+    "node": ">=24.13.0 <25"
+  }
 }

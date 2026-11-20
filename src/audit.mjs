@@ -74,6 +74,7 @@ export function createAuditModule({store,platform,trustedProxies=[],operatorIds=
     if(!['/api/audit/events','/api/audit/export'].includes(url.pathname))fail(404,'Log işlemi bulunamadı.');
     const exporting=url.pathname.endsWith('/export'),scope=url.searchParams.get('scope');
     authorize(user,scope,exporting);log.setScope(scope);
+    await platform.flushAudit?.();authorize(user,scope,exporting);
     const parameters=Object.fromEntries(url.searchParams),{scope:ignored,format='json',limit='50',...filters}=parameters;
     const page=log.query(scope,filters,exporting?200:Number(limit));
     if(!exporting){log.record({action:'audit.view',scope,detail:{filters,count:page.entries.length}});json(res,200,page);return true;}

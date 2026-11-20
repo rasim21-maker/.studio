@@ -1,15 +1,16 @@
 import {randomUUID} from 'node:crypto';
 import {defineAsyncModule,parseFields,fail} from '@loft-studio/sdk';
 import {assertPackageTrust} from './trust.mjs';
+import {AsyncIntegrations} from './async-integrations.mjs';
 
 const now=()=>new Date().toISOString();
 const valid=v=>typeof v==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(v);
 const decode=r=>r&&({id:r.id,revision:Number(r.revision),data:JSON.parse(r.data),created:r.created,updated:r.updated});
 /** Versioned async host. SQL and connections are never exposed to module code. */
 export class AsyncModuleHost {
- #storage; #authorize; #registry=new Map();
- constructor({storage,modules,authorize,trustPolicy={mode:'trusted-local'}}) {
-  this.#storage=storage;this.#authorize=authorize;
+ #storage; #authorize; #registry=new Map(); #ports; #audit;
+ constructor({storage,modules,authorize,ports={},sources={},integrations=[],audit,trustPolicy={mode:'trusted-local'}}) {
+  this.#storage=storage;this.#authorize=authorize;this.#ports=ports;this.#audit=audit;
   for(const d of modules){
    if(d.manifest?.apiVersion!==2)fail(422,'Async host requires module API 2.');
    defineAsyncModule(d);
@@ -25,6 +26,11 @@ export class AsyncModuleHost {
     visit(other,[...path,id]);
    }
   };for(const id of this.#registry.keys())visit(id);
+  this.integrations=new AsyncIntegrations({storage,modules:this.#registry,sources,
+   work:(actor,site,work)=>this.#work(actor,site,null,work),
+   system:(scope,work)=>this.#work({user_id:'system:integration'},scope.site_id,null,work,{id:scope.site_id,org_id:scope.org_id}),
+   audit:async(tx,entry)=>{if(this.#audit)await this.#audit.append(tx,entry);}
+  },integrations,trustPolicy);
  }
  #sql(tx){return async(parts,...values)=>{
   const sql=parts.reduce((s,p,i)=>s+(i?(this.#storage.dialect==='postgres'?'$'+i:'?'):'')+p,'');
@@ -36,20 +42,22 @@ export class AsyncModuleHost {
     'CREATE TABLE IF NOT EXISTS studio_async_scopes(org_id TEXT NOT NULL,site_id TEXT NOT NULL,revision INTEGER NOT NULL,PRIMARY KEY(org_id,site_id))',
     'CREATE TABLE IF NOT EXISTS studio_async_installations(org_id TEXT NOT NULL,site_id TEXT NOT NULL,module_id TEXT NOT NULL,version TEXT NOT NULL,schema_version INTEGER NOT NULL,state TEXT NOT NULL,revision INTEGER NOT NULL,PRIMARY KEY(org_id,site_id,module_id),FOREIGN KEY(org_id,site_id) REFERENCES studio_async_scopes(org_id,site_id))',
     'CREATE TABLE IF NOT EXISTS studio_async_records(org_id TEXT NOT NULL,site_id TEXT NOT NULL,module_id TEXT NOT NULL,collection TEXT NOT NULL,id TEXT NOT NULL,revision INTEGER NOT NULL,deleted INTEGER NOT NULL,data TEXT NOT NULL,created TEXT NOT NULL,updated TEXT NOT NULL,PRIMARY KEY(org_id,site_id,module_id,collection,id),FOREIGN KEY(org_id,site_id,module_id) REFERENCES studio_async_installations(org_id,site_id,module_id))',
-    'CREATE TABLE IF NOT EXISTS studio_async_outbox(id TEXT PRIMARY KEY,org_id TEXT NOT NULL,site_id TEXT NOT NULL,module_id TEXT NOT NULL,type TEXT NOT NULL,data TEXT NOT NULL,actor TEXT NOT NULL,created TEXT NOT NULL,FOREIGN KEY(org_id,site_id,module_id) REFERENCES studio_async_installations(org_id,site_id,module_id))'
+    'CREATE TABLE IF NOT EXISTS studio_async_outbox(id TEXT PRIMARY KEY,org_id TEXT NOT NULL,site_id TEXT NOT NULL,module_id TEXT NOT NULL,type TEXT NOT NULL,data TEXT NOT NULL,actor TEXT NOT NULL,created TEXT NOT NULL,FOREIGN KEY(org_id,site_id,module_id) REFERENCES studio_async_installations(org_id,site_id,module_id))',
+    'CREATE TABLE IF NOT EXISTS studio_async_references(org_id TEXT NOT NULL,site_id TEXT NOT NULL,module_id TEXT NOT NULL,collection TEXT NOT NULL,record_id TEXT NOT NULL,field TEXT NOT NULL,target_module TEXT NOT NULL,target_collection TEXT NOT NULL,target_id TEXT NOT NULL,PRIMARY KEY(org_id,site_id,module_id,collection,record_id,field))',
+    'CREATE TABLE IF NOT EXISTS studio_async_event_versions(event_id TEXT PRIMARY KEY,version INTEGER NOT NULL)'
    ])await tx.query(sql);
-  });return this;
+   });await this.integrations.initialize();return this;
  }
  #definition(id){const d=this.#registry.get(id);if(!d)fail(404,'Module not found.');return d;}
- async #work(actor,siteId,moduleId,work){
-  const first=await this.#authorize(actor,siteId);
+ async #work(actor,siteId,moduleId,work,systemSite){
+  const first=systemSite||await this.#authorize(actor,siteId);
   if(first.id!==siteId||!valid(first.org_id)||!valid(siteId)||!actor?.user_id)fail(403,'Invalid authorized scope.');
   return this.#storage.transaction(async tx=>{
    const q=this.#sql(tx),org=first.org_id,permissions=new Set(),pending=new Set();let active=true,poison;
    const authorize=async permission=>{
     if(!active)fail(409,'Module context has expired.');
     if(poison)throw poison;
-    const current=await this.#authorize(actor,siteId,permission);
+     const current=systemSite||await this.#authorize(actor,siteId,permission);
     if(current.id!==siteId||current.org_id!==org)fail(403,'Site authority changed.');
     if(permission)permissions.add(permission);return current;
    };
@@ -82,7 +90,8 @@ export class AsyncModuleHost {
      if(!/^[a-z][a-zA-Z0-9_.-]{0,99}$/.test(type))fail(422,'Invalid event.');
      if(d.events?.[type])data=parseFields(d.events[type].fields,data);
      const encoded=JSON.stringify(data);if(Buffer.byteLength(encoded)>16000)fail(422,'Event too large.');
-     await q`INSERT INTO studio_async_outbox VALUES (${randomUUID()},${org},${siteId},${id},${type},${encoded},${actor.user_id},${now()})`;
+     const eventId=randomUUID();await q`INSERT INTO studio_async_outbox VALUES (${eventId},${org},${siteId},${id},${type},${encoded},${actor.user_id},${now()})`;
+     await q`INSERT INTO studio_async_event_versions VALUES (${eventId},${d.events?.[type]?.version||1})`;
     });
     const references=async(fields,data)=>{for(const [key,f]of Object.entries(fields)){
      if(f.type==='reference'&&data[key])await get(f.collection,data[key]);
@@ -114,22 +123,25 @@ export class AsyncModuleHost {
      await authorize(c.permission);if(!migrating)await requireInstalled(id,true);
      const revision=old?old.revision+1:0,created=exists?old.created:now(),updated=now();
      await q`INSERT INTO studio_async_records VALUES (${org},${siteId},${id},${name},${key},${revision},0,${JSON.stringify(data)},${created},${updated}) ON CONFLICT(org_id,site_id,module_id,collection,id) DO UPDATE SET revision=excluded.revision,deleted=0,data=excluded.data,created=excluded.created,updated=excluded.updated`;
+     if(this.#audit)await this.#audit.append(tx,{orgId:org,siteId,moduleId:id,action:'record.saved',resource:name+'/'+key,actor,before:exists?decode(old):null,after:{id:key,revision,data,created,updated}});
      await emit('record.saved',{collection:name,id:key,revision});return {id:key,revision,data,created,updated};
     });
     ctx.records.remove=guard(async(name,key,revision)=>{
      if(!writable)fail(403,'Read-only context.');await requireInstalled(id,true);
      const c=await collection(name),old=await get(name,key);if(old.revision!==revision)fail(409,'Revision conflict.');
+     if((await q`SELECT record_id FROM studio_async_references WHERE org_id=${org} AND site_id=${siteId} AND target_module=${id} AND target_collection=${name} AND target_id=${key} LIMIT 1`).rows.length)fail(409,'Record is referenced by an integration.');
      if(c.beforeDelete)await c.beforeDelete(ctx,old);
      const points=(fields,data)=>Object.entries(fields).some(([key,f])=>f.type==='reference'&&f.collection===name&&data[key]===old.id||f.type==='items'&&(data[key]||[]).some(v=>points(f.fields,v)));
      for(const [other,schema]of Object.entries(d.collections||{}))if((await rows(other)).some(r=>points(schema.fields,JSON.parse(r.data))))fail(409,'Record is referenced.');
      await authorize(c.permission);
      await q`UPDATE studio_async_records SET deleted=1,revision=revision+1 WHERE org_id=${org} AND site_id=${siteId} AND module_id=${id} AND collection=${name} AND id=${key}`;
+     if(this.#audit)await this.#audit.append(tx,{orgId:org,siteId,moduleId:id,action:'record.deleted',resource:name+'/'+key,actor,before:old,after:null});
      await emit('record.deleted',{collection:name,id:key});
     });
     return ctx;
    };
    try{
-    const value=await work({q,org,authorize,installation,requireInstalled,context});
+    const value=await work({q,org,authorize,installation,requireInstalled,context,tx});
     while(pending.size)await Promise.allSettled([...pending]);
     if(poison)throw poison;for(const permission of permissions)await authorize(permission);
     return value;
@@ -139,7 +151,7 @@ export class AsyncModuleHost {
  async lifecycle(actor,siteId,id,action,expected){
   const d=this.#definition(id);
   if(!['install','enable','disable','uninstall','upgrade'].includes(action))fail(405,'Invalid lifecycle action.');
-  return this.#work(actor,siteId,id,async({q,org,authorize,installation,requireInstalled,context})=>{
+  return this.#work(actor,siteId,id,async({q,org,authorize,installation,requireInstalled,context,tx})=>{
    await authorize('members');for(const p of d.manifest.permissions)await authorize(p);
    const previous=await installation(id);if((previous?previous.revision:-1)!==expected)fail(409,'Installation revision conflict.');
    if(!previous&&action!=='install'||previous&&action==='install'&&previous.state!=='uninstalled')fail(409,'Invalid installation state.');
@@ -154,7 +166,9 @@ export class AsyncModuleHost {
    await q`INSERT INTO studio_async_installations VALUES (${org},${siteId},${id},${version},${schema},${state},${revision}) ON CONFLICT(org_id,site_id,module_id) DO UPDATE SET version=excluded.version,schema_version=excluded.schema_version,state=excluded.state,revision=excluded.revision`;
    const ctx=context(id,true,true);
    if(!disabling){for(const m of d.migrations)if(m.version>(previous?.schema_version||0))await m.up(ctx);if(!previous&&d.onInstall)await d.onInstall(ctx);}
-   await ctx.emit('module.'+action,{version,schemaVersion:schema,state});return installation(id);
+   await ctx.emit('module.'+action,{version,schemaVersion:schema,state});const result=await installation(id);
+   if(this.#audit)await this.#audit.append(tx,{orgId:org,siteId,moduleId:id,action:'module.'+action,resource:id,actor,before:previous||null,after:result});
+   return result;
   });
  }
  async collection(actor,siteId,id,name,method,input={}){
@@ -170,10 +184,20 @@ export class AsyncModuleHost {
  }
  async execute(actor,siteId,id,name,input){
   const d=this.#definition(id),command=d.commands?.[name];if(!command)fail(404,'Command not found.');
-  return this.#work(actor,siteId,id,async({authorize,requireInstalled,context})=>{
-   await authorize(command.permission);await requireInstalled(id,command.write!==false);
-   return command.run(context(id,command.write!==false),parseFields(command.fields||{},input));
+  if(command.port&&typeof this.#ports[command.port]!=='function')fail(503,'Command port is unavailable.');
+  const prepared=await this.#work(actor,siteId,id,async({org,authorize,requireInstalled,context})=>{
+   await authorize(command.permission);const installed=await requireInstalled(id,command.write!==false);
+   const value=await command.run(context(id,command.write!==false&&!command.port),parseFields(command.fields||{},input));
+   return command.port?{value,org,revision:installed.revision}:value;
   });
+  if(!command.port)return prepared;
+  // External authorities own their transaction. Never call them while holding SQL locks.
+  const site=await this.#work(actor,siteId,id,async({org,authorize,requireInstalled})=>{
+   if(org!==prepared.org)fail(403,'Site authority changed.');const installed=await requireInstalled(id,command.write!==false);
+   if(installed.revision!==prepared.revision)fail(409,'Module lifecycle changed during command preparation.');
+   return authorize(command.permission);
+  });
+  return await this.#ports[command.port]({actor,site,siteId,moduleId:id,command:name},prepared.value);
  }
  async importLegacy(actor,siteId,id,snapshot){
   const d=this.#definition(id);
@@ -217,10 +241,21 @@ export class AsyncModuleHost {
  }
  async export(actor,siteId,id){
   const d=this.#definition(id);
-  return this.#work(actor,siteId,id,async({q,org,authorize,requireInstalled})=>{
+  return this.#work(actor,siteId,id,async w=>{
+   const {q,org,authorize,requireInstalled}=w;
    for(const p of d.manifest.permissions)await authorize(p);const installation=await requireInstalled(id,false);
    const rows=(await q`SELECT * FROM studio_async_records WHERE org_id=${org} AND site_id=${siteId} AND module_id=${id} AND deleted=0 ORDER BY collection,id`).rows;
-   return {format:'studio-async-module-data',version:1,module:d.manifest,siteId,installation,records:rows.map(r=>({collection:r.collection,...decode(r)}))};
+   return {format:'studio-async-module-data',version:1,module:d.manifest,siteId,installation,records:rows.map(r=>({collection:r.collection,...decode(r)})),integrations:await this.integrations.export(w,id,siteId)};
   });
  }
+ async catalog(actor,siteId){return this.#work(actor,siteId,null,async w=>{
+  const site=await w.authorize(),result=[];
+  for(const d of this.#registry.values()){
+   if(!d.manifest.permissions.some(p=>site.allowed?.includes(p)))continue;
+   const installed=await w.installation(d.manifest.id);
+   result.push({...d.manifest,views:await this.integrations.views(w,d.manifest.id),installed:installed?{version:installed.version,state:installed.state,revision:installed.revision,schemaVersion:installed.schema_version}:null,
+    collections:Object.fromEntries(Object.entries(d.collections||{}).filter(([,c])=>site.allowed.includes(c.permission)).map(([id,c])=>[id,{label:c.label,fields:c.fields,singleton:!!c.singleton,readOnly:!!c.readOnly}])),
+    commands:Object.fromEntries(Object.entries(d.commands||{}).filter(([,c])=>site.allowed.includes(c.permission)).map(([id,c])=>[id,{label:c.label,fields:c.fields||{},write:c.write!==false,help:c.help}]))});
+  }return result;
+ });}
 }

@@ -46,6 +46,7 @@ export function validateBookingSettings(c){
 }
 export class Booking {
  isEnabled(site){
+  if(this.stateReader){const state=this.stateReader(site);return state!=='disabled'&&state!=='uninstalled';}
   if(this.store.get("SELECT name FROM sqlite_master WHERE type='table' AND name='studio_module_installations'")){
    const installed=this.store.get("SELECT state FROM studio_module_installations WHERE site_id=? AND module_id='studio.booking'",site);
    if(installed&&installed.state!=='enabled')return false;

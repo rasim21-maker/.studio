@@ -1,5 +1,27 @@
 # V2 doğrulama raporu
 
+## 2026-11-20 — Asenkron bağlantılar ve panel geçişi
+
+Varsayılan V2 panel API 2 çalıştırıcısına taşındı. Rezervasyon ve SEO portları,
+asenkron rezervasyon–CRM teslimatları, kalıcı ilişki koruması, atomik audit yazımı
+ve mevcut audit sorgu/export deposuna idempotent aktarım eklendi. Eski kayıtlar,
+kimlikler, revision değerleri, bağlantılar ve bekleyen teslimatlar yerel açılış
+geçişinde korunur. Yeniden başlatma, eski yazıcı reddi ve kayıp hedef veritabanı
+senaryoları test edildi. [Sınırlar ve geri dönüş](ASYNC_MODULES.md).
+
+Tam kontrol: `20261120T163910-13dc88a4`, başlangıç commit'i `a19c114`, çalışma
+ağacı `cd58bae819c963bb9acd3f845bb6724d3aa66b0f9375de567c2296316dbdabcd`.
+Çalışma sırasında dosya değişmedi. 54 eski + 146 V2 = 200 uygulama testi geçti;
+gerçek PostgreSQL grupları etkin, uygulama testlerinde skip yok. Yardımcıda
+15 başarılı test ve Windows symlink yetkisine bağlı 1 skip var. Typecheck, build,
+check, sekiz paket tüketicisi, lisans envanteri, SBOM ve npm audit başarılı.
+Bu rapor paragrafı ve yerel checkpoint testten sonra eklendi; çalışan kod değişmedi.
+
+PostgreSQL 17.7 gerçek loopback test sunucusudur. Booking operasyonel motoru ve
+SEO içerik otoritesi bu kabulde SQLite/yerel portlardır; tüm CMS PostgreSQL'e
+geçmiş değildir. Dağıtılmış transaction veya yeni canlı ödeme sağlayıcısı kabulü
+iddia edilmez. Üretim verisi taşınmadı; uzak CI çalışması doğrulanmadı.
+
 ## 2026-11-19 — Asenkron modül kaydı ve gerçek PostgreSQL
 
 API 2 AsyncModuleHost, CRM/e-ticaret portları, atomik yaşam döngüsü/olay yazımı

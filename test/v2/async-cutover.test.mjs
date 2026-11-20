@@ -1,0 +1,50 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {Store} from '../../src/store.mjs';
+import {ModuleHost} from '@loft-studio/module-core';
+import {AuditLog} from '@loft-studio/audit';
+import {Booking,createBookingModule} from '@loft-studio/booking';
+import crm from '@loft-studio/crm';
+import bridge from '@loft-studio/booking-crm';
+import modules,{studioIntegrations} from '../../studio.config.mjs';
+import {createAsyncRuntime} from '../../src/v2/async-runtime.mjs';
+
+test('panel cutover preserves records, deliveries and audit; restart cannot recopy stale data',async()=>{
+ const dir=await fs.mkdtemp(path.resolve('test-results/async-cutover-')),store=new Store(':memory:');
+ let runtime;
+ try{
+  store.db.exec("CREATE TABLE studio_sites(id TEXT PRIMARY KEY,org_id TEXT);INSERT INTO studio_sites VALUES ('site','org');");
+  const site={id:'site',org_id:'org',name:'Site',revision:0,document:{pages:[]},allowed:['members','operations','content']},actor={user_id:'owner'};
+  const authorize=(a,id)=>{if(a.user_id!=='owner'||id!=='site')throw Object.assign(Error('Denied'),{status:403});return site;};
+  const booking=new Booking(store),features={booking},legacy=new ModuleHost({store,modules:[crm,createBookingModule({store,booking})],integrations:[bridge],authorize});
+  for(const id of ['studio.booking','studio.crm'])legacy.lifecycle(actor,'site',id,'install',-1);
+  const config=booking.settings('site');Object.assign(config.values,{timezone:'UTC',approval:'automatic'});Object.assign(config.values.services[1],{enabled:true,minNoticeHours:0,weekdays:[0,1,2,3,4,5,6]});booking.saveSettings('site',config,'owner');
+  const reservation=booking.create('site',{requestId:crypto.randomUUID(),serviceId:'appointment',start:new Date(Date.now()+7*86400000).toISOString().slice(0,10)+'T10:00',quantity:1,customer:{name:'Person',email:'person@example.test',phone:'1234567'},participants:[{name:'Guest'}],consent:true},'owner');
+  legacy.integrations.ingest();legacy.integrations.drain();
+  const contact=legacy.collection(actor,'site','studio.crm','contacts','PUT',{id:'preserved',data:{name:'Original'}});
+  legacy.integrations.execute(actor,'site',bridge.id,'link',{contactId:contact.id,bookingId:reservation.id});
+  booking.update('site',reservation.id,{revision:0,status:'confirmed'},'owner');legacy.integrations.ingest();
+  store.audit=new AuditLog({db:store.db});
+  const options={store,dataDir:dir,features,modules:modules({store,features}),integrations:studioIntegrations,authorize,save(){throw Error('Unexpected save');}};
+  runtime=await createAsyncRuntime(options);
+  assert.equal((await runtime.host.collection(actor,'site','studio.crm','contacts','GET',{id:contact.id})).revision,0);
+  assert.equal((await runtime.host.integrations.drain()).delivered,1);
+  assert.equal((await runtime.host.integrations.execute(actor,'site',bridge.id,'timeline',{contactId:contact.id})).items.length,2);
+  assert.equal((await runtime.export(actor,'site','studio.booking')).operational.bookings[0].id,reservation.id);
+  assert.throws(()=>legacy.collection(actor,'site','studio.crm','contacts','PUT',{id:contact.id,revision:0,data:{name:'Old writer'}}),/moved to async/);
+  await store.audit.withContext({requestId:'cutover-request',actorId:'owner',actorType:'human',ip:'192.0.2.7'},()=>runtime.host.collection(actor,'site','studio.crm','contacts','PUT',{id:contact.id,revision:0,data:{name:'Updated'}}));
+  await runtime.flushAudit();
+  const logs=store.audit.query('site:site').entries,change=logs.find(e=>e.action==='record.saved');
+  assert.equal(change.ip,'192.0.2.7');assert.ok(change.values.changes.some(c=>c.path==='/data/name'&&c.before==='Original'&&c.after==='Updated'));
+  const count=store.get('SELECT COUNT(*) n FROM studio_log_entries').n;
+  await runtime.close();runtime=await createAsyncRuntime(options);await runtime.flushAudit();
+  assert.equal(store.get('SELECT COUNT(*) n FROM studio_log_entries').n,count,'idempotent audit bridge');
+  assert.equal((await runtime.host.collection(actor,'site','studio.crm','contacts','GET',{id:contact.id})).data.name,'Updated');
+  assert.equal((await runtime.host.integrations.drain()).delivered,0);
+  await runtime.close();runtime=null;
+  await fs.rename(path.join(dir,'modules.sqlite'),path.join(dir,'modules.saved.sqlite'));
+  await assert.rejects(createAsyncRuntime(options),/Authoritative module database is missing/);
+ }finally{await runtime?.close();store.close();}
+});
