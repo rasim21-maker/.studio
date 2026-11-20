@@ -1,5 +1,11 @@
 # Anahtar, yedek ve AI işletimi
 
+21 Kasım: yerel veri seti artık console.sqlite + modules.sqlite + operations.sqlite
+dosyalarını birlikte içerir. Offline yedek aracı üçünü de SQLite backup API ile
+kopyalar ve bütünlüğünü kontrol eder. Eksik eşleşen veritabanını reddeder.
+Harici PostgreSQL operasyon deposu için koordineli ayrı sunucu yedeği gerekir.
+[Geçiş ve geri dönüş sınırları](OPERATION_STORAGE.md).
+
 Bu prosedür yerel alfa içindir. Hosted KMS, online nesne snapshot ve PITR
 sağlanmış değildir. Üretim verileriyle çalışmadan önce kopya üzerinde deneyin.
 

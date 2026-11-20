@@ -7,14 +7,19 @@
     ".": "./index.mjs",
     "./engine": "./engine.mjs",
     "./events": "./events.mjs",
-    "./async": "./async.mjs"
+    "./async": "./async.mjs",
+    "./async-engine": "./async-engine.mjs",
+    "./repository": "./repository.mjs"
   },
   "files": [
     "index.mjs",
     "engine.mjs",
     "README.md",
     "events.mjs",
-    "async.mjs"
+    "async.mjs",
+    "rules.mjs",
+    "async-engine.mjs",
+    "repository.mjs"
   ],
   "dependencies": {
     "@loft-studio/sdk": "0.1.0"

@@ -1,5 +1,23 @@
 # V2 doğrulama raporu
 
+## 2026-11-21 — Asenkron rezervasyon ve ödeme depolaması
+
+Tam kontrol `20261120T224246-c34e220f`, başlangıç commit'i `a2f823a`, çalışma
+ağacı `81b4ed0f49dc39a76658d7606952af6fd0cb91fb1d185bea2262c394c01db054`.
+Çalışma sırasında dosya değişmedi. 54 eski + 156 V2 = 210 uygulama testi geçti;
+gerçek PostgreSQL etkin ve uygulama testlerinde skip yok. Yardımcı testleri
+15 başarılı, Windows symlink yetkisi nedeniyle 1 skip. Typecheck, build, check,
+paket tüketicileri, lisans, SBOM ve npm audit başarılı. Ayrı `test:postgres`
+çalıştırması 36/36 geçti. Sonrasında eklenen eşlenik SQLite/WAL yedek regresyonu
+ayrıca çalıştırılır; bu ekleme üretim kodunu değiştirmez.
+
+Kapasite yarışı, idempotency, atomik audit, ödeme ağı sırasında SQL kilidinin
+serbest olması, eşzamanlı doğrulamada tek onay, geç ödeme incelemesi, eski
+verilerin taşınması ve yeniden başlatma doğrulandı. Operasyonel depolama gerçek
+SQLite/PostgreSQL üzerinde çalışır; tüm CMS'nin PostgreSQL'e geçtiği veya canlı
+ödeme sağlayıcısı kabulünün yapıldığı iddia edilmez. Varsayılan yerel kurulum
+üç SQLite veritabanı kullanır. [Tasarım ve geçiş](OPERATION_STORAGE.md).
+
 ## 2026-11-20 — Asenkron bağlantılar ve panel geçişi
 
 Varsayılan V2 panel API 2 çalıştırıcısına taşındı. Rezervasyon ve SEO portları,

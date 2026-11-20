@@ -17,7 +17,7 @@ export async function createAsyncRuntime({store,dataDir,modules,integrations,aut
  try{
   const audit=await new AsyncAudit({storage,context:()=>store.audit?.current()||{}}).initialize();
   const ports={'site.document.save':async({actor,siteId},input)=>save(actor,siteId,{...input,actorType:'human'})},sources={};
-  for(const m of modules){for(const [key,fn]of Object.entries(m.bindings?.ports||{})){if(ports[key])throw Error('Duplicate module port');ports[key]=fn;}if(m.bindings?.source)sources[m.manifest.id]=m.bindings.source;}
+  for(const m of modules){for(const [key,fn]of Object.entries(m.bindings?.ports||{})){if(ports[key])throw Error('Duplicate module port');ports[key]=(ctx,input)=>features?.authorized?features.authorized(()=>{for(const p of m.manifest.permissions)authorize(ctx.actor,ctx.siteId,p);},()=>fn(ctx,input)):fn(ctx,input);}if(m.bindings?.source)sources[m.manifest.id]=m.bindings.source;}
   const host=await new AsyncModuleHost({storage,modules,integrations,sources,ports,audit,authorize,trustPolicy}).initialize();
   await migrate(store,storage,modules,integrations);
   reader=new DatabaseSync(filename,{readOnly:true});
@@ -26,10 +26,10 @@ export async function createAsyncRuntime({store,dataDir,modules,integrations,aut
   const flushAudit=()=>{
    if(flushing)return flushing;
    if(!store.audit)return Promise.resolve();
-   flushing=(async()=>{for(;;){const rows=await audit.pending();if(!rows.length)break;
+   flushing=(async()=>{for(const source of [audit,features?.asyncAudit].filter(Boolean))for(;;){const rows=await source.pending();if(!rows.length)break;
     store.transaction(()=>{for(const r of rows){const p=JSON.parse(r.payload),c=p.context;
      store.run('INSERT OR IGNORE INTO studio_log_entries(id,occurred_at,kind,action,scope,actor_id,actor_type,actor_label,request_id,method,path,ip,peer_ip,ip_source,device,resource,values_json,detail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',r.id,r.created,'change',p.action,'site:'+r.site_id,c.actorId,c.actorType,c.actorLabel||null,c.requestId||null,c.method||null,c.path||null,c.ip||null,c.peerIp||null,c.ipSource||null,JSON.stringify(c.device||{}),p.resource||p.moduleId,JSON.stringify(difference(p.before,p.after)),JSON.stringify({moduleId:p.moduleId,authority:'async-runtime'}));
-    }});await audit.acknowledge(rows.map(r=>r.id));
+    }});await source.acknowledge(rows.map(r=>r.id));
    }})().finally(()=>{flushing=undefined;});return flushing;
   };
   return {host,storage,audit,flushAudit,

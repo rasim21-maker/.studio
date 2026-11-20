@@ -221,7 +221,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    if(action==='modules/enable'&&method==='POST'){
     access(user,id,'operations');access(user,id,'integrations');
     if(!features)fail(503,'İş modülü bulunamadı.');
-    if(!store.get('SELECT id FROM sites WHERE id=?',id)){features.enableSite(site);audit(site,user,'modules.enabled',site.revision);}return send({enabled:true});
+    if(!store.get('SELECT id FROM sites WHERE id=?',id)){await features.enableSite(site);audit(site,user,'modules.enabled',site.revision);}return send({enabled:true});
    }
    if(action.startsWith('modules/')){
     const tail=action.slice(8),required=/^(integrations|payments)|\/checkout$/.test(tail)?'integrations':'operations';
@@ -288,5 +288,5 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;
  }
- return{route,registry,save,access,deliverEvents,flushAudit:moduleRuntime.flushAudit,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);await delivering;await moduleRuntime.close();}};
+ return{route,registry,save,access,deliverEvents,flushAudit:moduleRuntime.flushAudit,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);await delivering;await moduleRuntime.close();await features?.close?.();}};
 }

@@ -13,11 +13,16 @@ export async function backupData(source,target,{offline=false,excludeRoots=[]}={
   if(database.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Source database integrity check failed.');
   await fs.mkdir(to,{mode:0o700}); // Exclusive destination; never overwrite a previous backup.
   await backup(database,path.join(to,'console.sqlite'));
-  const entries=[];
+  const entries=[],databases=['console.sqlite'];
+  for(const [filename,marker]of [['modules.sqlite','studio_async_origin'],['operations.sqlite','studio_operations_origin']]){
+   let present=true;try{await fs.access(path.join(from,filename));}catch(e){if(e.code!=='ENOENT')throw e;present=false;}
+   if(!present){const exists=database.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(marker);if(exists&&database.prepare('SELECT state FROM '+marker).get()?.state==='live')throw Error('Missing paired '+filename+'; external PostgreSQL needs a coordinated database backup.');continue;}
+   const extra=new DatabaseSync(path.join(from,filename),{readOnly:true});try{if(extra.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Integrity check failed: '+filename);await backup(extra,path.join(to,filename));databases.push(filename);}finally{extra.close();}
+  }
   async function copy(dir,relativeDir=''){
    for(const entry of await fs.readdir(dir,{withFileTypes:true})){
     if(!relativeDir&&excludeRoots.includes(entry.name))continue;
-    if(!relativeDir&&['console.sqlite','console.sqlite-wal','console.sqlite-shm'].includes(entry.name))continue;
+    if(!relativeDir&&databases.some(name=>[name,name+'-wal',name+'-shm'].includes(entry.name)))continue;
     if(entry.isSymbolicLink()||!entry.isDirectory()&&!entry.isFile())throw Error('Backup refuses links and special files.');
     const relativeFile=path.join(relativeDir,entry.name),destination=path.join(to,relativeFile);
     if(entry.isDirectory()){await fs.mkdir(destination,{mode:0o700});await copy(path.join(dir,entry.name),relativeFile);}
@@ -25,8 +30,9 @@ export async function backupData(source,target,{offline=false,excludeRoots=[]}={
    }
   }
   await copy(from);
-  const bytes=await fs.readFile(path.join(to,'console.sqlite'));entries.push({path:'console.sqlite',size:bytes.length,sha256:digest(bytes)});
-  const verify=new DatabaseSync(path.join(to,'console.sqlite'),{readOnly:true});try{if(verify.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Backup integrity check failed.');}finally{verify.close();}
+  for(const filename of databases){const bytes=await fs.readFile(path.join(to,filename));entries.push({path:filename,size:bytes.length,sha256:digest(bytes)});
+   const verify=new DatabaseSync(path.join(to,filename),{readOnly:true});try{if(verify.prepare('PRAGMA integrity_check').get().integrity_check!=='ok')throw Error('Backup integrity check failed: '+filename);}finally{verify.close();}
+  }
   const report={formatVersion:1,created:new Date().toISOString(),databaseVersion:database.prepare('PRAGMA user_version').get().user_version,files:entries};
   await fs.writeFile(path.join(to,'backup-manifest.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600,flag:'wx'});return report;
  }finally{database.close();}

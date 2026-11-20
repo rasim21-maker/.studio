@@ -1,5 +1,13 @@
 # Test prosedürü ve code review regresyonları
 
+2026-11-21: `async-operations.test.mjs` gerçek SQLite/PostgreSQL kapasite yarışını,
+ödeme idempotency/kilitlerini, provider beklerken SQL kilidinin bırakılmasını,
+eşzamanlı verify ve geç ödeme review davranışını sınar. `operations-migration.test.mjs`
+iki motorda gerçek eski kayıt aktarımı ve restart kabulüdür. `test:postgres` bu
+dosyaları da zorunlu çalıştırır. HTTP testleri artık asenkron API'yi bekler; sentetik
+veri düzenlemeleri yeni repository üzerinden yapılır. Eski tabloları değiştiren
+testler yeni yetkili depoyu doğruluyormuş gibi kullanılamaz.
+
 2026-11-20 ek kabul: `async-connections.test.mjs` hem SQLite hem gerçek
 PostgreSQL üzerinde rezervasyon portu/idempotency, SEO revision, entegrasyon
 rollback/retry, pasif modül görünürlüğü, kalıcı ilişkiler ve audit atomikliğini

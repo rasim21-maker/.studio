@@ -1,5 +1,10 @@
 # Asynchronous module runtime and database acceptance
 
+2026-11-21 update: booking/payment repositories now use the same asynchronous
+storage contract on SQLite and PostgreSQL. See [operational storage](OPERATION_STORAGE.md)
+for current composition, migration and acceptance; the 20 November boundary below
+describes the preceding cutover stage.
+
 Date: 2026-11-20. Module API 2 is an explicit preview contract; API 1 remains
 available for existing applications. Storage API version remains 1.
 

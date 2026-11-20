@@ -26,6 +26,8 @@ import asyncCommerce from '@loft-studio/commerce/async';
 import asyncSeo from '@loft-studio/seo/async';
 import asyncBridge from '@loft-studio/booking-crm/async';
 import {createAsyncBookingModule} from '@loft-studio/booking/async';
+import {AsyncBooking} from '@loft-studio/booking/async-engine';
+import {OperationsRepository} from '@loft-studio/booking/repository';
 import {AsyncAudit} from '@loft-studio/audit/async';
 import {assertPackageTrust} from '@loft-studio/module-core/trust';
 import {Booking,ensureBookingSite,createBookingModule} from '@loft-studio/booking';
@@ -39,6 +41,8 @@ await portable.transaction(async tx=>{await tx.query('CREATE TABLE proof(id TEXT
 assert.throws(()=>assertPackageTrust('acme.unknown','1.0.0',{mode:'reviewed-only',packages:{}}));
 const asyncStorage=new SQLiteStorage(':memory:');
 const asyncAudit=await new AsyncAudit({storage:asyncStorage}).initialize();
+const operations=await new OperationsRepository({storage:asyncStorage,audit:asyncAudit,resolveSite:async id=>({id,org_id:'consumer-org'})}).initialize();
+const asyncBooking=new AsyncBooking(operations);await asyncBooking.provision({id:'consumer-site'});assert.equal((await asyncBooking.settings('consumer-site')).values.participantMode,'generic');
 assert.equal(asyncSeo.manifest.apiVersion,2);assert.equal(asyncBridge.apiVersion,2);assert.equal(typeof createAsyncBookingModule,'function');
 const asyncHost=await new AsyncModuleHost({storage:asyncStorage,modules:[asyncCrm,asyncCommerce],audit:asyncAudit,authorize:(actor,id)=>({id,org_id:'consumer-org',allowed:['members','operations']})}).initialize();
 await asyncHost.lifecycle({user_id:'consumer'},'consumer-site','studio.crm','install',-1);

@@ -1,5 +1,10 @@
 # Studio V2 architecture and migration
 
+2026-11-21: operational reservations, calendar, provider configuration and payments
+now use asynchronous SQLite/PostgreSQL repositories. The local default adds
+operations.sqlite to the paired backup set. Content/authentication remain in the
+original application store. See [operational storage](OPERATION_STORAGE.md).
+
 Status: implementation in the separate v2 branch. The deployed 0.2 checkout and its database are not modified by development.
 
 2026-11-20: the default V2 panel uses the async API 2 module host. Module records,

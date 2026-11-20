@@ -160,12 +160,14 @@ describe('Audit HTTP integration',()=>{
     finally{app.audit.log.query=original;app.store.run('UPDATE studio_members SET permissions=? WHERE site_id=? AND user_id=?','["audit","auditExport"]',site,'reader');}
     assert.ok(original('site:'+site,{action:'audit.export.failed'}).entries.length>0);
   });
-  test('L12: payment/provider secrets never enter the log; financial changes keep their resource ID',()=>{
+  test('L12: payment/provider secrets never enter the log; financial changes keep their resource ID',async()=>{
     const id=randomUUID(),payment=randomUUID(),now=new Date().toISOString();
     const row={id,site_id:'loft',revision:0,reference:'AUDIT-FIXTURE',service_id:'fixture',resource:'fixture',start:1,end:2,busy_start:1,busy_end:2,quantity:1,status:'pending',hold_until:null,price_minor:100,currency:'TRY',customer:'{"name":"Fixture"}',pets:'[]',notes:'',token_hash:'never-booking-token-hash',created:now,updated:now};
-    app.store.run('INSERT INTO reservations ('+Object.keys(row).join(',')+') VALUES ('+Object.keys(row).map(()=>'?').join(',')+')',...Object.values(row));
-    app.store.run('INSERT INTO payment_transactions VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',payment,'loft',id,'iyzico','never-checkout-token','https://pay.example/?token=never-checkout-token',100,'TRY','created',now,now,'{"providerToken":"never-provider-token"}');
-    app.store.run("UPDATE payment_transactions SET status='paid' WHERE id=?",payment);
+    await app.features.repository.scope('loft',async()=>{
+     await app.features.repository.run('INSERT INTO reservations ('+Object.keys(row).join(',')+') VALUES ('+Object.keys(row).map(()=>'?').join(',')+')',...Object.values(row));
+     await app.features.repository.run('INSERT INTO payment_transactions VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',payment,'loft',id,'iyzico','never-checkout-token','https://pay.example/?token=never-checkout-token',100,'TRY','created',now,now,'{"providerToken":"never-provider-token"}');
+     await app.features.repository.run("UPDATE payment_transactions SET status='paid' WHERE id=?",payment);
+    });await app.platform.flushAudit();
     const entries=app.audit.log.query('site:loft',{action:'payment_transactions.update'}).entries;
     assert.ok(entries[0].resource.includes(payment));assert.ok(entries[0].values.changes.some(c=>c.path==='/status'&&c.before==='created'&&c.after==='paid'));
     assert.doesNotMatch(JSON.stringify(app.audit.log.query('site:loft').entries),/never-booking-token-hash|never-checkout-token|never-provider-token/);
