@@ -1,7 +1,7 @@
 # Unmarked HTML discovery and field selection
 
-Import review now lists static HTML text candidates with their source file,
-section, tag, field type and a bounded text sample. Individual checkboxes and
+Import review lists static HTML text and attribute candidates with their source file,
+section, tag, attribute, field type and a bounded text sample. Individual checkboxes and
 select-all/clear controls use native keyboard-accessible controls. Samples are
 rendered as text, never injected HTML. The final import action commits the chosen
 editing scope; discovery itself creates no live deployment.
@@ -16,11 +16,32 @@ links or attributed nested elements are conservatively excluded. Source bytes fo
 those elements remain intact; this heuristic is not a complete framework detector
 or a guarantee that any arbitrary HTML is safe to execute.
 
-Discovery retains the existing limits: 40 HTML pages and 40 candidate nodes per
-section, supported lowercase page paths, and current document/import limits.
-This is not a visual selector for arbitrary DOM nodes. Images, link destinations,
-arbitrary spans, navigation outside the main root, React runtime trees and CMS
+Discovery retains the existing limits: 40 HTML pages, at most 40 text candidate nodes
+and 40 link/image candidate nodes inspected per section, and at most 40 fields total
+per section (text first). Supported lowercase page paths and document/import limits apply.
+This is not a visual selector for arbitrary DOM nodes. Arbitrary spans,
+navigation outside the main root, React runtime trees and CMS
 schemas need their respective adapters/SDK or later explicit mapping support.
+
+## Links and images
+
+Static HTML sections also expose anchor `href`, image `alt`, and verified local image
+`src` as independent fields. Href values follow the shared HTTPS/mailto/tel/root-relative
+or fragment policy; unsupported page-relative URLs remain untouched with a warning.
+Nested link markup is preserved when changing its destination. Images imported under
+legacy paths gain a canonical `media/<hash>.<extension>` library copy; original paths
+and bytes remain intact. The source src changes only when the chosen image changes,
+and is written relative to the HTML page. The existing media picker selects verified
+library images. Alt is plain text, bounded to 500 characters and may be empty for
+decorative images. URL fields are bounded to 2000 characters.
+
+External images are not downloaded. Responsive `srcset`/`picture`, `data-src`, base-URL
+documents, template expressions and event-bound elements are not automatically mapped
+for source replacement. Safe alt fields can still be offered on external/responsive
+images. Markers `data-studio-href`, `data-studio-src`, `data-studio-alt` persist each
+binding; restore verifies its allowed tag/type pair. Multiple changes to one opening
+tag are merged using parser attribute offsets, retaining unrelated attributes and
+attribute-like text inside quoted values. Previous text field IDs are not renumbered.
 
 ## Persistence and API
 
@@ -49,3 +70,7 @@ selection, export/reimport, stale-source rejection, HTTP CSRF and persistent imp
 commit after restart. Browser checks exercise the actual selection component with
 local sample data. They are not full accessibility certification or live-framework
 acceptance. No new dependency or AI service is required.
+
+Attribute tests additionally cover simultaneous src/alt edits, nested-page image paths,
+link markup and quoted attribute preservation, invalid URL/media rejection, forged
+marker/type rejection, source-only preservation and the shared section field limit.

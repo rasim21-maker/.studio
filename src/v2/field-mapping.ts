@@ -8,6 +8,7 @@ export function fieldCandidates(document:Document,source:Source){
   key:digest(JSON.stringify([page.id,section.id,field.id])),file:page.path,section:section.name,
   label:field.label,type:field.type,sample:String(field.value).slice(0,300),
   tag:source.bindings.find(b=>b.page===page.id&&b.section===section.id&&b.field===field.id)?.tag||'',
+  attribute:source.bindings.find(b=>b.page===page.id&&b.section===section.id&&b.field===field.id)?.attribute||'',
  }))));
 }
 
@@ -26,11 +27,17 @@ export function selectFields(document:Document,source:Source,selection:unknown){
 // Reject content whose replacement could silently remove behavior or structured markup.
 export function safeTextCandidate(node:any):boolean{
  if(!node.sourceCodeLocation?.endTag)return false;
+ if(!safeAttributeCandidate(node))return false;
+ const visit=(n:any):boolean=>n.nodeName==='#text'?!/\{\{|\{%|<%/.test(n.value):
+  ['b','strong','i','em','u','s','br','span','small','sup','sub','code','mark'].includes(n.tagName)&&!(n.attrs||[]).length&&(n.childNodes||[]).every(visit);
+ return (node.childNodes||[]).every(visit);
+}
+
+export function safeAttributeCandidate(node:any):boolean{
+ if(!node.sourceCodeLocation?.startTag)return false;
  for(let parent=node;parent;parent=parent.parentNode){
   if(['script','style','template','noscript','form','button','svg','math'].includes(parent.tagName))return false;
   if((parent.attrs||[]).some((a:any)=>/^(on|v-|x-|:|@)/.test(a.name)||['hidden','contenteditable','data-reactroot','data-reactid'].includes(a.name)||a.name==='aria-hidden'&&a.value==='true'))return false;
  }
- const visit=(n:any):boolean=>n.nodeName==='#text'?!/\{\{|\{%|<%/.test(n.value):
-  ['b','strong','i','em','u','s','br','span','small','sup','sub','code','mark'].includes(n.tagName)&&!(n.attrs||[]).length&&(n.childNodes||[]).every(visit);
- return (node.childNodes||[]).every(visit);
+ return !(node.attrs||[]).some((a:any)=>/\{\{|\{%|<%/.test(a.value));
 }

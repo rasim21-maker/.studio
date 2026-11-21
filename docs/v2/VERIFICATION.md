@@ -1,5 +1,24 @@
 # V2 doğrulama raporu
 
+## 2026-11-21 — Bağlantı ve görsel öznitelik eşleştirmesi
+
+Tam kontrol `20261121T165424-1d60e1d6`; başlangıç commit'i `9c9a156`, çalışma
+ağacı `500d6da14aa8172adb4682b5824b508bd58569293c7fbdc69c3ac204b01e2e52`.
+Çalışma sırasında dosya değişmedi. 54 eski + 174 V2 = 228 uygulama testi geçti;
+uygulama skip'i yok, gerçek PostgreSQL etkin. Yardımcı 15 başarılı/1 skip;
+typecheck, build, check, paket tüketicileri, lisans, SBOM ve audit başarılı.
+Bu rapor testten sonra eklendi; çalışan kod değişmedi.
+
+Alan eşleştirme paketindeki altı test; href, alt ve src marker/type sözleşmesi,
+aynı görselde birleştirilen src/alt yamaları, alt dizindeki sayfa yolları, tırnak
+içinde öznitelik benzeri metnin korunması, mevcut bağlantı biçiminin korunması,
+export/yeniden import ve seçim kalıcılığını doğrular. Geçersiz URL/medya, sahte
+marker/type ve bölümün 40 alan sınırı sınandı. Responsive/harici/dinamik görsel
+kaynakları otomatik src eşleştirmesinin dışındadır; alt bağımsız kalabilir.
+Bu dilimde yeni tarayıcı kabulü yapılmadı; mevcut alan editörü kullanıldı ve panel
+derlendi. Canlı sağlayıcı veya dinamik framework kabulü iddia edilmez.
+[Kapsam](FIELD_MAPPING.md).
+
 ## 2026-11-21 — İşaretsiz HTML alan keşfi ve seçim
 
 Tam kontrol `20261121T164311-b39b1d17`; başlangıç commit'i `8d3d4f0`, çalışma

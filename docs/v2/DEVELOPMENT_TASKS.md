@@ -33,7 +33,9 @@ Update this list and share its current state after each completed task.
 - [x] Unmarked static HTML text discovery, import-review selection and permanent
   source annotation. Direct headings/paragraphs and nested section text supported;
   selection/export/reimport and HTTP restart tested. See [scope](FIELD_MAPPING.md).
-- [ ] Broader manual DOM mapping, images/link targets and framework-aware discovery.
+- [x] Static link targets, image alt and verified local image selection with permanent
+  attribute bindings. External/responsive image source replacement remains unsupported.
+- [ ] Broader manual DOM mapping and framework-aware discovery.
 - [ ] Legacy-console retirement plan with data authority and recovery checkpoints.
 - [ ] General content types/blog followed by editorial workflow.
 - [ ] SEO/media expansion, booking–CRM automations and commerce completion.

@@ -1,10 +1,11 @@
 import {parse} from 'parse5';
-import {safeTextCandidate} from './field-mapping.ts';
+import {safeTextCandidate,safeAttributeCandidate} from './field-mapping.ts';
+import {posix} from 'node:path';
 import {fail} from '../util.mjs';
-import {digest,safePath} from './import.ts';
+import {digest,safePath,mediaAsset} from './import.ts';
 import {attr,findNodes,escape,designCss,sectionHtml,sdkHtml,inertPreview} from './render.ts';
 import {emptyLayout,defaultDictionaries,newSection} from '../../shared/v2/model.ts';
-import {validateDocument,validRich,fieldPolicy} from '../../shared/v2/validation.ts';
+import {validateDocument,validRich,fieldPolicy,safeUrl} from '../../shared/v2/validation.ts';
 import type {Adapter,Document,Source,Binding,Capabilities,Section,Field,Files,Manifest} from '../../shared/v2/model.ts';
 const cap=(state:'supported'|'partial'|'unsupported',reason:string)=>({state,reason});
 const common:Capabilities={content:cap('supported','Alan şemasına uygun düzenleme ve sürüm kontrollü kayıt.'),layout:cap('supported','Bölümler, boşluklar ve cihaz ayarları kaynak modele yazılır.'),preview:cap('partial','İzole, JavaScript çalıştırmayan önizleme. Etkileşimli uygulama davranışı gösterilmez.'),publish:cap('partial','Sürüm ZIP olarak dışa aktarılır. Canlı sunucuya dağıtım bağlı değil.'),rollback:cap('supported','İçerik ve tasarım sürümünü geri yükleme; operasyon kayıtları kapsam dışı.'),build:cap('unsupported','İçe alınan kurulum veya derleme betikleri çalıştırılmaz.'),operations:cap('unsupported','Bu siteye rezervasyon/ödeme sağlayıcısı henüz bağlanmadı.')};
@@ -14,6 +15,28 @@ const parseSource=(html:string)=>parse(html,{sourceCodeLocationInfo:true}) as an
 const inner=(html:string,node:any)=>{const loc=node.sourceCodeLocation;return loc?.startTag&&loc?.endTag?html.slice(loc.startTag.endOffset,loc.endTag.startOffset):'';};
 const plain=(node:any):string=>node.nodeName==='#text'?node.value:(node.childNodes||[]).map(plain).join('');
 type Patch={start:number;end:number;text:string};
+function attributePatch(html:string,node:any,key:string,value:string,patches:Patch[]){
+ const tag=node.sourceCodeLocation.startTag;
+ const existing=patches.find(p=>p.start===tag.startOffset&&p.end===tag.endOffset);
+ const raw=existing?.text??html.slice(tag.startOffset,tag.endOffset);
+ const parsed=findNodes(parseSource(raw),n=>n.sourceCodeLocation?.startTag?.startOffset===0)[0];
+ const location=parsed?.sourceCodeLocation?.attrs?.[key],replacement=key+'="'+escape(value)+'"';
+ const text=location?raw.slice(0,location.startOffset)+replacement+raw.slice(location.endOffset):raw.replace(/\s*\/?>$/,m=>' '+replacement+m);
+ if(existing)existing.text=text;else patches.push({start:tag.startOffset,end:tag.endOffset,text});
+}
+const attributeTypes={href:{tag:'a',type:'url'},src:{tag:'img',type:'image'},alt:{tag:'img',type:'text'}} as const;
+function fieldNode(root:any,field:Field){
+ const matches:any[]=[];
+ for(const node of findNodes(root,n=>Boolean(n.tagName))){
+  if(attr(node,'data-studio-field')===field.id)matches.push({node,attribute:undefined});
+  for(const [key,policy]of Object.entries(attributeTypes))if(attr(node,'data-studio-'+key)===field.id){
+   if(node.tagName!==policy.tag||field.type!==policy.type)fail(422,'Kaynak öznitelik şeması uyuşmuyor.');
+   matches.push({node,attribute:key});
+  }
+ }
+ if(matches.length!==1||!matches[0].node.sourceCodeLocation?.startTag||!matches[0].attribute&&!matches[0].node.sourceCodeLocation?.endTag)fail(422,'Alan eşleştirmesi belirsiz.');
+ return matches[0];
+}
 function patch(html:string,patches:Patch[]):string{let boundary=html.length;for(const p of patches.sort((a,b)=>b.start-a.start)){if(p.end>boundary||p.start<0||p.end<p.start)fail(422,'Kaynak eşleştirmeleri çakışıyor.');html=html.slice(0,p.start)+p.text+html.slice(p.end);boundary=p.start;}return html;}
 function tagAttribute(html:string,node:any,key:string,value:string){const tag=node.sourceCodeLocation.startTag,raw=html.slice(tag.startOffset,tag.endOffset),pattern=new RegExp('\\s'+key+'(?:\\s*=\\s*(?:"[^"]*"|\'[^\']*\'|[^\\s>]+))?','gi');return raw.replace(pattern,'').replace(/\s*\/?>$/,m=>' '+key+'="'+escape(value)+'"'+m);}
 function checkManifest(manifest:Manifest){
@@ -55,8 +78,8 @@ function restoreSourceState(input:Source){
    source.bindings.push({id:section.id,page:page.id,section:section.id,file:page.path,tag:nodes[0].tagName});
    if(section.kind==='source')for(const field of section.fields){
     if(source.manifest.editableFields&&!source.manifest.editableFields.includes(field.id))fail(422,'Alan manifest düzenleme kapsamı dışında.');
-    const fields=findNodes(nodes[0],n=>attr(n,'data-studio-field')===field.id);if(fields.length!==1||!fields[0].sourceCodeLocation?.endTag)fail(422,'Alan eşleştirmesi belirsiz.');
-    source.bindings.push({id:field.id,page:page.id,section:section.id,field:field.id,file:page.path,tag:fields[0].tagName});
+    const {node,attribute}=fieldNode(nodes[0],field);
+    source.bindings.push({id:field.id,page:page.id,section:section.id,field:field.id,file:page.path,tag:node.tagName,...(attribute?{attribute}:{})});
    }
   }
  }
@@ -91,6 +114,30 @@ class StaticAdapter implements Adapter{
      if(n===node){const sectionPatch=patches.find(p=>p.start===n.sourceCodeLocation.startTag.startOffset)!;if(attr(n,'data-studio-field')===undefined)sectionPatch.text=sectionPatch.text.replace(/\s*\/?>$/,m=>' data-studio-field="'+escape(fieldId)+'"'+m);}
      else patches.push({start:n.sourceCodeLocation.startTag.startOffset,end:n.sourceCodeLocation.startTag.endOffset,text:tagAttribute(original,n,'data-studio-field',fieldId)});
     }
+    // Attribute fields are separate from inner HTML; existing text IDs do not shift.
+    if(this.id==='static')for(const [ai,n]of findNodes(node,n=>['a','img'].includes(n.tagName)).slice(0,40).entries()){
+     if(!safeAttributeCandidate(n)){warnings.push(file+': Dinamik bağlantı/görsel korunur; öznitelik eşlenmedi.');continue;}
+     const add=(key:'href'|'src'|'alt',value:string,label:string)=>{
+      if(fields.length>=40){warnings.push(file+': Bölümün 40 alan sınırı dolu; ek öznitelikler kaynakta korundu.');return;}
+      if(value.length>(key==='alt'?500:2000)||/[<>\u0000-\u001f\u007f]/.test(value)){warnings.push(file+': Öznitelik değeri alan sınırlarına uymuyor; kaynak korundu.');return;}
+      const fieldId=attr(n,'data-studio-'+key)||stable(id+':attribute:'+ai+':'+key);
+      if(!/^[a-zA-Z][\w-]{0,79}$/.test(fieldId)||fieldIds.has(fieldId))fail(422,'Öznitelik alan kimliği geçersiz veya yinelenmiş.');
+      if(source.manifest.editableFields&&!source.manifest.editableFields.includes(fieldId))return;
+      fieldIds.add(fieldId);fields.push({id:fieldId,label,type:attributeTypes[key].type,value,maxLength:key==='alt'?500:2000});
+      source.bindings.push({id:fieldId,page:pageId,section:id,field:fieldId,file,tag:n.tagName,attribute:key});
+      attributePatch(original,n,'data-studio-'+key,fieldId,patches);
+     };
+     if(n.tagName==='a'){const href=attr(n,'href');if(typeof href==='string'&&safeUrl(href))add('href',href,'Bağlantı hedefi: '+plain(n).trim().slice(0,50));else warnings.push(file+': Bağlantı hedefi desteklenen URL biçiminde değil; kaynak korundu.');}
+     else{
+      const alt=attr(n,'alt')||'';if(alt.length<=500)add('alt',alt,'Görsel alternatif metni');
+      const src=attr(n,'src')||'';
+      if(!src||/[?#%\\:]/.test(src)||src.startsWith('//')||attr(n,'srcset')!==undefined||attr(n,'data-src')!==undefined||n.parentNode?.tagName==='picture'||findNodes(tree,n=>n.tagName==='base').length){warnings.push(file+': Harici veya responsive görsel kaynağı otomatik eşlenmedi.');continue;}
+      const assetPath=src.startsWith('/')?src.slice(1):posix.normalize(posix.join(posix.dirname(file),src)),asset=source.assets[assetPath];
+      if(!safePath(assetPath)||!asset){warnings.push(file+': Görsel doğrulanmış yerel medya içinde bulunamadı.');continue;}
+      const canonical=mediaAsset(Buffer.from(asset.base64,'base64'),assetPath);source.assets[canonical.key]=canonical.asset;
+      add('src',canonical.key,'Görsel: '+assetPath.slice(0,70));
+     }
+    }
     sections.push({id,name:plain(findNodes(node,n=>/^h[1-6]$/.test(n.tagName))[0]||node).trim().slice(0,100)||'Bölüm '+(si+1),kind:'source',enabled:!node.attrs.some((a:any)=>a.name==='hidden'),fields,layout:emptyLayout()});
    }
    if(!sections.length)warnings.push(file+': Doğrudan ana alan altındaki bölüm eşleştirmesi yok; kaynak korunur.');
@@ -111,8 +158,8 @@ class StaticAdapter implements Adapter{
     const old=before.pages.find(b=>b.id===p.id)?.sections.find(b=>b.id===s.id)?.fields.find(b=>b.id===f.id);
     const value=f.translations?.[after.locale]??f.value,oldValue=old?.translations?.[before.locale]??old?.value;
     if(value===oldValue)continue;
-    const nodes=findNodes(tree,n=>attr(n,'data-studio-field')===f.id),node=nodes[0];
-    if(nodes.length!==1||!node?.sourceCodeLocation?.endTag)fail(409,'Kaynak alanı değişmiş; yeniden eşleme gerekli.');
+    const {node,attribute}=fieldNode(tree,f);
+    if(attribute){attributePatch(html,node,attribute,attribute==='src'&&value?posix.relative(posix.dirname(p.path),String(value)):String(value),patches);continue;}
     const loc=node.sourceCodeLocation;let content=f.type==='rich'?String(value):escape(value);
     if(f.type==='rich'&&/<(?:p|h[1-6]|ul|ol|blockquote|pre)(?:\s|>)/.test(content)){
      const wrapper=content.match(/^<p(?: style="(text-align: (?:left|center|right|justify);?)")?>([\s\S]*)<\/p>$/);

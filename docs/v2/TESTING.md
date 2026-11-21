@@ -5,6 +5,10 @@ aynı etiketli farklı alanlar, seçim dışı HTML'nin korunması, hatalı/yine
 export/yeniden import, eski kaynak hash'i, CSRF ve restart kalıcılığını sınar.
 Tarayıcıda tekil/toplu seçim ve klavye kullanımını kontrol edin. Dinamik içeriği
 keyfi kod çalıştırarak keşfetmeyin; kapsam sınırları `FIELD_MAPPING.md` içindedir.
+Öznitelik kapsamı: href/alt/src aynı kaynakta korunmalı, aynı img üzerindeki src/alt
+yamaları çakışmamalı; tırnak içindeki öznitelik benzeri metin değişmemeli. Göreli görsel
+yolu, dışlanan responsive/dinamik kaynak, hatalı URL/medya, sahte marker/type ve bölümün
+40 alan sınırı zorunlu regresyonlardır.
 
 Hosting regresyonu: `hosting.test.mjs` statik çıktı sınırları, ikili ZIP aktarımı,
 sağlayıcı proje/commit/URL eşleşmesi, şifreli bağlantı, CSRF, belirsiz POST sonrası
