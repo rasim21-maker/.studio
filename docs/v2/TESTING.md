@@ -1,5 +1,12 @@
 # Test prosedürü ve code review regresyonları
 
+GitHub yayın regresyonu: `github-publisher.test.mjs`; uzak dal çatışması, force=false,
+beklenen commit/ağaç ayrımı, dosya hash'i, korunmuş dosya modu, gizli/yasak yollar,
+kesilmiş ağaç, yetki iptali, kayıp PATCH yanıtı ve aynı commit ile uzlaştırma zorunludur.
+HTTP kabulü şifreli import, CSRF, kalıcı hazırlık, restart ve çift yazma olmamasını
+doğrular. Gerçek GitHub kabulü ayrıca belirtilmedikçe fixture testidir. Panelde hazırlık,
+hata ve klavye ile yeniden doğrulama akışını kontrol edin. Hazırlık dalı ilerletmemeli.
+
 2026-11-21: `async-operations.test.mjs` gerçek SQLite/PostgreSQL kapasite yarışını,
 ödeme idempotency/kilitlerini, provider beklerken SQL kilidinin bırakılmasını,
 eşzamanlı verify ve geç ödeme review davranışını sınar. `operations-migration.test.mjs`

@@ -13,6 +13,7 @@ import {createAgentAccess} from './agent-access.mjs';
 import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
 import {createAsyncRuntime} from './async-runtime.mjs';
+import {createGitHubPublications} from './github-publications.ts';
 import {permissions} from '../../shared/v2/model.ts';
 import type {Document,Source,Adapter,SiteRecord} from '../../shared/v2/model.ts';
 type Store=any;
@@ -56,7 +57,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   if(!row||row.owner!==user.user_id&&!row.permissions)fail(404,'Site bulunamadı veya erişiminiz yok.');
   row.allowed=row.owner===user.user_id?[...permissions]:parse(row.permissions);if(permission&&!row.allowed.includes(permission))fail(403,'Bu işlem için '+permission+' yetkisi gerekli.');store.audit?.setScope('site:'+id);return packed(row);
  }
- function summary(site:any){return{id:site.id,name:site.name,orgId:site.org_id,workspaceId:site.workspace_id,projectId:site.project_id,environment:site.environment,adapter:site.adapter,revision:site.revision,capabilities:{...registry.get(site.adapter).capabilities(site.source),operations:store.get('SELECT id FROM sites WHERE id=?',site.id)?{state:'partial',reason:'Rezervasyon, takvim ve sağlayıcı ayarları hazır. Canlı kullanım ayrıca etkinleştirilir.'}:{state:'unsupported',reason:'İş modülleri henüz kurulmadı.'}},permissions:site.allowed};}
+ function summary(site:any){return{id:site.id,name:site.name,orgId:site.org_id,workspaceId:site.workspace_id,projectId:site.project_id,environment:site.environment,adapter:site.adapter,revision:site.revision,capabilities:{...registry.get(site.adapter).capabilities(site.source),...(store.get("SELECT kind FROM studio_connections WHERE site_id=?",site.id)?.kind==='github'?{publish:{state:'partial',reason:'ZIP dışa aktarımı ve dal/yazma yetkisi doğrulanan GitHub bağlantısında kontrollü commit gönderimi. Hosting dağıtımı bağlı değil.'}}:{}),operations:store.get('SELECT id FROM sites WHERE id=?',site.id)?{state:'partial',reason:'Rezervasyon, takvim ve sağlayıcı ayarları hazır. Canlı kullanım ayrıca etkinleştirilir.'}:{state:'unsupported',reason:'İş modülleri henüz kurulmadı.'}},permissions:site.allowed};}
  function getVersion(site:any,revision:number){const row=store.get('SELECT * FROM studio_versions WHERE site_id=? AND revision=?',site.id,revision);if(!row)fail(404,'Sürüm bulunamadı.');return row;}
  function recordVersion(site:any,user:any,note:string,actorType:string){const id=randomUUID();store.run('INSERT INTO studio_versions VALUES (?,?,?,?,?,?,?,?,?)',id,site.id,site.revision,encode(site.document),encode(site.source),user.user_id,actorType,note,now());return id;}
  function assertRevision(site:any,expected:unknown){if(!Number.isInteger(expected)||site.revision!==expected)fail(409,'Başka bir oturum kaynak sürümünü değiştirdi. Yerel düzenlemeleriniz korunuyor; farkları inceleyin.',{currentRevision:site.revision});}
@@ -86,6 +87,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   const source=adapter.write(site.document,after,site.source);
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
+ const githubPublications=createGitHubPublications({store,access,registry,unseal,audit,transport});
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
  const moduleRuntime=await createAsyncRuntime({store,dataDir,modules,integrations,trustPolicy,authorize:access,save,features});
  const moduleHost=moduleRuntime.host;
@@ -128,7 +130,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
     const sourceNames=new Set<string>();
     for(const item of tree.tree){if(!item||typeof item.path!=='string')fail(422,'GitHub kaynak yolu geçersiz.');claimSourcePath(item.path,sourceNames);}
     const files:Record<string,Buffer>=Object.create(null);let total=0,processed=0;for(const item of tree.tree){if(item.type==='tree')continue;if(item.type!=='blob'||item.mode==='120000'||item.mode==='160000'||!Number.isInteger(item.size)||item.size>limits.file)fail(422,'GitHub ağacında bağlantı veya sınır dışı dosya.');total+=item.size;if(total>limits.expanded)fail(422,'GitHub kaynak boyutu sınırı aşıldı.');if(controller.signal.aborted)fail(422,'Import süresi aşıldı veya iptal edildi.');if(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status==='cancelled')return;const response=await remote(base+'/git/blobs/'+item.sha,{headers,maxBytes:Math.ceil(limits.file*1.4)});if(response.status!==200)fail(422,'GitHub dosyası okunamadı.');const blob=parse(response.body.toString());if(blob.encoding!=='base64')fail(422,'GitHub blob kodlaması geçersiz.');files[item.path]=Buffer.from(blob.content,'base64');if(files[item.path].length!==item.size)fail(422,'GitHub dosya boyutu uyuşmuyor.');store.run('UPDATE studio_imports SET progress=? WHERE id=?',15+Math.floor(++processed/tree.tree.length*45),job.id);}
-    const scan=inspectFiles(files);source=scan.source;report=scan.report;source.manifest.connections=[{id:'git',kind:'github',authority:['code','content','design']}];connection={kind:'github',config:{endpoint:base+'/git/trees/'+encodeURIComponent(input.ref),remoteRevision:tree.sha},secrets:{token:input.token}};report.warnings.push('GitHub anlık görüntüsü alındı. Geri yazma kapalı; sürümü ZIP ile dışa aktarın. Kaynak ref: '+tree.sha);
+    const scan=inspectFiles(files);source=scan.source;report=scan.report;source.manifest.connections=[{id:'git',kind:'github',authority:['code','content','design']}];connection={kind:'github',config:{endpoint:base+'/git/trees/'+encodeURIComponent(input.ref),remoteRevision:tree.sha},secrets:{token:input.token}};report.warnings.push('GitHub anlık görüntüsü alındı. Dal ve yazma izni varsa yayın panelinde commit hazırlayıp gönderebilirsiniz; hosting dağıtımı ayrı işlemdir. Kaynak ağaç: '+tree.sha);
    }else fail(422,'Import kaynağı desteklenmiyor.');
    if(input.kind!=='wordpress')source!.manifest.publish.mode='export';
    if(input.name){if(!name(input.name))fail(422,'Site adı 1–120 karakter olmalı.');source!.manifest.name=input.name.trim();}
@@ -240,6 +242,10 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
     access(user,id,'import');
     const response=await transport(config.endpoint,{headers});if(response.status!==200)fail(502,'Kaynak sürümü okunamadı.');const result=parse(response.body.toString()),revision=conn.kind==='wordpress'?result.revision:result.sha;if(typeof revision!=='string')fail(502,'Kaynak sürüm yanıtı geçersiz.');return send({status:revision===config.remoteRevision?'current':'changed',message:revision===config.remoteRevision?'Kaynak bağlantısından bu yana değişiklik yok.':'Kaynak dışarıda değişmiş. Yeniden import raporuyla karşılaştırın.',importedRevision:config.remoteRevision,remoteRevision:revision});
    }
+   if(action==='github-publications'&&method==='GET')return send(githubPublications.list(user,id));
+   if(action==='github-publications'&&method==='POST'){access(user,id,'publish');const input=await body(req);return send(await githubPublications.prepare(user,id,input.revision),201);}
+   const githubPublish=action.match(/^github-publications\/([a-f0-9-]{36})\/publish$/);
+   if(githubPublish&&method==='POST'){access(user,id,'publish');await body(req);return send(await githubPublications.publish(user,id,githubPublish[1]));}
    if(action==='history'&&method==='GET')return send({versions:store.all('SELECT id,revision,actor,actor_type,note,created FROM studio_versions WHERE site_id=? ORDER BY revision DESC LIMIT 100',id),releases:store.all('SELECT id,version_id,created FROM studio_releases WHERE site_id=? ORDER BY created DESC LIMIT 100',id)});
    if(action==='audit'&&method==='GET'){access(user,id,'members');return send({events:store.all('SELECT actor,actor_type,action,revision,created,detail FROM studio_audit WHERE site_id=? ORDER BY created DESC LIMIT 100',id)});}
    if(action==='diff'&&method==='GET'){const revision=Number(url.searchParams.get('revision'));if(!Number.isInteger(revision))fail(422,'Sürüm gerekli.');const v=getVersion(site,revision);return send({before:parse(v.document),after:site.document,revision});}

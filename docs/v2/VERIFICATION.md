@@ -1,5 +1,21 @@
 # V2 doğrulama raporu
 
+## 2026-11-21 — GitHub geri yazma ve kalıcı yayın akışı
+
+Tam kontrol `20261121T071944-56b9fcdc`; başlangıç commit'i `35ce7b4`, çalışma
+ağacı `28495e8428b28f28d8631f6370c7d978bcd2ae2d681f446ec86c41987e40438d`.
+Çalışma sırasında dosya değişmedi. 54 eski + 163 V2 = 217 uygulama testi geçti;
+gerçek PostgreSQL etkin, uygulama testlerinde skip yok. Yardımcı 15 başarılı,
+Windows symlink yetkisi nedeniyle 1 skip. Typecheck, build, check, paket tüketicileri,
+lisans, SBOM ve npm audit başarılı. Görev listesi ve bu rapor testten sonra güncellendi.
+
+Altı GitHub testi; Git nesneleri, değişen dosyalar, ikili içerik, dosya modu, çatışma,
+yol sınırları, yetki iptali, yanıt kaybı, HTTP/CSRF, restart ve aynı commit ile
+uzlaştırmayı doğrular. Gerçek React panelinde hazırlık, hata gösterimi ve Enter ile
+yeniden kontrol akışı yerel fixture üzerinde denendi. Canlı GitHub kabulü, hosting
+dağıtımı veya kapsamlı erişilebilirlik sertifikasyonu iddia edilmez.
+[Sözleşme, kullanım ve sınırlar](GITHUB_PUBLICATION.md).
+
 ## 2026-11-21 — Asenkron rezervasyon ve ödeme depolaması
 
 Tam kontrol `20261120T224246-c34e220f`, başlangıç commit'i `a2f823a`, çalışma

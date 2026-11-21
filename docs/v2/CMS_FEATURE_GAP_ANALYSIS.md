@@ -1,5 +1,10 @@
 # Loft Studio — CMS özellik eksikleri ve öncelik analizi
 
+2026-11-21 güncellemesi: geliştirme sırası [güncel görev listesinde](DEVELOPMENT_TASKS.md)
+tutuluyor. Asenkron depolama geçişinden sonraki ilk dilim, [GitHub'a kontrollü geri
+yazma ve kalıcı yayın akışıdır](GITHUB_PUBLICATION.md). Aşağıdaki eski salt okunur
+GitHub tespiti bu dilimle değişir; hosting dağıtımı ve canlı sağlayıcı kabulü ayrı kalır.
+
 Tarih: 17 Kasım 2026
 Kapsam: Loft Studio `v2`; Wix, WordPress, Joomla ve benzer CMS ürünleriyle karşılaştırma.
 
