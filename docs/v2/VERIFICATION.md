@@ -1,5 +1,27 @@
 # V2 doğrulama raporu
 
+## 2026-11-21 — Hosting bağlantıları ve statik dağıtım ajanı
+
+Tam kontrol `20261121T162417-331a7c07`; başlangıç commit'i `21df0bf`, çalışma
+ağacı `ba630c30a658c51bf36e34fe007f170e44403dee89a737f672e4a2e9ef672e6a`.
+Çalışma sırasında dosya değişmedi. 54 eski + 168 V2 = 222 uygulama testi geçti;
+uygulama testlerinde skip yok, gerçek PostgreSQL etkin. Yardımcı testleri 15
+başarılı ve 1 skip. Typecheck, build, check, paket tüketicileri, lisans, SBOM ve
+audit başarılı. Görev listesi ve bu rapor testten sonra güncellendi.
+
+Beş hosting testi; ZIP ve sağlayıcı kimliği doğrulaması, Cloudflare branch/commit
+uyuşmazlığı, şifreli yapılandırma, CSRF/yetki/revision, restart, kayıp yanıt,
+yeniden gönderim engeli ve HTTP sağlık durumunu kapsar. Self-hosted/Natro ajanı
+gerçek yerel HTTP ve dosya sistemiyle; yetkisiz erişim, digest, idempotency,
+If-Match çatışması, yeniden başlatma ve eski sürüm durumu için test edildi.
+
+Gerçek React paneli yerel fixture API ile kontrol edildi: bekleyen → inceleme →
+başarılı durumları, klavyeyle durum sorgulama, kaydetme hatasında girdilerin
+korunması ve Natro VPS/VDS alanları. Dar ekran görüntüsü sınırlı görsel kontroldür;
+kapsamlı mobil/erişilebilirlik kabulü değildir. Canlı sağlayıcı hesapları, gerçek
+TLS reverse proxy ve Natro paylaşımlı FTP hosting test edilmedi. Cloudflare/Netlify
+testleri fixture kullanır. [Kapsam, kurulum ve sınırlamalar](HOSTING.md).
+
 ## 2026-11-21 — GitHub geri yazma ve kalıcı yayın akışı
 
 Tam kontrol `20261121T071944-56b9fcdc`; başlangıç commit'i `35ce7b4`, çalışma

@@ -7,7 +7,7 @@ export function publicAddress(address:string):boolean{
  const [a,b,c]=address.split('.').map(Number);
  return !(a===0||a===10||a===127||a>=224||a===169&&b===254||a===172&&b>=16&&b<=31||a===192&&(b===168||b===0||b===2)||a===100&&b>=64&&b<=127||a===198&&(b===18||b===19||b===51&&c===100)||a===203&&b===0&&c===113);
 }
-export async function safeRequest(url:string,{method='GET',headers={},body,maxBytes=2*1024*1024,signal}:{method?:string;headers?:Record<string,string>;body?:string;maxBytes?:number;signal?:AbortSignal}={}):Promise<{status:number;headers:Record<string,any>;body:Buffer}>{
+export async function safeRequest(url:string,{method='GET',headers={},body,maxBytes=2*1024*1024,signal}:{method?:string;headers?:Record<string,string>;body?:string|Buffer;maxBytes?:number;signal?:AbortSignal}={}):Promise<{status:number;headers:Record<string,any>;body:Buffer}>{
  signal=AbortSignal.any([AbortSignal.timeout(10_000),...(signal?[signal]:[])]);
  let target:URL;try{target=new URL(url);}catch{fail(422,'Geçersiz bağlantı adresi.');}
  if(target!.protocol!=='https:'||target!.username||target!.password||target!.port&&target!.port!=='443'||target!.hash||target!.hostname.length>253||isIP(target!.hostname))fail(422,'HTTPS alan adı ve standart port gerekli.');

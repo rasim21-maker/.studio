@@ -14,6 +14,7 @@ import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
 import {createAsyncRuntime} from './async-runtime.mjs';
 import {createGitHubPublications} from './github-publications.ts';
+import {createHosting} from './hosting.ts';
 import {permissions} from '../../shared/v2/model.ts';
 import type {Document,Source,Adapter,SiteRecord} from '../../shared/v2/model.ts';
 type Store=any;
@@ -88,6 +89,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   return store.transaction(()=>{const current=access(user,id,'content');assertRevision(current,input.revision);site.revision++;site.document=after;site.source=source;site.name=after.name;store.run('UPDATE studio_sites SET name=?,revision=?,document=?,source=? WHERE id=?',site.name,site.revision,encode(after),encode(source),id);recordVersion(site,user,String(input.note||'Editör kaydı').slice(0,200),input.actorType||'human');audit(site,user,'content.saved',site.revision,{},input.actorType||'human');onSaved?.();return{...summary(site),document:after,changed:true};});
  }
  const githubPublications=createGitHubPublications({store,access,registry,unseal,audit,transport});
+ const hosting=createHosting({store,access,registry,seal,unseal,audit,transport});
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
  const moduleRuntime=await createAsyncRuntime({store,dataDir,modules,integrations,trustPolicy,authorize:access,save,features});
  const moduleHost=moduleRuntime.host;
@@ -242,6 +244,13 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
     access(user,id,'import');
     const response=await transport(config.endpoint,{headers});if(response.status!==200)fail(502,'Kaynak sürümü okunamadı.');const result=parse(response.body.toString()),revision=conn.kind==='wordpress'?result.revision:result.sha;if(typeof revision!=='string')fail(502,'Kaynak sürüm yanıtı geçersiz.');return send({status:revision===config.remoteRevision?'current':'changed',message:revision===config.remoteRevision?'Kaynak bağlantısından bu yana değişiklik yok.':'Kaynak dışarıda değişmiş. Yeniden import raporuyla karşılaştırın.',importedRevision:config.remoteRevision,remoteRevision:revision});
    }
+   if(action==='hosting'&&method==='GET')return send(hosting.list(user,id));
+   const hostingConfig=action.match(/^hosting\/connections\/(cloudflare-pages|netlify|self-hosted|natro)$/);
+   if(hostingConfig&&method==='PUT'){access(user,id,'integrations');return send(await hosting.configure(user,id,hostingConfig[1],await body(req)));}
+   const hostingSubmit=action.match(/^hosting\/deploy\/(cloudflare-pages|netlify|self-hosted|natro)$/);
+   if(hostingSubmit&&method==='POST'){access(user,id,'publish');return send(await hosting.submit(user,id,hostingSubmit[1],await body(req)),201);}
+   const hostingCheck=action.match(/^hosting\/deployments\/([a-f0-9-]{36})\/(check|acknowledge)$/);
+   if(hostingCheck&&method==='POST'){access(user,id,'publish');const input=await body(req);if(hostingCheck[2]==='acknowledge'){if(input.confirmed!==true)fail(422,'Sağlayıcı panelinde manuel kontrolü onaylayın.');return send(await hosting.acknowledge(user,id,hostingCheck[1]));}return send(await hosting.check(user,id,hostingCheck[1]));}
    if(action==='github-publications'&&method==='GET')return send(githubPublications.list(user,id));
    if(action==='github-publications'&&method==='POST'){access(user,id,'publish');const input=await body(req);return send(await githubPublications.prepare(user,id,input.revision),201);}
    const githubPublish=action.match(/^github-publications\/([a-f0-9-]{36})\/publish$/);

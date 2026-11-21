@@ -19,12 +19,16 @@ Update this list and share its current state after each completed task.
 
 ## Next dependent work
 
-- [ ] Cloudflare Pages deployment and post-deployment verification.
-- [ ] Netlify deployment and post-deployment verification.
-- [ ] Self-hosted deployment connection.
-- [ ] Natro connection, using capabilities of the selected hosting plan. Official
-  documentation describes FTP and plan-specific SSH; no general Natro deployment
-  REST API or universal SFTP support has been verified. Do not promise either.
+- [x] Cloudflare Pages Git-connected production-branch deployment, commit receipt
+  comparison and HTTP verification (provider fixtures; live acceptance pending).
+- [x] Netlify static ZIP deployment and HTTP verification (provider fixtures).
+- [x] Self-hosted static deployment agent: real local HTTP/disk/restart tests.
+- [x] Natro VPS/VDS connection through the same Node-capable static agent;
+  shared FTP hosting is unsupported. See [hosting scope and setup](HOSTING.md).
+- [x] Hosting panel state/error checks and full regression: 222 application tests.
+- [ ] Live account acceptance for GitHub and all four hosting targets, including
+  actual TLS/proxy and provider credentials. No live acceptance claimed by fixtures.
+- [ ] Natro shared-hosting/FTP publication, if required, needs a separate connector.
   Keep source commit, build result and deployed release separate; ZIP is not hosting.
 - [ ] Unmarked-site discovery and explicit editable-field mapping/annotation.
 - [ ] Legacy-console retirement plan with data authority and recovery checkpoints.

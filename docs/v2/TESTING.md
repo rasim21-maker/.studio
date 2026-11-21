@@ -1,5 +1,11 @@
 # Test prosedürü ve code review regresyonları
 
+Hosting regresyonu: `hosting.test.mjs` statik çıktı sınırları, ikili ZIP aktarımı,
+sağlayıcı proje/commit/URL eşleşmesi, şifreli bağlantı, CSRF, belirsiz POST sonrası
+tekrarın engellenmesi ve gerçek yerel yayın servisinin auth/CAS/idempotency/restart
+kontrollerini içerir. `ready` için sağlayıcı durumu ve kimliksiz HTTP HEAD kontrolü
+gerekir. Canlı Netlify/Cloudflare/Natro kabulü fixture testleriyle aynı değildir.
+
 GitHub yayın regresyonu: `github-publisher.test.mjs`; uzak dal çatışması, force=false,
 beklenen commit/ağaç ayrımı, dosya hash'i, korunmuş dosya modu, gizli/yasak yollar,
 kesilmiş ağaç, yetki iptali, kayıp PATCH yanıtı ve aynı commit ile uzlaştırma zorunludur.
