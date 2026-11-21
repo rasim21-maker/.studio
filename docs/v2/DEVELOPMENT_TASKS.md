@@ -1,6 +1,6 @@
 # Current development tasks
 
-Updated: 2026-11-21. This order supersedes the older feature gap report's sequencing.
+Updated: 2026-11-22. This order supersedes the older feature gap report's sequencing.
 Update this list and share its current state after each completed task.
 
 ## Delivered foundation
@@ -35,7 +35,12 @@ Update this list and share its current state after each completed task.
   selection/export/reimport and HTTP restart tested. See [scope](FIELD_MAPPING.md).
 - [x] Static link targets, image alt and verified local image selection with permanent
   attribute bindings. External/responsive image source replacement remains unsupported.
-- [ ] Broader manual DOM mapping and framework-aware discovery.
+- [x] Manual source-DOM path selection for supported plain-text leaves in existing
+  sections; fingerprint-bound IDs, overlap prevention and 40-field limits.
+- [x] Non-executing framework evidence report, including failed imports; runtime
+  component editing remains explicitly unsupported without SDK/adapter integration.
+- [ ] Visual point-and-click selection, new section-root mapping and live framework
+  component/source integration beyond the existing Studio SDK.
 - [ ] Legacy-console retirement plan with data authority and recovery checkpoints.
 - [ ] General content types/blog followed by editorial workflow.
 - [ ] SEO/media expansion, booking–CRM automations and commerce completion.

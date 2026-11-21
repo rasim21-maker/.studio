@@ -1,5 +1,12 @@
 # Test prosedürü ve code review regresyonları
 
+Manuel DOM/framework regresyonu: `manual-mapping.test.mjs` kaynak hash'ine bağlı seçim,
+çakışan alanların dışlanması, marker ile gerçek kaynak yazımı, yeniden import,
+manifest kapsamı, 200 aday/40 alan sınırı ve çalıştırmasız framework kanıtlarını
+doğrular. `field-mapping.test.mjs` HTTP üzerinden manuel seçimin commit/restart
+kalıcılığını ve başarısız framework importunda raporun gösterilmesini de sınar.
+Tarayıcıda DOM araması, klavye seçimi ve framework uyarısını kontrol edin.
+
 Alan keşfi regresyonu: `field-mapping.test.mjs`; işaretsiz doğrudan/iç içe metin,
 aynı etiketli farklı alanlar, seçim dışı HTML'nin korunması, hatalı/yinelenen seçim,
 export/yeniden import, eski kaynak hash'i, CSRF ve restart kalıcılığını sınar.

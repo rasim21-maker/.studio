@@ -16,6 +16,8 @@ import {createAsyncRuntime} from './async-runtime.mjs';
 import {createGitHubPublications} from './github-publications.ts';
 import {createHosting} from './hosting.ts';
 import {fieldCandidates,selectFields} from './field-mapping.ts';
+import {manualCandidates,applyManualFields} from './manual-mapping.ts';
+import {inspectFramework} from './framework-discovery.ts';
 import {permissions} from '../../shared/v2/model.ts';
 import type {Document,Source,Adapter,SiteRecord} from '../../shared/v2/model.ts';
 type Store=any;
@@ -101,6 +103,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
  const regional=createRegionalSettings({store,access,audit});
  store.run('INSERT OR IGNORE INTO studio_migrations VALUES (2,?)',now());
  async function analyze(user:any,job:any,input:any){
+  let discoveryReport:any=null;
   if(closed||store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status!=='queued')return;
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),60_000);controllers.set(job.id,controller);
   const remote=async(url:string,options:any={})=>{
@@ -137,7 +140,9 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    }else fail(422,'Import kaynağı desteklenmiyor.');
    if(input.kind!=='wordpress')source!.manifest.publish.mode='export';
    if(input.name){if(!name(input.name))fail(422,'Site adı 1–120 karakter olmalı.');source!.manifest.name=input.name.trim();}
+   report.framework=inspectFramework(source!);discoveryReport=report;
    store.run('UPDATE studio_imports SET progress=65 WHERE id=?',job.id);const result=discover(source!,registry);
+   report.manualCandidates=manualCandidates(result.document,result.source).map(({value,offset,...candidate})=>candidate);
    if(result.source.manifest.adapter.id==='static')report.fieldCandidates=fieldCandidates(result.document,result.source);
    report.warnings.push(...result.warnings);report.accepted=Object.keys(result.source.files);const previous=authorizeImport(user,job);
    const paths=new Set([...Object.keys(previous?.source.files||{}),...Object.keys(result.source.files)]);
@@ -147,7 +152,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    const sealed=connection?await seal(connection.secrets,job.org_id,connection.kind):null;
    authorizeImport(user,job);
    store.run("UPDATE studio_imports SET status='review',progress=100,result=? WHERE id=?",encode({...result,report,changes,connection:connection?{...connection,secrets:undefined,sealed}:null}),job.id);
-  }catch(error:any){if(['queued','analyzing'].includes(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status))store.run("UPDATE studio_imports SET status='failed',result=NULL,error=? WHERE id=?",error.status?error.message:'Import tamamlanamadı; dosya biçimini kontrol edin.',job.id);}finally{clearTimeout(timeout);controllers.delete(job.id);}
+  }catch(error:any){if(['queued','analyzing'].includes(store.get('SELECT status FROM studio_imports WHERE id=?',job.id)?.status))store.run("UPDATE studio_imports SET status='failed',result=?,error=? WHERE id=?",discoveryReport?encode({report:discoveryReport}):null,error.status?error.message:'Import tamamlanamadı; dosya biçimini kontrol edin.',job.id);}finally{clearTimeout(timeout);controllers.delete(job.id);}
  }
  async function route({req,res,url,method,user,body,json}:{req:any;res:any;url:URL;method:string;user:any;body:any;json:any}):Promise<boolean>{
   if(!url.pathname.startsWith('/api/v2/'))return false;
@@ -171,7 +176,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   const importMatch=route.match(/^imports\/([a-f0-9-]{36})(?:\/(commit|cancel))?$/);
   if(importMatch){
    const job=store.get('SELECT * FROM studio_imports WHERE id=? AND owner=?',importMatch[1],user.user_id);if(!job)fail(404,'Import bulunamadı.');if(job.site_id)access(user,job.site_id,'import');else organization(user,job.org_id);
-   if(method==='GET'){const result=job.result?parse(job.result):null;return send({id:job.id,status:job.status,progress:job.progress,error:job.error,siteId:job.site_id,report:result?.report,changes:result?.changes,document:result?.document,capabilities:result?registry.get(result.source.manifest.adapter.id).capabilities(result.source):null});}
+   if(method==='GET'){const result=job.result?parse(job.result):null;return send({id:job.id,status:job.status,progress:job.progress,error:job.error,siteId:job.site_id,report:result?.report,changes:result?.changes,document:result?.document,capabilities:result?.source?registry.get(result.source.manifest.adapter.id).capabilities(result.source):null});}
    if(method==='POST'&&importMatch[2]==='cancel'){if(job.status==='committed')fail(409,'Tamamlanmış import iptal edilemez; içerik sürümünü geri yükleyin.');store.run("UPDATE studio_imports SET status='cancelled',result=NULL WHERE id=?",job.id);controllers.get(job.id)?.abort();return send({ok:true});}
    if(method==='POST'&&importMatch[2]==='commit'){
     const input=await body(req);
@@ -184,6 +189,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
      if(job.status!=='review')fail(409,'Import incelemeye hazır değil.');
      const result=parse(job.result);
      if(input.selectedFields!==undefined){const mapped=selectFields(result.document,result.source,input.selectedFields);assertSnapshot(registry.get(result.source.manifest.adapter.id),mapped.document,mapped.source);Object.assign(result,mapped);}
+     if(input.manualFields!==undefined){const mapped=applyManualFields(result.document,result.source,input.manualFields);assertSnapshot(registry.get(result.source.manifest.adapter.id),mapped.document,mapped.source);Object.assign(result,mapped);}
      if(input.acceptRejected!==true&&result.report.rejected.length)fail(422,'Reddedilen dosyaları inceleyip dışlamayı onaylayın.');
      let site:any;if(job.site_id){site=access(user,job.site_id,'import');assertRevision(site,job.expected);if(!site.allowed.includes('content')||!site.allowed.includes('design'))fail(403,'Yeniden import içerik ve tasarım yetkisi gerektirir.');site.document=result.document;site.source=result.source;site.revision++;store.run('UPDATE studio_sites SET revision=?,document=?,source=?,name=? WHERE id=?',site.revision,encode(site.document),encode(site.source),site.document.name,site.id);}
      else{if(store.get('SELECT COUNT(*) n FROM studio_sites WHERE org_id=?',job.org_id).n>=20)fail(422,'Yerel sürümde kurum başına en çok 20 site.');const workspace=randomUUID(),project=randomUUID();store.run('INSERT INTO studio_workspaces VALUES (?,?,?)',workspace,job.org_id,result.document.name);store.run('INSERT INTO studio_projects VALUES (?,?,?)',project,workspace,result.document.name);site={id:randomUUID(),org_id:job.org_id,workspace_id:workspace,project_id:project,environment:'development',adapter:result.source.manifest.adapter.id,name:result.document.name,revision:0,document:result.document,source:result.source};store.run('INSERT INTO studio_sites VALUES (?,?,?,?,?,?,?,?,?,?,?)',site.id,site.org_id,workspace,project,site.environment,site.adapter,site.name,0,encode(site.document),encode(site.source),now());}

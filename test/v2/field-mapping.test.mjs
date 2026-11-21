@@ -96,19 +96,25 @@ test('HTTP mapping validates scoped keys and CSRF, commits once and persists sel
  t.after(async()=>app?.close());
  assert.equal((await api('/api/setup','POST',{token:app.setupToken,email:'mapping@example.test',password:'Mapping-test-password-2026!'})).status,201);
  const orgId=(await api('/api/v2/workspace')).data.organizations[0].id;
- const base64=Buffer.from(zipSync({'index.html':strToU8('<!doctype html><html><head><title>Map</title></head><body><main><h1>Heading</h1><section><p>Keep this text</p></section></main></body></html>')})).toString('base64');
+ const base64=Buffer.from(zipSync({'index.html':strToU8('<!doctype html><html><head><title>Map</title></head><body><main><h1>Heading</h1><section><p>Keep this text</p><span>Manual leaf</span></section></main></body></html>')})).toString('base64');
  const job=(await api('/api/v2/imports','POST',{kind:'zip',base64,orgId,requestId:randomUUID()})).data;
  let review;for(let i=0;i<100;i++){review=(await api('/api/v2/imports/'+job.id)).data;if(!['queued','analyzing'].includes(review.status))break;await new Promise(r=>setTimeout(r,10));}
  assert.equal(review.status,'review',JSON.stringify(review));const keys=review.report.fieldCandidates.map(c=>c.key);assert.equal(keys.length,2);
+ const manual=review.report.manualCandidates;assert.equal(manual.length,1);assert.equal(review.report.framework.codeExecuted,false);
  const endpoint='/api/v2/imports/'+job.id+'/commit';
+ assert.equal((await api(endpoint,'POST',{manualFields:['forged']})).status,422);
  assert.equal((await api(endpoint,'POST',{selectedFields:['foreign-field']})).status,422);
  assert.equal((await api(endpoint,'POST',{selectedFields:[keys[0],keys[0]]})).status,422);
  assert.equal((await api(endpoint,'POST',{selectedFields:[keys[0]]},{'X-CSRF-Token':''})).status,403);
- const committed=await api(endpoint,'POST',{selectedFields:[keys[0]]});assert.equal(committed.status,201,JSON.stringify(committed));
+ const committed=await api(endpoint,'POST',{selectedFields:[keys[0]],manualFields:[manual[0].key]});assert.equal(committed.status,201,JSON.stringify(committed));
  assert.equal((await api(endpoint,'POST',{selectedFields:[]})).data.siteId,committed.data.siteId);
  const url='/api/v2/sites/'+committed.data.siteId;let site=(await api(url)).data;
- assert.equal(site.document.pages[0].sections.flatMap(s=>s.fields).length,1);
+ assert.equal(site.document.pages[0].sections.flatMap(s=>s.fields).length,2);
  assert.ok((await api(url+'/source?path=index.html')).data.text.includes('Keep this text'));
  await app.close();app=await createApp({projectRoot:root,dataDir,origin});await new Promise(r=>app.server.listen(port,'127.0.0.1',r));
- site=(await api(url)).data;assert.equal(site.document.pages[0].sections.flatMap(s=>s.fields).length,1);
+ site=(await api(url)).data;assert.equal(site.document.pages[0].sections.flatMap(s=>s.fields).length,2);
+ const frameworkZip=Buffer.from(zipSync({'package.json':strToU8(JSON.stringify({dependencies:{next:'*',react:'*'}}))})).toString('base64');
+ const failedJob=(await api('/api/v2/imports','POST',{kind:'zip',base64:frameworkZip,orgId,requestId:randomUUID()})).data;
+ let failed;for(let i=0;i<100;i++){failed=(await api('/api/v2/imports/'+failedJob.id)).data;if(!['queued','analyzing'].includes(failed.status))break;await new Promise(r=>setTimeout(r,10));}
+ assert.equal(failed.status,'failed');assert.ok(failed.report.framework.names.includes('Next.js'));assert.equal(failed.capabilities,null);
 });

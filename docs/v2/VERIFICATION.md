@@ -1,5 +1,27 @@
 # V2 doğrulama raporu
 
+## 2026-11-22 — Manuel kaynak DOM seçimi ve framework keşfi
+
+Tam kontrol `20261121T220839-1bf321a5` (UTC kimliği); başlangıç commit'i `3e5471b`,
+çalışma ağacı `66adcb507700434ad4fd31381b5f9a887fe31b19edb860e85fa2b64bc0f383f5`.
+Çalışma sırasında dosya değişmedi. 54 eski + 177 V2 = 231 uygulama testi geçti;
+uygulama skip'i yok, gerçek PostgreSQL etkin. Yardımcı 15 başarılı/1 skip;
+typecheck, build, check, paket tüketicileri, lisans, SBOM ve audit başarılı.
+Bu rapor testten sonra eklendi; çalışan kod değişmedi.
+
+Dokuz odaklı alan/DOM testi; hash'e bağlı seçim, çakışan alanların dışlanması,
+manuel alanın gerçek HTML kaynağına yazılması, export/yeniden import, manifest
+kapsamı, aday/alan sınırları ve kod çalıştırmadan framework kanıtlarını doğrular.
+HTTP kabulünde manuel seçim commit/restart sonrası korunur; sahte anahtar reddedilir
+ve HTML içermeyen framework importunun hata ekranı için kanıt raporu saklanır.
+
+Gerçek React bileşenleri yerel fixture ile tarayıcıda denendi: DOM yolunda arama,
+Space ile seçim, filtre altında seçimin korunması, temizleme ve teknoloji uyarısı.
+Bu, tüm import sihirbazının tarayıcı kabulü veya erişilebilirlik sertifikası değildir.
+Manuel seçim desteklenen düz metin yapraklarının kaynak yol listesidir; görsel
+sayfada tıklamayla seçim ve framework bileşen koduna otomatik geri yazma tamamlanmadı.
+[Kapsam ve API](FIELD_MAPPING.md).
+
 ## 2026-11-21 — Bağlantı ve görsel öznitelik eşleştirmesi
 
 Tam kontrol `20261121T165424-1d60e1d6`; başlangıç commit'i `9c9a156`, çalışma

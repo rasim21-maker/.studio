@@ -19,9 +19,40 @@ or a guarantee that any arbitrary HTML is safe to execute.
 Discovery retains the existing limits: 40 HTML pages, at most 40 text candidate nodes
 and 40 link/image candidate nodes inspected per section, and at most 40 fields total
 per section (text first). Supported lowercase page paths and document/import limits apply.
-This is not a visual selector for arbitrary DOM nodes. Arbitrary spans,
-navigation outside the main root, React runtime trees and CMS
-schemas need their respective adapters/SDK or later explicit mapping support.
+This is not a visual point-and-click selector for arbitrary DOM nodes. Navigation
+outside existing sections, React runtime trees and CMS schemas need their respective
+adapters/SDK or later mapping support. Supported additional leaves can now be selected
+through the manual source-DOM path list below.
+
+## Manual DOM path selection and framework evidence
+
+Import review includes an opt-in, searchable list grouped by source file. It shows
+DOM ancestry (`nth-of-type` paths), section and literal text sample. Supported
+additional leaves are span/li/dt/dd/figcaption/address/div/label containing only
+plain text, inside already mapped source sections. Existing field ancestors,
+dynamic/hidden/form elements, markup-bearing leaves and control characters are
+excluded. This avoids overlapping replacement ranges. At most 200 candidates are
+shown; the shared 40-field section limit still applies at commit. The user can
+deselect automatic fields to make room. This is a filtered source tree, not an
+interactive live page or arbitrary CSS selector execution.
+
+`report.manualCandidates` exposes opaque keys and display metadata, not trusted
+client selectors. Commit accepts `manualFields: string[]`. The server recomputes
+keys from file, section, full HTML hash and source offset against the quarantined
+snapshot, validates the selection and writes permanent markers/sidecar in the
+existing import transaction. Unknown, duplicate and stale keys are rejected.
+Manual choices start unchecked. Existing explicit manifest field allowlists are
+not expanded by this flow. Empty manual selection leaves the source unchanged.
+
+`report.framework` is available for successful and discovery-failed imports.
+Package dependency declarations and known HTML markers provide bounded evidence
+for React, Next.js, Vue/Nuxt, Svelte/SvelteKit, Astro and Angular. Scripts, package
+installers and framework runtimes are never executed. The report does not switch
+adapters or claim that declared dependencies run on the site. No signal means
+unknown/static, not proven static. A Studio SDK manifest remains authoritative
+for SDK content. Sources with detected framework signals do not offer additional
+manual HTML mappings: generated HTML is not the component source. Existing static
+snapshot behavior remains available with the explicit integration warning.
 
 ## Links and images
 
