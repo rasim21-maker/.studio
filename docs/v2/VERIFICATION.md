@@ -9,7 +9,8 @@ gerçek PostgreSQL etkin ve uygulama testlerinde skip yok. Yardımcı testleri
 15 başarılı, Windows symlink yetkisi nedeniyle 1 skip. Typecheck, build, check,
 paket tüketicileri, lisans, SBOM ve npm audit başarılı. Ayrı `test:postgres`
 çalıştırması 36/36 geçti. Sonrasında eklenen eşlenik SQLite/WAL yedek regresyonu
-ayrıca çalıştırılır; bu ekleme üretim kodunu değiştirmez.
+ayrıca çalıştırıldı: yedekleme dosyasındaki iki test de geçti. Bu ekleme üretim
+kodunu değiştirmedi.
 
 Kapasite yarışı, idempotency, atomik audit, ödeme ağı sırasında SQL kilidinin
 serbest olması, eşzamanlı doğrulamada tek onay, geç ödeme incelemesi, eski
