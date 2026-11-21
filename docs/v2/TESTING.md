@@ -1,5 +1,11 @@
 # Test prosedürü ve code review regresyonları
 
+Alan keşfi regresyonu: `field-mapping.test.mjs`; işaretsiz doğrudan/iç içe metin,
+aynı etiketli farklı alanlar, seçim dışı HTML'nin korunması, hatalı/yinelenen seçim,
+export/yeniden import, eski kaynak hash'i, CSRF ve restart kalıcılığını sınar.
+Tarayıcıda tekil/toplu seçim ve klavye kullanımını kontrol edin. Dinamik içeriği
+keyfi kod çalıştırarak keşfetmeyin; kapsam sınırları `FIELD_MAPPING.md` içindedir.
+
 Hosting regresyonu: `hosting.test.mjs` statik çıktı sınırları, ikili ZIP aktarımı,
 sağlayıcı proje/commit/URL eşleşmesi, şifreli bağlantı, CSRF, belirsiz POST sonrası
 tekrarın engellenmesi ve gerçek yerel yayın servisinin auth/CAS/idempotency/restart

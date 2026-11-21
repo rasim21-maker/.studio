@@ -1,4 +1,5 @@
 import {parse} from 'parse5';
+import {safeTextCandidate} from './field-mapping.ts';
 import {fail} from '../util.mjs';
 import {digest,safePath} from './import.ts';
 import {attr,findNodes,escape,designCss,sectionHtml,sdkHtml,inertPreview} from './render.ts';
@@ -73,7 +74,7 @@ class StaticAdapter implements Adapter{
    const tree=parseSource(original),main=findNodes(tree,n=>n.tagName==='main')[0]||findNodes(tree,n=>n.tagName==='body')[0],pageId=stable(file),patches:Patch[]=[];
    if(!main?.sourceCodeLocation?.startTag){warnings.push(file+': Düzenlenebilir ana alan bulunamadı.');continue;}
    patches.push({start:main.sourceCodeLocation.startTag.startOffset,end:main.sourceCodeLocation.startTag.endOffset,text:tagAttribute(original,main,'data-studio-page',pageId)});
-   const sections:Section[]=[],fieldIds=new Set<string>();const candidates=(main.childNodes||[]).filter((n:any)=>['section','article','div','header','footer'].includes(n.tagName)&&n.sourceCodeLocation?.endTag);
+   const sections:Section[]=[],fieldIds=new Set<string>();const candidates=(main.childNodes||[]).filter((n:any)=>['section','article','div','header','footer','h1','h2','h3','h4','h5','h6','p'].includes(n.tagName)&&n.sourceCodeLocation?.endTag);
    for(const [si,node]of candidates.entries()){
     const id=attr(node,'data-studio-id')||stable(file+':section:'+si);if(!/^[a-zA-Z][\w-]{0,79}$/.test(id))fail(422,'Kaynak bölüm kimliği geçersiz.');
     patches.push({start:node.sourceCodeLocation.startTag.startOffset,end:node.sourceCodeLocation.startTag.endOffset,text:tagAttribute(original,node,'data-studio-id',id)});
@@ -81,12 +82,14 @@ class StaticAdapter implements Adapter{
     const nodes=findNodes(node,n=>/^h[1-6]$/.test(n.tagName)||n.tagName==='p'||n.tagName==='img').filter(n=>n.sourceCodeLocation?.startTag).slice(0,40);
     for(const [fi,n]of nodes.entries()){
      if(n.tagName==='img')continue; // Arbitrary legacy image paths remain untouched; new media has canonical identifiers.
+     if(!safeTextCandidate(n)){warnings.push(file+': Dinamik, gizli veya yapısal içerik alanı düzenlemeye açılmadı; kaynak korundu.');continue;}
      const fieldId=attr(n,'data-studio-field')||stable(id+':field:'+fi),value=inner(original,n),type=validRich(value)?'rich':'text';if(!/^[a-zA-Z][\w-]{0,79}$/.test(fieldId))fail(422,'Alan kimliği geçersiz.');
      if(source.manifest.editableFields&&!source.manifest.editableFields.includes(fieldId))continue;
      if(fieldIds.has(fieldId))fail(422,'Aynı dosyada yinelenen alan eşleştirmesi.');fieldIds.add(fieldId);
      fields.push({id:fieldId,label:plain(n).trim().slice(0,70)||'Metin',type,value:type==='rich'?value:plain(n),maxLength:12000});
      source.bindings.push({id:fieldId,page:pageId,section:id,field:fieldId,file,tag:n.tagName});
-     patches.push({start:n.sourceCodeLocation.startTag.startOffset,end:n.sourceCodeLocation.startTag.endOffset,text:tagAttribute(original,n,'data-studio-field',fieldId)});
+     if(n===node){const sectionPatch=patches.find(p=>p.start===n.sourceCodeLocation.startTag.startOffset)!;if(attr(n,'data-studio-field')===undefined)sectionPatch.text=sectionPatch.text.replace(/\s*\/?>$/,m=>' data-studio-field="'+escape(fieldId)+'"'+m);}
+     else patches.push({start:n.sourceCodeLocation.startTag.startOffset,end:n.sourceCodeLocation.startTag.endOffset,text:tagAttribute(original,n,'data-studio-field',fieldId)});
     }
     sections.push({id,name:plain(findNodes(node,n=>/^h[1-6]$/.test(n.tagName))[0]||node).trim().slice(0,100)||'Bölüm '+(si+1),kind:'source',enabled:!node.attrs.some((a:any)=>a.name==='hidden'),fields,layout:emptyLayout()});
    }

@@ -1,5 +1,28 @@
 # V2 doğrulama raporu
 
+## 2026-11-21 — İşaretsiz HTML alan keşfi ve seçim
+
+Tam kontrol `20261121T164311-b39b1d17`; başlangıç commit'i `8d3d4f0`, çalışma
+ağacı `27417b8f2aa61008c9220022d90ed69725d6d5ee402f4ad311141287054f8b2b`.
+Çalışma sırasında dosya değişmedi. 54 eski + 172 V2 = 226 uygulama testi geçti;
+uygulama skip'i yok, gerçek PostgreSQL etkin. Yardımcı 15 başarılı/1 skip;
+typecheck, build, check, paket tüketicileri, lisans, SBOM ve audit başarılı.
+Bu doğrulama kaydı testten sonra eklendi; çalışan kod değiştirilmedi.
+
+Dört yeni test; doğrudan/iç içe işaretsiz metin, aynı etiketli alanlar, kalıcı
+kimlikler, kaynak yazımı, seçim dışı HTML'nin korunması, boş/hatalı seçim,
+export/yeniden import, eski hash reddi, CSRF, tek commit ve restart kalıcılığını
+doğrular. Gerçek React seçim bileşeni yerel örneklerle tarayıcıda kontrol edildi:
+tekil seçim, tümünü seç/temizle, Space ile checkbox ve HTML örneğinin metin gösterimi.
+Bu kontrol tam import sihirbazının tarayıcı kabulü veya erişilebilirlik sertifikası
+değildir; import uçtan uca akışı gerçek HTTP testindedir.
+
+Önceki tam denemede hosting ajanının ilk yayını bir kez 502 döndü; staging
+dosyaları oluştu fakat release dizinine geçmedi. Aynı beş hosting testi ayrı
+çalıştırmada ve son tam pakette geçti. Kök neden doğrulanmadı; tekrarlanabilir
+bir kaynak eşleştirme hatası bulunmadı. Bu durum başarılı son koşumdan ayrı kaydedildi.
+[Kapsam ve API uyumluluğu](FIELD_MAPPING.md).
+
 ## 2026-11-21 — Hosting bağlantıları ve statik dağıtım ajanı
 
 Tam kontrol `20261121T162417-331a7c07`; başlangıç commit'i `21df0bf`, çalışma

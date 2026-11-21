@@ -30,7 +30,10 @@ Update this list and share its current state after each completed task.
   actual TLS/proxy and provider credentials. No live acceptance claimed by fixtures.
 - [ ] Natro shared-hosting/FTP publication, if required, needs a separate connector.
   Keep source commit, build result and deployed release separate; ZIP is not hosting.
-- [ ] Unmarked-site discovery and explicit editable-field mapping/annotation.
+- [x] Unmarked static HTML text discovery, import-review selection and permanent
+  source annotation. Direct headings/paragraphs and nested section text supported;
+  selection/export/reimport and HTTP restart tested. See [scope](FIELD_MAPPING.md).
+- [ ] Broader manual DOM mapping, images/link targets and framework-aware discovery.
 - [ ] Legacy-console retirement plan with data authority and recovery checkpoints.
 - [ ] General content types/blog followed by editorial workflow.
 - [ ] SEO/media expansion, booking–CRM automations and commerce completion.
