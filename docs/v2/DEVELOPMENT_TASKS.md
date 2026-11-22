@@ -19,10 +19,15 @@ Update this list and share its current state after each completed task.
 
 ## Next dependent work
 
-- [ ] NEXT ANALYSIS: optional AI model gateway and paid editing/publication/security
-  modules. Benchmark Google Gemma 4 and Alibaba Qwen 3 / 3.8 alongside other suitable models;
-  verify exact licenses, hardware/cost and isolation. See [AI plan](AI_MODULES_PLAN.md).
-  No model installation yet. Implementation requires isolated workers and entitlements.
+- [x] AI desk comparison: Gemma 4 E4B, Qwen3-8B and Qwen3.8-27B; official
+  model/license sources, memory lower bounds and local hardware feasibility.
+  See [comparison](AI_MODEL_COMPARISON.md). No real inference benchmark claimed.
+- [x] AI execution architecture and benchmark specification; current content-only
+  proposal permissions preserved. See [ADR](ADR_AI_EXECUTION.md).
+- [ ] NEXT: versioned AI contracts and synthetic benchmark fixtures/runner.
+- [ ] Durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
+- [ ] Pinned model/runtime pilot and measured quality/latency/cost decision.
+  Production hardware, concurrency, budget and region remain deployment inputs.
 
 - [x] Cloudflare Pages Git-connected production-branch deployment, commit receipt
   comparison and HTTP verification (provider fixtures; live acceptance pending).

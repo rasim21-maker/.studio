@@ -4,8 +4,10 @@
 
 ## Priority and architectural decision
 
-The next analysis task after visual selection/React component bindings is an AI
-feasibility ADR and model benchmark plan. Do not install or select a model yet.
+Desk analysis is complete: [model comparison](AI_MODEL_COMPARISON.md) and
+[execution ADR](ADR_AI_EXECUTION.md). Next build versioned contracts and synthetic
+benchmark fixtures/runner. Real inference, model selection and installation remain
+pending; the comparison is not measured benchmark evidence.
 Implementation follows the worker-isolation and commercial-entitlement prerequisites;
 it must not be presented as completion of core CMS/blog/editorial backlog items.
 The current application is a modular monolith. The new AI execution layer is designed
