@@ -1,5 +1,20 @@
 # V2 doğrulama raporu
 
+## 2026-11-22 — Kalıcı AI deposu ve PostgreSQL CI düzeltmesi
+
+Tam kontrol `20261122T200319-2b32c028`, başlangıç `78fca80`, çalışma ağacı
+`040ecc2cfc61318b3cb6b4fad9f00ac40f2b495aa771e99ed5805e17e440d499`.
+Çalışma sırasında değişiklik yok. 54 eski + 190 V2 = 244 uygulama testi geçti,
+gerçek PostgreSQL etkin, uygulama skip'i yok. Yardımcı 15 başarılı/1 platform skip;
+typecheck/build/check/paket/lisans/SBOM/audit başarılı. Ayrı test:postgres 38/38 geçti.
+Belgeler test sonrasında eklendi. Önceki değişen çalışma ağacı koşusu teslim kanıtı sayılmadı.
+
+GitHub 45063769745 ve 45003923979 PostgreSQL günlüklerinde aynı ENOENT bulundu:
+migration testi temiz checkout'ta bulunmayan test-results dizinini varsayıyordu.
+Fixture artık işletim sistemi geçici alanında mkdtemp kullanır. test:postgres yeni
+AI depo testlerini de zorunlu çalıştırır. Yerel başarı uzak CI başarısı değildir.
+AI kapsamı: AI_JOB_STORAGE.md; canlı model/panel/izole worker kabulü yapılmadı.
+
 ## 2026-11-22 — AI iş geçişi politikası
 
 Tam kontrol `20261122T195543-5f881ad1`, başlangıç `d6b124d`, çalışma ağacı

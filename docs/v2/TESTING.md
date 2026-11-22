@@ -1,5 +1,11 @@
 # Test prosedürü ve code review regresyonları
 
+Kalıcı AI deposu: ai-jobs.test.mjs gerçek SQLite/PostgreSQL üzerinde kota/claim
+yarışları, yetki iptali, audit rollback, idempotency ve sonuç kalıcılığını sınar;
+test:postgres paketine dahildir. Testler önceden oluşmuş test-results klasörüne
+bağımlı olmamalı. Migration fixture işletim sistemi geçici dizinini kullanır;
+temiz checkout PostgreSQL CI işi teslim kapısı olarak korunur.
+
 AI sözleşme regresyonu: `ai-contracts.test.mjs` sürüm/tür/fazladan yetki alanı,
 eski kaynak, yanlış iş/alan/kanıt, bütçe ve yinelenen hedef reddini doğrular.
 Çevrimdışı değerlendiricide eksik çıktı başarı sayılmaz; CLI bozuk/büyük dosyayı

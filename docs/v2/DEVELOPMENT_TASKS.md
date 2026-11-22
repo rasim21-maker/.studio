@@ -32,10 +32,17 @@ Update this list and share its current state after each completed task.
 - [x] Preview AI job/result contracts and offline evaluation CLI: 60 development
   and 20 separate synthetic smoke cases. No actual inference or quality score.
   See [scope and usage](AI_EVALUATION.md).
-- [ ] NEXT: durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
+- [x] Internal durable AI job repository: SQLite/PostgreSQL, atomic revision writes,
+  idempotency, mandatory authorization/audit and tenant outstanding-job quotas.
+  See [scope](AI_JOB_STORAGE.md); not yet connected to the panel/model worker.
+- [x] Fix PostgreSQL CI clean-checkout failure: migration fixture no longer assumes
+  test-results exists. AI repository tests added to required PostgreSQL acceptance.
+- [ ] NEXT: worker/API composition, crash recovery and isolated gateway/worker.
+- [ ] Token accounting, retention and paid-module entitlement integration.
 - [x] Pure AI job transition policy: expiring ownership, increasing attempt,
   stale revision/worker rejection, cancellation and separate human review state.
-  Persistence/CAS, authentication, quota and actual worker integration remain pending.
+  Persistence/CAS and slot quota now have an internal repository; endpoint/worker
+  authentication and actual worker integration remain pending.
 - [ ] Local Qwen4 checkpoint/runtime pinning and functional/security smoke acceptance
   after official open weights and license are verified. External release pending;
   independent jobs/worker implementation continues. No quality benchmark required.

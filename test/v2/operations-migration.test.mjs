@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
 import {PostgreSQLStorage} from '@loft-studio/module-core/storage';
 import {Store} from '../../src/store.mjs';
@@ -9,7 +10,7 @@ import {Booking,ensureBookingSite} from '@loft-studio/booking';
 import {Integrations} from '../../src/integrations.mjs';
 import {createOperations} from '../../src/operations.mjs';
 for(const backend of ['sqlite','postgres'])test('operational migration and restart: '+backend,{skip:backend==='postgres'&&!process.env.LOFT_TEST_POSTGRES_URL},async()=>{
- const dir=await fs.mkdtemp(path.resolve('test-results/ops-migration-')),source=new Store(':memory:');let operations,pool,admin,schema;
+ const dir=await fs.mkdtemp(path.join(tmpdir(),'loft-ops-migration-')),source=new Store(':memory:');let operations,pool,admin,schema;
  try{
   const oldBooking=new Booking(source),oldPayments=await Integrations.open(source,dir);
   ensureBookingSite(source,{id:'site',name:'Migration'});const c=oldBooking.settings('site');Object.assign(c.values,{timezone:'UTC',publicEnabled:true});Object.assign(c.values.services[1],{enabled:true,minNoticeHours:0,priceMinor:2500,weekdays:[0,1,2,3,4,5,6]});oldBooking.saveSettings('site',c,'owner');
