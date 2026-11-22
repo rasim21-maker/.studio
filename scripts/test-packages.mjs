@@ -14,7 +14,8 @@ run([process.env.npm_execpath,'install','--offline','--ignore-scripts','--no-aud
 run([path.join(base,'node_modules/@loft-studio/sdk/cli.mjs'),'create',path.join(base,'external-module'),'acme.notes'],base);
 run([path.join(base,'node_modules/@loft-studio/sdk/cli.mjs'),'create-async',path.join(base,'external-async'),'acme.async-notes'],base);
 run([path.join(base,'node_modules/@loft-studio/sdk/cli.mjs'),'check',path.join(base,'external-async/index.mjs')],base);
-const consumer=`import assert from 'node:assert/strict';
+const consumer=`import {componentProps} from '@loft-studio/sdk/components';
+import assert from 'node:assert/strict';
 import {fileURLToPath} from 'node:url';
 import {DatabaseSync} from 'node:sqlite';
 import {AuditLog} from '@loft-studio/audit';
@@ -35,6 +36,7 @@ import bookingCrm from '@loft-studio/booking-crm';
 import external from './external-module/index.mjs';
 import crm from '@loft-studio/crm';import seo from '@loft-studio/seo';import commerce from '@loft-studio/commerce';
 for(const name of ['sdk','module-core','booking','crm','seo','commerce','booking-crm','audit'])assert.ok(fileURLToPath(import.meta.resolve('@loft-studio/'+name)).startsWith(process.cwd()),'Dependency escaped the consumer checkout: '+name);
+assert.equal(componentProps({locale:'en',locales:['en'],pages:[{id:'p',sections:[{id:'s',fields:[{id:'title',type:'text',value:'Package consumer'}]}]}]}, {version:1,components:[{id:'hero',page:'p',section:'s',sourceFile:'src/Hero.tsx',exportName:'default',props:{title:'title'}}]},'hero').title,'Package consumer');
 const auditDb=new DatabaseSync(':memory:');auditDb.exec('CREATE TABLE notes(id TEXT PRIMARY KEY,site_id TEXT,value TEXT)');
 const portable=new SQLiteStorage(':memory:');
 await portable.transaction(async tx=>{await tx.query('CREATE TABLE proof(id TEXT PRIMARY KEY)');await tx.query('INSERT INTO proof VALUES (?)',['consumer']);assert.equal((await tx.get('SELECT id FROM proof')).id,'consumer');});await portable.close();

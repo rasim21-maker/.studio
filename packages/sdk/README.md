@@ -1,5 +1,11 @@
 # @loft-studio/sdk
 
+The private workspace also exports `@loft-studio/sdk/components` with
+`validateComponentBindings(document, manifest)` and
+`componentProps(document, manifest, componentId, locale?)`. It resolves declared
+primitive props without loading component source. See [the guide](../../docs/v2/COMPONENT_BINDINGS.md).
+This data bridge is separate from business-module API versions.
+
 Version 0.1.0. See docs/v2/MODULES.md in the Studio repository for the public contract, usage, migration and security boundaries.
 
 This first-party package is private while the product license is being selected. It is tested as a standalone local tarball; it has not been published to npm.

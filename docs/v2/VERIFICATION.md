@@ -1,5 +1,35 @@
 # V2 doğrulama raporu
 
+## 2026-11-22 — Görsel seçim, React prop bağlantıları ve ortak güvenlik sözleşmesi
+
+Son tam kontrol: `20261122T081034-7dd9d7df`; başlangıç commit'i `abebb07`, çalışma
+ağacı `a874ba0c13023bd3e29233788a4c1658374ea9bc447940b9c99268a2b447d888`.
+Çalışma sırasında dosya değişmedi. 54 eski + 179 V2 = 233 uygulama testi geçti;
+uygulama skip'i yok, gerçek PostgreSQL etkin. Yardımcı 15 başarılı/1 platform skip;
+typecheck, build, check, bağımsız paket tüketicileri, lisans, SBOM ve audit geçti.
+Bu rapor sonradan eklendi; çalışan kod değişmedi.
+
+İlk denemede PostgreSQL testindeki eski audit kayıtları 500 kayıtlık sorgu dilimini
+doldurdu. Teste ayrı şema/temizlik getirildi. Sonraki hosting testinde ikinci yayın
+dosya taşıma aşamasında başarısız oldu; test verisi OneDrive çalışma dizininden
+işletim sistemi geçici alanına taşındı. Üretim audit veya yayın davranışı bu test
+izolasyon düzeltmeleri için değiştirilmedi; tam kontrol sonrasında geçti.
+
+Gerçek `VisualSelection` React bileşeni yerel iki sayfalı fixture ile tarayıcıda
+doğrulandı: tıklama/Enter seçimi, Space ile kaldırma, sayfa değişiminde seçimin
+korunması. Bu, bütün import sihirbazının uçtan uca tarayıcı kabulü veya WCAG
+sertifikası değildir. HTTP testinde yetki ve seçim endpoint'i; protokol testinde
+kaynak/origin/channel/key denetimi ve ithal kodun temizliği doğrulanır.
+
+React SDK fixture'ı güvenilir test bileşenini gerçekten derler/render eder;
+kaydedilen alan değeri çıktıya yansır ve JSX kaynağı korunur. Müşteri bileşenleri
+çalıştırılmaz. Bildirilmemiş framework/JSX dönüşümleri ve izole canlı derleme bekliyor.
+
+Ortak kök SECURITY.md resolver ile src/v2 kapsamı için doğrulandı. Bu bir yeni
+güvenlik taraması veya bağımsız onay değildir. README, teknik devir, özellik eksik
+analizi ve görev listesi güncellendi. Gemma 4 / Qwen 3 / Qwen 3.8 model kartları
+AI analiz planına eklendi; ağırlık indirme, model kurulumu ve benchmark yapılmadı.
+
 ## 2026-11-22 — Manuel kaynak DOM seçimi ve framework keşfi
 
 Tam kontrol `20261121T220839-1bf321a5` (UTC kimliği); başlangıç commit'i `3e5471b`,

@@ -3,6 +3,10 @@ export function FrameworkReport({report}:{report:any}){
  if(!report)return null;
  return <details open><summary>Teknoloji keşfi · {report.names.join(', ')||'Statik veya bilinmiyor'}</summary><p>{report.message}</p><p>Kod çalıştırılmadı. Paket bildirimi veya HTML işareti, çalışan framework doğrulaması değildir.</p>{report.evidence.map((e:any,i:number)=><p key={i}><strong>{e.name}</strong> · <code>{e.file}</code> · {e.signal}</p>)}</details>;
 }
+export function ComponentReport({manifest}:{manifest:any}){
+ if(!manifest)return null;
+ return <details open><summary>SDK bileşen bağları · {manifest.components.length}</summary><p>Bu bileşenler içerik alanlarını React uygulamasında özellik olarak kullanır. Studio özel bileşen kodunu çalıştırmaz; kaynak dosyası ve export adı geliştirici beyanıdır.</p>{manifest.components.map((c:any)=><p key={c.id}><strong>{c.id}</strong> · <code>{c.sourceFile} / {c.exportName}</code><br/>{Object.entries(c.props).map(([prop,field])=>prop+' ← '+field).join(', ')}</p>)}</details>;
+}
 export function ManualMapping({candidates,selected,onChange}:{candidates:any[];selected:string[];onChange:(keys:string[])=>void}){
  const [query,setQuery]=useState('');
  const shown=candidates.filter(c=>(c.file+' '+c.path+' '+c.sample).toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr')));

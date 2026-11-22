@@ -19,10 +19,25 @@ or a guarantee that any arbitrary HTML is safe to execute.
 Discovery retains the existing limits: 40 HTML pages, at most 40 text candidate nodes
 and 40 link/image candidate nodes inspected per section, and at most 40 fields total
 per section (text first). Supported lowercase page paths and document/import limits apply.
-This is not a visual point-and-click selector for arbitrary DOM nodes. Navigation
+The visual picker selects supported manual candidates, not arbitrary DOM nodes. Navigation
 outside existing sections, React runtime trees and CMS schemas need their respective
 adapters/SDK or later mapping support. Supported additional leaves can now be selected
 through the manual source-DOM path list below.
+
+## Visual click selection
+
+The import review offers a page selector and a sandboxed preview for manual candidates.
+Click an outlined leaf or focus it with Tab and press Enter/Space; the pending DOM
+selection toggles. The path list remains the accessible fallback and selection record.
+`GET /api/v2/imports/:id/selection-preview?file=...` requires import ownership/scope
+and review status. It returns sanitized HTML, an ephemeral channel and allowed keys.
+
+The iframe has `sandbox="allow-scripts"` only: no same-origin, forms or navigation
+permissions. Imported scripts/frames/forms and forged picker attributes are removed;
+only the generated nonce-authorized Studio controller executes under a network-denying
+CSP. The parent checks the exact iframe window, opaque null origin, current channel,
+message schema and key allowlist. Clicks do not write data; commit rechecks the source
+mapping. Normal previews remain script-free. Unknown JS behavior is not reproduced.
 
 ## Manual DOM path selection and framework evidence
 

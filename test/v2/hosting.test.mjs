@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
+import {tmpdir} from 'node:os';
 import net from 'node:net';
 import {netlify,cloudflare,selfHosted,natro,staticArtifact} from '../../src/v2/hosting-providers.ts';
 import {createStaticDeployAgent} from '../../src/v2/static-deploy-agent.ts';
@@ -56,7 +57,9 @@ test('hosting HTTP encrypts credentials, persists deployment and prevents retry 
  assert.equal((await api('/api/v2/sites/'+randomUUID()+'/hosting')).status,404);assert.equal((await api(base+'/hosting/deploy/natro','POST',{revision})).status,422);
 });
 test('self-hosted and Natro agent serve immutable static releases with auth, CAS, retry and restart',async t=>{
- const directory=path.resolve('test-results/agent-'+randomUUID()),token='fixture-agent-token-'.repeat(3),instanceId=randomUUID(),publicUrl='https://static.example.test/',config={origin:publicUrl,instanceId};let agent,origin;
+ // Atomic rename fixtures belong outside cloud-synchronized workspaces, whose
+ // background file handles can interrupt publication independently of the agent.
+ const directory=path.join(tmpdir(),'loft-deploy-agent-test-'+randomUUID()),token='fixture-agent-token-'.repeat(3),instanceId=randomUUID(),publicUrl='https://static.example.test/',config={origin:publicUrl,instanceId};let agent,origin;
  const start=async()=>{agent=await createStaticDeployAgent({directory,token,instanceId,publicUrl});await new Promise(r=>agent.server.listen(0,'127.0.0.1',r));origin='http://127.0.0.1:'+agent.server.address().port;};await start();t.after(async()=>agent?.close());
  const transport=async(url,o={})=>{assert.ok(url.startsWith(publicUrl));const r=await fetch(origin+url.slice(publicUrl.length-1),{method:o.method||'GET',headers:o.headers,body:o.body});return{status:r.status,headers:Object.fromEntries(r.headers),body:Buffer.from(await r.arrayBuffer())};};
  assert.equal((await fetch(origin+'/_studio/v1/info')).status,401);await selfHosted.verify(config,token,transport);await natro.verify(config,token,transport);

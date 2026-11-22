@@ -19,6 +19,11 @@ Update this list and share its current state after each completed task.
 
 ## Next dependent work
 
+- [ ] NEXT ANALYSIS: optional AI model gateway and paid editing/publication/security
+  modules. Benchmark Google Gemma 4 and Alibaba Qwen 3 / 3.8 alongside other suitable models;
+  verify exact licenses, hardware/cost and isolation. See [AI plan](AI_MODULES_PLAN.md).
+  No model installation yet. Implementation requires isolated workers and entitlements.
+
 - [x] Cloudflare Pages Git-connected production-branch deployment, commit receipt
   comparison and HTTP verification (provider fixtures; live acceptance pending).
 - [x] Netlify static ZIP deployment and HTTP verification (provider fixtures).
@@ -39,12 +44,20 @@ Update this list and share its current state after each completed task.
   sections; fingerprint-bound IDs, overlap prevention and 40-field limits.
 - [x] Non-executing framework evidence report, including failed imports; runtime
   component editing remains explicitly unsupported without SDK/adapter integration.
-- [ ] Visual point-and-click selection, new section-root mapping and live framework
-  component/source integration beyond the existing Studio SDK.
+- [x] Visual click/keyboard selection of supported manual candidates in an isolated
+  source preview; imported site scripts stay disabled and commit remains authoritative.
+- [x] Declared React SDK component-prop bindings and a real compiled React fixture;
+  no customer JSX execution or automatic component source rewriting.
+- [x] Visual/component delivery gates: 233 application tests with real PostgreSQL,
+  packed SDK consumer, browser click/keyboard selection and shared security policy.
+  See [verification](VERIFICATION.md); full arbitrary-framework editing is not claimed.
+- [ ] New section-root mapping and additional framework adapters/live build isolation.
 - [ ] Legacy-console retirement plan with data authority and recovery checkpoints.
 - [ ] General content types/blog followed by editorial workflow.
 - [ ] SEO/media expansion, booking–CRM automations and commerce completion.
 - [ ] External module distribution and paid-module entitlement lifecycle.
+- [ ] Optional AI modules implementation after the analysis, isolated worker runtime
+  and entitlement foundations; independent gateway and workers, not embedded model code.
 
 Live hosting requires the chosen provider/project and credentials. Product licensing
 and public module distribution remain separate decisions. Isolation for untrusted

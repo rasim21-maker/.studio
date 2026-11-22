@@ -1,9 +1,17 @@
 # Loft Studio — CMS özellik eksikleri ve öncelik analizi
 
-2026-11-21 güncellemesi: geliştirme sırası [güncel görev listesinde](DEVELOPMENT_TASKS.md)
-tutuluyor. Asenkron depolama geçişinden sonraki ilk dilim, [GitHub'a kontrollü geri
-yazma ve kalıcı yayın akışıdır](GITHUB_PUBLICATION.md). Aşağıdaki eski salt okunur
-GitHub tespiti bu dilimle değişir; hosting dağıtımı ve canlı sağlayıcı kabulü ayrı kalır.
+2026-11-22 kod kapsamı güncellemesi: geliştirme sırası [güncel görev listesinde](DEVELOPMENT_TASKS.md).
+GitHub kontrollü yazma, hosting bağlantıları, sınırlı statik görsel seçim ve bildirimli
+React SDK prop eşleştirme eklendi. GitHub/yayın değerlendirmesi bu kapsamda
+güncellendi; canlı sağlayıcı kabulü halen bekliyor.
+Bu güncelleme yeni bir rakip pazar araştırması değildir. Genel JSX düzenleme,
+tam CMS PostgreSQL geçişi ve dış modül izolasyonu tamamlanmış sayılmaz.
+
+Yeni analiz: [isteğe bağlı AI modülleri](AI_MODULES_PLAN.md). Google Gemma 4 ve Alibaba
+Qwen 3 / 3.8 adayları değerlendirilecek; model gateway, düzenleme/yayın asistanları
+ve yetkili güvenlik incelemesi ayrı paket/çalıştırıcılar olarak planlanıyor. Henüz
+model kurulmadı. Uygulama ön koşulları izolasyon, yetkilendirme ve ticari modül
+aktivasyonudur. Ortak katkı güvenlik sözleşmesi: [SECURITY.md](../../SECURITY.md).
 
 Tarih: 17 Kasım 2026
 Kapsam: Loft Studio `v2`; Wix, WordPress, Joomla ve benzer CMS ürünleriyle karşılaştırma.
@@ -34,13 +42,21 @@ Taslak, geçmiş ve yetki altyapısı var. Genel içerik için “yazar → edit
 
 Bölüm taşıma ve yerleşim ayarları çalışıyor. Serbest iç içe bileşen düzenleme, tekrar kullanılabilir global bölümler, dinamik içerik listeleri ve kapsamlı şablon tasarımcısı düzeyine henüz ulaşmadı. Statik adaptörde yeni sayfa oluşturma ve keyfi kaynak yapılarını değiştirme de sınırlı.
 
+Desteklenen statik metin yaprakları tıklama/klavye ile seçilebiliyor; React SDK
+bileşenlerine bildirilen ilkel prop değerleri bağlanabiliyor. Bu, keyfi JSX veya
+her framework için görsel kaynak kodu düzenleme anlamına gelmiyor.
+
 ### 5. Tema ve bileşen ekosistemi — kısmi
 
 Palet ve yerleşim seçenekleri mevcut. Bağımsız geliştiricilerin tema/bileşen yayımladığı katalog, sürüm uyumluluğu, önizlemeli kurulum ve güncelleme sistemi yok. WordPress ve Joomla’nın tema/eklenti ekosistemine karşı belirgin bir açık. [WordPress](https://wordpress.org/about/features/), [Joomla](https://docs.joomla.org/Joomla_Core_Features)
 
 ### 6. Canlı yayın ve barındırma yönetimi — kısmi
 
-ZIP üretimi ve koşullu API yayın sözleşmesi var. GitHub’a değişiklik yazma, yaygın hosting sağlayıcılarına dağıtım, alan adı/SSL yönetimi ve sağlayıcıda doğrulanmış geri alma akışları tamamlanmış değil. GitHub bağlantısı şu anda salt okunur kaynak anlık görüntüsü.
+GitHub'a beklenen commit üzerinden kontrollü yazma ve kalıcı uzlaştırma var.
+Cloudflare Pages, Netlify ve bağımsız statik yayın agent'ı (Natro VPS/VDS dahil)
+bağlantıları uygulandı; sağlayıcı fixture'ları ve yerel gerçek HTTP/disk testleri
+canlı hesap kabulünün yerine geçmez. Canlı hesap kabulü, alan adı/SSL yönetimi,
+sağlayıcıda doğrulanmış geri alma ve Natro paylaşımlı FTP hosting halen eksik.
 
 ### 7. Gerçek CMS bağlantıları ve taşıma araçları — kısmi
 

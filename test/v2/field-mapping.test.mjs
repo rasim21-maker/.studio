@@ -101,6 +101,8 @@ test('HTTP mapping validates scoped keys and CSRF, commits once and persists sel
  let review;for(let i=0;i<100;i++){review=(await api('/api/v2/imports/'+job.id)).data;if(!['queued','analyzing'].includes(review.status))break;await new Promise(r=>setTimeout(r,10));}
  assert.equal(review.status,'review',JSON.stringify(review));const keys=review.report.fieldCandidates.map(c=>c.key);assert.equal(keys.length,2);
  const manual=review.report.manualCandidates;assert.equal(manual.length,1);assert.equal(review.report.framework.codeExecuted,false);
+ const preview=await api('/api/v2/imports/'+job.id+'/selection-preview?file=index.html');assert.equal(preview.status,200);assert.deepEqual(preview.data.keys,manual.map(c=>c.key));
+ const denied=await api('/api/v2/imports/'+job.id+'/selection-preview?file=index.html','GET',undefined,{Cookie:''});assert.equal(denied.status,401);
  const endpoint='/api/v2/imports/'+job.id+'/commit';
  assert.equal((await api(endpoint,'POST',{manualFields:['forged']})).status,422);
  assert.equal((await api(endpoint,'POST',{selectedFields:['foreign-field']})).status,422);

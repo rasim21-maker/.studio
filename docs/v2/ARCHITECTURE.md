@@ -31,6 +31,13 @@ The 0.2 application has HTTP authentication and site membership, SQLite versione
 
 ## Data boundaries
 
+Optional AI execution is a planned separately deployable gateway/worker layer,
+not model code embedded in this modular monolith. Editing, publication assistance
+and authorized security assessment are independent modules using versioned job
+contracts and existing scoped APIs. Model output has no direct write/deploy authority.
+Gemma and Qwen adapters remain replaceable; paid entitlements never replace tenant
+authorization. See [analysis and prerequisite ordering](AI_MODULES_PLAN.md).
+
 Organization -> workspace -> project -> site -> environment. Each imported site currently creates one workspace/project in a development environment. The manifest can describe several authorities, but the local connector store currently retains one remote connection per site. Source files, media bytes and immutable snapshots are stored in SQLite JSON columns; media names are content hashes. API callers cannot choose filesystem paths. This deliberately bounded local storage is not an object-store implementation.
 
 The primary product target is a hosted multi-tenant service; the local edition remains supported. Hosted Phase 1 requires PostgreSQL behind a shared repository contract, structural tenant isolation, S3-compatible object storage and durable jobs with separate workers. These are required implementations, not existing capabilities or a configuration switch. Local SQLite/files/in-process work remain separate implementations without requiring hosted services. The owner chose global reach, an open-source core and potential optional commercial modules. See [product decisions](PRODUCT_MODEL.md). Regional formatting preferences are implemented; they do not choose physical data residency or certify legal compliance. Per-tenant data region, recovery objectives and production providers remain deployment decisions.

@@ -1,5 +1,9 @@
 # Loft Studio 2 — yerel ön sürüm
 
+22 Kasım 2026: [görsel kaynak seçimi](FIELD_MAPPING.md), [React bileşen bağları](COMPONENT_BINDINGS.md),
+[hosting](HOSTING.md), [güncel görevler](DEVELOPMENT_TASKS.md) ve [ortak güvenlik kuralları](../../SECURITY.md).
+Planlanan model/AI modülleri [AI_MODULES_PLAN.md](AI_MODULES_PLAN.md) içindedir; canlı özellik değildir.
+
 Başka bir AI veya geliştiriciye teknik devir için: [English technical architecture and codebase handoff](AI_TECHNICAL_HANDOFF.md).
 
 Bu dal ilk uçtan uca geçiş dilimini içerir. Mevcut Loft konsolu `/`, yeni çalışma alanı `/v2/` adresindedir. Canlı Loft veri klasörü bu geliştirmede değiştirilmemiştir.

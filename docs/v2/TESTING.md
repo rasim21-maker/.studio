@@ -1,5 +1,19 @@
 # Test prosedürü ve code review regresyonları
 
+Test izolasyonu (2026-11-22): PostgreSQL bağlantı testi her çalıştırmada ayrı şema
+oluşturur ve sonunda yalnızca kendi şemasını kaldırır. Eski testlerin audit kuyruğu,
+500 kayıtlık sorgu sınırında yeni kayıtları gizlememeli. Statik hosting agent testi
+atomik dosya taşıma işlemlerini işletim sisteminin geçici alanında çalıştırır;
+bulutla senkronize çalışma klasörü test verisi dizini olarak kullanılmaz.
+
+Görsel seçim/bileşen regresyonu: `visual-components.test.mjs` ithal script ve sahte
+marker temizliğini, tek nonce kontrollü seçiciyi, kaynak/origin/channel/key mesaj
+kontrollerini ve kaynak dosyanın seçim önizlemesinde değişmemesini sınar. React
+fixture gerçek derleme/render ile alan güncellemesini doğrular; müşteri kodu testte
+çalıştırılmaz. Geçersiz prop, kaynak yolu ve eksik alan reddedilmeli. Paket tüketici
+testi SDK `components` export'unu kurulu paket üzerinden sınar. Tarayıcıda tıklama,
+Enter/Space seçimi ve sayfa değişiminde seçim korunmasını ayrıca kontrol edin.
+
 Manuel DOM/framework regresyonu: `manual-mapping.test.mjs` kaynak hash'ine bağlı seçim,
 çakışan alanların dışlanması, marker ile gerçek kaynak yazımı, yeniden import,
 manifest kapsamı, 200 aday/40 alan sınırı ve çalıştırmasız framework kanıtlarını

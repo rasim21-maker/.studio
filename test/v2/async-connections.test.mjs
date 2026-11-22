@@ -14,7 +14,14 @@ const url=process.env.LOFT_TEST_POSTGRES_URL;
 for(const backend of ['sqlite','postgres'])test('async connections: '+backend,{skip:backend==='postgres'&&!url},async t=>{
  let storage,pool;
  if(backend==='sqlite'){storage=new SQLiteStorage(':memory:');t.after(()=>storage.close());}
- else{const {Pool}=await import('pg');pool=new Pool({connectionString:url,max:4,statement_timeout:5000});storage=new PostgreSQLStorage(pool);t.after(()=>pool.end());}
+ else{
+  const {Pool}=await import('pg'),schema='connections_'+randomUUID().replaceAll('-','');
+  // Isolate repeated runs: pending() reads a bounded global outbox batch, so old
+  // unacknowledged fixture rows must not hide this test's current audit records.
+  pool=new Pool({connectionString:url,max:4,statement_timeout:5000,options:'-c search_path='+schema});
+  t.after(async()=>{try{await pool.query('DROP SCHEMA IF EXISTS '+schema+' CASCADE');}finally{await pool.end();}});
+  await pool.query('CREATE SCHEMA '+schema);storage=new PostgreSQLStorage(pool);
+ }
  const store=new Store(':memory:');t.after(()=>store.close());const booking=new Booking(store),binding=createAsyncBookingModule({store,booking});
  const id=randomUUID(),org=randomUUID(),actor={user_id:'owner'},site={id,org_id:org,name:'Site',revision:0,document:{pages:[{id:'home',name:'Home',title:'Home',description:'Description',path:'index.html'}]},allowed:['members','content','operations']};
  let permitted=true,auditFail=false,deliveryFail=false;

@@ -1,11 +1,21 @@
 # Loft Studio Technical Architecture and AI Handoff
 
-Version baseline: `1a8a28beefc2048fc551c7dc7e346e3c30b971d2` on branch `v2`.
-Prepared: 17 November 2026.
+Updated delivery: 22 November 2026, branch `v2`; implementation baseline `abebb07` plus the visual-selection/component-binding delivery described below. Immutable test evidence is in VERIFICATION.md.
+Originally prepared: 17 November 2026; revised: 22 November 2026.
 Repository: https://github.com/rasim21-maker/.studio
 Application package: `site-admin-console@2.0.0-alpha.1`.
 
 This document describes the implemented local alpha, its code organization, contracts, operational boundaries, and remaining work. It is intended for an AI coding system or engineer receiving this repository for the first time. It is a technical map, not a claim that the hosted product or every planned feature is complete. Paths below are relative to the repository root.
+
+## Current extension surfaces (22 November 2026)
+
+- `src/v2/manual-mapping.ts`: fingerprint-bound plain-text leaf selection; commit revalidates against quarantined source.
+- `src/v2/selection-preview.ts`, `shared/v2/selection-protocol.ts`, `ui/visual-selection.tsx`: inert source preview plus one nonce-authorized first-party controller in an opaque-origin iframe. Messages change pending selection only. Normal previews remain script-free.
+- `src/v2/framework-discovery.ts`: non-executing dependency/HTML evidence, including discovery failures. Detection does not confer edit capabilities.
+- `src/v2/component-bindings.ts`, `packages/sdk/components.mjs`: React SDK component prop declarations, validated on import/write. No arbitrary JSX rewriting or imported component execution in Studio.
+- `src/v2/github-publications.ts`, `hosting.ts`, `hosting-providers.ts`, `static-deploy-agent.ts`: durable publication and bounded provider/agent connections. See their documents for ambiguity, reconciliation and live-acceptance limits.
+- Read root `SECURITY.md` first for the shared human/AI contributor contract. `docs/v2/SECURITY.md` retains the detailed import/preview boundary notes. No independent security signoff is implied.
+- Optional AI gateway/editing/publication/security modules are analysis-only in `AI_MODULES_PLAN.md`; model selection, worker isolation, entitlements and billing are not delivered features.
 
 ## 1. Product purpose and current position
 
@@ -30,7 +40,7 @@ The long-term product direction is an open-source core with optional commercial 
 
 ### Not yet a delivered hosted platform
 
-PostgreSQL tenant isolation, object storage, external workers, arbitrary framework build isolation, general hosting deployment, a module marketplace, paid-module billing, and broad live-provider acceptance remain future work. SQLite and in-process services are actual implementation choices, not placeholders that can be switched to hosted operation with one environment variable.
+Full CMS PostgreSQL/hosted isolation, object storage, external workers, arbitrary framework build isolation, a module marketplace, paid-module billing and broad live-provider acceptance remain future work. Async modules and booking/payment storage have SQLite and real PostgreSQL acceptance. The default local installation still uses SQLite. GitHub write-back and four bounded hosting connectors are implemented; fixtures/local agent tests are not live-provider acceptance.
 
 ## 2. Architecture at a glance
 
@@ -61,7 +71,7 @@ flowchart TD
 
 The application is a modular monolith. There is no Express, Next.js server, ORM, Python application backend, or mandatory external queue in this implementation.
 
-The diagram is logical: most runtime components share one Node process and SQLite connection. Package boundaries and tenant authorization are not operating-system isolation.
+The diagram is logical: runtime services share one Node process by default, but CMS, module and operational authorities are separated. Async storage supports SQLite/PostgreSQL for modules and operations; the CMS console store remains SQLite. Package boundaries are not operating-system isolation.
 
 ## 3. Technology and build model
 
@@ -69,7 +79,7 @@ The diagram is logical: most runtime components share one Node process and SQLit
 | --- | --- |
 | Runtime | Node.js >=24.13.0 and <25, ESM |
 | Server | Native node:http, JavaScript .mjs plus directly imported TypeScript |
-| Database | node:sqlite, synchronous statements and transactions |
+| Database | SQLite CMS; async SQLite/PostgreSQL module and operational contracts (see ASYNC_MODULES.md and OPERATION_STORAGE.md) |
 | V2 UI | React 19.3.1 and TypeScript 5.9.3 |
 | Browser build | esbuild 0.28.2 |
 | Rich text | Tiptap |
@@ -273,7 +283,7 @@ Existing sections can be reordered/hidden. Arbitrary nested framework rewrites, 
 
 ### React SDK
 
-Compatible applications consume `studio/content.json` and `studio/design.css`. The Northstar example has its own pinned React build pipeline. Other React applications need to consume this contract or supply an adapter. Studio does not execute imported JSX in its preview.
+Compatible applications consume `studio/content.json` and `studio/design.css`. Optional `studio/components.json` declares versioned component-to-field bindings; `@loft-studio/sdk/components` resolves safe primitive props for developer-owned React components. See COMPONENT_BINDINGS.md. The Northstar example has its own pinned React build pipeline. Other React applications need to consume this contract or supply an adapter. Studio does not execute imported JSX in its preview.
 
 ### WordPress
 
@@ -321,7 +331,7 @@ V2 remote transport validates destinations and resolved IPs, pins checked addres
 
 Import idempotency uses owner/request key plus an input fingerprint. Reimport checks the expected local revision and preserves site identity. Authorization is rechecked during remote work; cancellation/revocation must prevent later commit.
 
-GitHub is a read-only snapshot connector. Ref drift is detected, but there is no automatic Git write-back or conflict merge. Exports include `studio/source-state.json` to preserve bindings and hashes. Hash mismatch rejects a stale mapping; hashes establish consistency, not authenticity.
+GitHub imports snapshots and supports immutable commit preparation, expected-source checks, non-forced branch updates and durable publication reconciliation. There is no automatic conflict merge. See GITHUB_PUBLICATION.md and HOSTING.md. Exports include `studio/source-state.json` to preserve bindings and hashes. Hash mismatch rejects a stale mapping; hashes establish consistency, not authenticity.
 
 ## 11. Save, preview, release and restore flows
 
@@ -364,7 +374,7 @@ A module definition declares manifest ID/version/API version/schema version/perm
 
 `ctx.records` is scoped to site/module/declared collection. Updates/deletes require revisions. Records are schema validated, uniqueness is scoped, and relationships protect referenced records. `beforeSave` output is validated again.
 
-`ctx.transaction()` wraps synchronous multi-write operations. Do not await network calls inside synchronous SQLite transactions. `ctx.emit()` records events and, for declared business events, participates in durable delivery.
+Current API 2 uses awaited storage transactions and asynchronous scoped record/event operations. Keep provider/network I/O outside transaction locks. The API 1 synchronous SQLite host remains a compatibility surface, not the contract for new modules. See ASYNC_MODULES.md, OPERATION_STORAGE.md and packages/module-core/async.mjs.
 
 Installation states are enabled, disabled and uninstalled. Disable/uninstall preserve data. Dependencies prevent unsafe shutdown. Migration failure rolls back the affected lifecycle change; silently downgrading to an older schema is not permitted.
 
@@ -453,7 +463,7 @@ It captures:
 - Registered data mutations with safe resource identity and before/after field differences.
 - Log viewing and export activity.
 
-AsyncLocalStorage correlates operations with their request. Connection-local temporary database triggers make registered business changes and their audit insert atomic. Log failure aborts that business transaction. Request-start logging failure rejects the request; a failure after sending the response can only raise a safe operational alarm.
+AsyncLocalStorage correlates operations with their request. Legacy SQLite request/business tracking uses connection-local temporary triggers; API 2 module and operational writes use asynchronous atomic audit/outbox paths and idempotent projection into the existing audit query store. Log failure aborts that business transaction. Request-start logging failure rejects the request; a failure after sending the response can only raise a safe operational alarm.
 
 Passwords, tokens, cookies, authentication material and sensitive payment fields are excluded/masked. Raw request bodies and query strings are not indiscriminately copied. Binary/source values and oversized structures use explicit omission markers/digests. Logs are not full data backups.
 
@@ -556,7 +566,7 @@ Exact N-1 reader/writer compatibility, managed KMS rotation, online snapshots an
 
 ## 21. Tests and verification evidence
 
-At the baseline development delivery, the full local profile passed 54 legacy plus 112 V2 tests, 15 Python helper tests, and the eight-package consumer checks. One Python symlink test was skipped on Windows. Typecheck, build, consistency checks, licenses, SBOM and dependency audit also passed. These are recorded local results, not a claim about a later GitHub Actions run.
+The older November 17 baseline had 54 legacy plus 112 V2 tests. The November 22 pre-picker delivery reached 231 application tests. Consult VERIFICATION.md and the current worktree-bound dev-assist report for this delivery; do not reuse historical counts as current evidence. The delivery gate includes Python helper tests and eight-package consumer checks. One Python symlink test was skipped on Windows. Typecheck, build, consistency checks, licenses, SBOM and dependency audit also passed. These are recorded local results, not a claim about a later GitHub Actions run.
 
 Important suites:
 

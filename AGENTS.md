@@ -3,6 +3,9 @@
 Work on `v2`. Preserve existing product behavior and user data. The product is
 Node.js/TypeScript; Python is only a local development helper.
 
+Read root `SECURITY.md` for the shared human/AI contributor security contract.
+Keep implemented controls, pending architecture and live acceptance clearly separate.
+
 For development tasks, prefer the bounded helper before broad repository reads:
 
 ```text

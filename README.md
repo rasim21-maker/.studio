@@ -1,5 +1,19 @@
 # Loft Studio 2 — ön sürüm
 
+22 Kasım 2026: V2; statik alan/öznitelik keşfi, manuel DOM yolları ve izole
+önizlemede tıklayarak ek metin seçimini destekler. React SDK uygulamaları için
+[bildirimli bileşen özellik bağları](docs/v2/COMPONENT_BINDINGS.md) eklendi;
+özel JSX Studio içinde çalıştırılmaz. [GitHub yayın akışı](docs/v2/GITHUB_PUBLICATION.md)
+ve [hosting bağlantıları](docs/v2/HOSTING.md) uygulanmıştır; canlı sağlayıcı kabulü
+ayrı bekleyen iştir. Modül ve rezervasyon/ödeme depolaması asenkron SQLite/PostgreSQL
+sözleşmelerini kullanır; tüm CMS'nin PostgreSQL'e geçtiği iddia edilmez.
+
+AI/geliştirici başlangıcı: [ortak güvenlik sözleşmesi](SECURITY.md),
+[teknik devir](docs/v2/AI_TECHNICAL_HANDOFF.md), [ana görev listesi](docs/v2/DEVELOPMENT_TASKS.md),
+[CMS eksik analizi](docs/v2/CMS_FEATURE_GAP_ANALYSIS.md) ve [doğrulama](docs/v2/VERIFICATION.md).
+Bağımsız AI/model geçidi ve ücretli yardımcı/güvenlik modülleri
+[analiz aşamasındadır](docs/v2/AI_MODULES_PLAN.md); henüz model kurulmadı.
+
 `v2` dalı farklı site kaynaklarını bağlayan yeni çalışma alanını içerir. Yeni arayüz `/v2/`, mevcut Loft konsolu `/` adresindedir. [V2 kurulum ve kullanım](docs/v2/README.md), [geçiş planı](docs/v2/MIGRATION.md) ve [doğrulama/kalan kapsam](docs/v2/VERIFICATION.md) belgelerini okuyun. Bu sürüm otomatik olarak canlı sitenizin yerini almaz.
 
 ## Mevcut Loft konsolu

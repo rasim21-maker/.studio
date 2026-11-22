@@ -1,3 +1,5 @@
+import {componentBindings} from './component-bindings.ts';
+import {selectionPreview} from './selection-preview.ts';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {randomUUID,randomBytes,createDecipheriv} from 'node:crypto';
@@ -142,6 +144,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    if(input.name){if(!name(input.name))fail(422,'Site adı 1–120 karakter olmalı.');source!.manifest.name=input.name.trim();}
    report.framework=inspectFramework(source!);discoveryReport=report;
    store.run('UPDATE studio_imports SET progress=65 WHERE id=?',job.id);const result=discover(source!,registry);
+   report.components=componentBindings(result.document,result.source);
    report.manualCandidates=manualCandidates(result.document,result.source).map(({value,offset,...candidate})=>candidate);
    if(result.source.manifest.adapter.id==='static')report.fieldCandidates=fieldCandidates(result.document,result.source);
    report.warnings.push(...result.warnings);report.accepted=Object.keys(result.source.files);const previous=authorizeImport(user,job);
@@ -173,9 +176,10 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    const id=randomUUID();store.run('INSERT INTO studio_imports VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',id,user.user_id,org.id,input.siteId||null,input.revision??null,'queued',0,null,null,now(),input.requestId,fingerprint);
    const job=store.get('SELECT * FROM studio_imports WHERE id=?',id);pending.push(()=>analyze(user,job,input));pump();return send({id,status:'queued'},202);
   }
-  const importMatch=route.match(/^imports\/([a-f0-9-]{36})(?:\/(commit|cancel))?$/);
+  const importMatch=route.match(/^imports\/([a-f0-9-]{36})(?:\/(commit|cancel|selection-preview))?$/);
   if(importMatch){
    const job=store.get('SELECT * FROM studio_imports WHERE id=? AND owner=?',importMatch[1],user.user_id);if(!job)fail(404,'Import bulunamadı.');if(job.site_id)access(user,job.site_id,'import');else organization(user,job.org_id);
+   if(method==='GET'&&importMatch[2]==='selection-preview'){if(job.status!=='review')fail(409,'Import incelemeye hazır değil.');const result=parse(job.result);return send(selectionPreview(result.document,result.source,url.searchParams.get('file')||''));}
    if(method==='GET'){const result=job.result?parse(job.result):null;return send({id:job.id,status:job.status,progress:job.progress,error:job.error,siteId:job.site_id,report:result?.report,changes:result?.changes,document:result?.document,capabilities:result?.source?registry.get(result.source.manifest.adapter.id).capabilities(result.source):null});}
    if(method==='POST'&&importMatch[2]==='cancel'){if(job.status==='committed')fail(409,'Tamamlanmış import iptal edilemez; içerik sürümünü geri yükleyin.');store.run("UPDATE studio_imports SET status='cancelled',result=NULL WHERE id=?",job.id);controllers.get(job.id)?.abort();return send({ok:true});}
    if(method==='POST'&&importMatch[2]==='commit'){

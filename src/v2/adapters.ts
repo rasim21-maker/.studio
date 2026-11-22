@@ -1,3 +1,4 @@
+import {componentBindings} from './component-bindings.ts';
 import {parse} from 'parse5';
 import {safeTextCandidate,safeAttributeCandidate} from './field-mapping.ts';
 import {posix} from 'node:path';
@@ -198,9 +199,9 @@ class StaticAdapter implements Adapter{
 class ReactSdkAdapter implements Adapter{
  id='react-sdk';version=1 as const;
  capabilities(){return{...common,preview:cap('partial','Studio SDK bileşenlerinin şema önizlemesi. İçe alınan JSX çalıştırılmaz.')}};
- discover(input:Source){const source=structuredClone(input);checkManifest(source.manifest);const file=source.manifest.contentPath||'studio/content.json';if(!source.files[file])fail(422,'SDK içerik dosyası bulunamadı.');let doc;try{doc=JSON.parse(source.files[file]);}catch{fail(422,'SDK içerik JSON biçimi geçersiz.');}const errors=validateDocument(doc,doc);if(errors.length)fail(422,'SDK belgesi doğrulanamadı.',errors);return{document:doc as Document,source,warnings:['Özel React bileşenleri bu önizlemede çalıştırılmaz. Kaynak kod değişmeden korunur.']};}
+ discover(input:Source){const source=structuredClone(input);checkManifest(source.manifest);const file=source.manifest.contentPath||'studio/content.json';if(!source.files[file])fail(422,'SDK içerik dosyası bulunamadı.');let doc;try{doc=JSON.parse(source.files[file]);}catch{fail(422,'SDK içerik JSON biçimi geçersiz.');}const errors=validateDocument(doc,doc);if(errors.length)fail(422,'SDK belgesi doğrulanamadı.',errors);componentBindings(doc,source);return{document:doc as Document,source,warnings:['Özel React bileşenleri bu önizlemede çalıştırılmaz. Kaynak kod değişmeden korunur.']};}
  validate=policy;
- write(before:Document,after:Document,input:Source){const errors=this.validate(before,after,input);if(errors.length)fail(422,'Alanları kontrol edin.',errors);const source=structuredClone(input);source.files[source.manifest.contentPath||'studio/content.json']=JSON.stringify(after,null,2);source.files['studio/design.css']='body{margin:0;font:18px/1.6 system-ui}main{padding:32px}section{padding:28px;background:var(--studio-surface)}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}'+designCss(after);source.manifest.name=after.name;source.manifest.locales=after.locales;source.files['studio.manifest.json']=JSON.stringify(source.manifest,null,2);return source;}
+ write(before:Document,after:Document,input:Source){const errors=this.validate(before,after,input);if(errors.length)fail(422,'Alanları kontrol edin.',errors);const source=structuredClone(input);componentBindings(after,source);source.files[source.manifest.contentPath||'studio/content.json']=JSON.stringify(after,null,2);source.files['studio/design.css']='body{margin:0;font:18px/1.6 system-ui}main{padding:32px}section{padding:28px;background:var(--studio-surface)}h2{font-size:clamp(28px,5vw,56px)}a{color:inherit}'+designCss(after);source.manifest.name=after.name;source.manifest.locales=after.locales;source.files['studio.manifest.json']=JSON.stringify(source.manifest,null,2);return source;}
  preview(doc:Document,source:Source,page:string){return inertPreview(sdkHtml(doc,page),source,doc.pages.find(p=>p.id===page)?.path||'index.html');}
  export(doc:Document,source:Source){return{...source.files,...Object.fromEntries(doc.pages.map(p=>['studio-preview/'+p.path,sdkHtml(doc,p.id,'studio-preview/'+p.path)]))};}
 }
