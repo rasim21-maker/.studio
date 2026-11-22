@@ -9,6 +9,14 @@ CMS feature. No new dependency: JSON Schema compilation reuses installed Ajv.
 
 ## Contracts
 
+`shared/v2/ai-job-state.mjs` adds a pure transition policy. A claim increments the
+attempt; expired/replaced ownership cannot start or finish work. Completion enters
+review; accept/reject are separate transitions. Cancellation invalidates late results.
+The caller must supply a trusted clock/state, authorize actor/worker actions and
+persist via atomic revision CAS. This is not a durable queue or a distributed lock;
+no endpoint currently invokes it and it does not apply content or execute a model.
+Regressions are in `test/v2/ai-job-state.test.mjs`.
+
 `shared/v2/ai-contracts.mjs` exports job/result JSON schemas and validators. Both
 reject additional fields and type coercion. Job scope includes tenant/site/actor,
 environment, base revision, source digest, allowed targets/evidence, region and

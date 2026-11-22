@@ -33,6 +33,9 @@ Update this list and share its current state after each completed task.
   and 20 separate synthetic smoke cases. No actual inference or quality score.
   See [scope and usage](AI_EVALUATION.md).
 - [ ] NEXT: durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
+- [x] Pure AI job transition policy: expiring ownership, increasing attempt,
+  stale revision/worker rejection, cancellation and separate human review state.
+  Persistence/CAS, authentication, quota and actual worker integration remain pending.
 - [ ] Local Qwen4 checkpoint/runtime pinning and functional/security smoke acceptance
   after official open weights and license are verified. External release pending;
   independent jobs/worker implementation continues. No quality benchmark required.

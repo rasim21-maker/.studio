@@ -1,5 +1,15 @@
 # V2 doğrulama raporu
 
+## 2026-11-22 — AI iş geçişi politikası
+
+Tam kontrol `20261122T195543-5f881ad1`, başlangıç `d6b124d`, çalışma ağacı
+`0f12100fe7c706aa14777761520ee77113b4fb1548984ddf484fbf4f73e240a0`.
+Çalışma sırasında değişiklik yok. 54 eski + 188 V2 = 242 uygulama testi geçti;
+gerçek PostgreSQL etkin, uygulama skip'i yok. Yardımcı 15 başarılı/1 platform skip;
+typecheck, build, check, paket, lisans, SBOM ve audit başarılı. Belgeler sonradan eklendi.
+Üç yeni test saf iş durum geçişlerini sınar; kalıcı AI kuyruğu/PostgreSQL AI iş
+deposu veya gerçek çalıştırıcı kabulü değildir. Model çalıştırılmadı.
+
 ## 2026-11-22 — AI sözleşmeleri ve çevrimdışı değerlendirme aracı
 
 Tam kontrol `20261122T083512-60e2b600`; başlangıç commit'i `06df9f3`, çalışma ağacı
