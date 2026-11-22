@@ -1,5 +1,9 @@
 # AI model feasibility comparison
 
+Superseded selection policy: the owner chose local/open-weight Qwen and to await
+Qwen4 weights, skipping comparative real-model benchmarks. See [decision](QWEN_DECISION.md).
+The desk research below is retained as historical evidence, not the active rollout.
+
 22 November 2026. Desk research and proposed evaluation, not executed inference.
 Code baseline: `130080b`. No model weights, packages or paid services installed.
 

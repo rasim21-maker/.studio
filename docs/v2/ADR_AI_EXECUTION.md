@@ -1,5 +1,10 @@
 # ADR: optional AI execution outside the CMS process
 
+Owner update, 22 November: [local/open-weight Qwen only](QWEN_DECISION.md).
+Remote-provider execution is outside the current rollout; comparative model pilot
+steps below are superseded by functional/security acceptance after Qwen4 weights
+and license are verified. Independent job/worker architecture remains applicable.
+
 Date: 22 November 2026. Status: proposed implementation architecture; desk analysis
 complete, production adoption gated on isolation and evaluation. No runtime changed.
 

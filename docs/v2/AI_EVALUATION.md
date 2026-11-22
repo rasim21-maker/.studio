@@ -1,5 +1,9 @@
 # AI contracts and offline evaluation v1
 
+Owner scope update: [local Qwen4 decision](QWEN_DECISION.md) defers the expanded
+comparative performance benchmark below. Keep this evaluator for contract regression;
+functional and security acceptance remain required. No cloud fallback is authorized.
+
 22 November 2026. Implemented developer tooling, not an inference service or live
 CMS feature. No new dependency: JSON Schema compilation reuses installed Ajv.
 

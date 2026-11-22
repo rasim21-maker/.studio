@@ -2,6 +2,11 @@
 
 22 November 2026. Requested product direction, NOT implemented functionality.
 
+Current owner decision: [local/open-weight Qwen only](QWEN_DECISION.md), awaiting
+verified Qwen4 weights/license. Skip comparative real-model benchmarking; retain
+integration/security acceptance. The shortlist and evaluation discussion below
+are historical research, not an instruction to install Gemma or use cloud APIs.
+
 ## Priority and architectural decision
 
 Desk analysis is complete: [model comparison](AI_MODEL_COMPARISON.md) and

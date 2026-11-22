@@ -19,6 +19,11 @@ Update this list and share its current state after each completed task.
 
 ## Next dependent work
 
+- [x] Owner model decision: local/open-weight Qwen only; wait for verified Qwen4
+  weights/license. No Qwen4-Max cloud API or silent older-model fallback.
+  Comparative real-model benchmarking is deferred by request, not passed.
+  See [current Qwen decision](QWEN_DECISION.md).
+
 - [x] AI desk comparison: Gemma 4 E4B, Qwen3-8B and Qwen3.8-27B; official
   model/license sources, memory lower bounds and local hardware feasibility.
   See [comparison](AI_MODEL_COMPARISON.md). No real inference benchmark claimed.
@@ -28,10 +33,11 @@ Update this list and share its current state after each completed task.
   and 20 separate synthetic smoke cases. No actual inference or quality score.
   See [scope and usage](AI_EVALUATION.md).
 - [ ] NEXT: durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
-- [ ] Real inference harness, natural-language/visual cases and stronger holdout;
-  synthetic evaluator checks do not satisfy model quality acceptance.
-- [ ] Pinned model/runtime pilot and measured quality/latency/cost decision.
-  Production hardware, concurrency, budget and region remain deployment inputs.
+- [ ] Local Qwen4 checkpoint/runtime pinning and functional/security smoke acceptance
+  after official open weights and license are verified. External release pending;
+  independent jobs/worker implementation continues. No quality benchmark required.
+- Deferred by owner: cross-model inference comparison, expanded quality corpus and
+  measured model-ranking decision. Existing offline regression tools remain available.
 
 - [x] Cloudflare Pages Git-connected production-branch deployment, commit receipt
   comparison and HTTP verification (provider fixtures; live acceptance pending).

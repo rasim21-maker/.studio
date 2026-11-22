@@ -9,6 +9,10 @@ This document describes the implemented local alpha, its code organization, cont
 
 ## Current extension surfaces (22 November 2026)
 
+- Current model policy: `QWEN_DECISION.md` supersedes comparative model selection.
+  Local/open-weight Qwen only; await verified Qwen4 weights/license, no cloud API.
+  Comparative performance benchmark deferred; functional/security tests retained.
+
 - `src/v2/manual-mapping.ts`: fingerprint-bound plain-text leaf selection; commit revalidates against quarantined source.
 - `src/v2/selection-preview.ts`, `shared/v2/selection-protocol.ts`, `ui/visual-selection.tsx`: inert source preview plus one nonce-authorized first-party controller in an opaque-origin iframe. Messages change pending selection only. Normal previews remain script-free.
 - `src/v2/framework-discovery.ts`: non-executing dependency/HTML evidence, including discovery failures. Detection does not confer edit capabilities.
