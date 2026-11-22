@@ -1,5 +1,11 @@
 # Test prosedürü ve code review regresyonları
 
+AI sözleşme regresyonu: `ai-contracts.test.mjs` sürüm/tür/fazladan yetki alanı,
+eski kaynak, yanlış iş/alan/kanıt, bütçe ve yinelenen hedef reddini doğrular.
+Çevrimdışı değerlendiricide eksik çıktı başarı sayılmaz; CLI bozuk/büyük dosyayı
+reddeder ve girdiyi hata mesajına taşımaz. Sentetik beklenen cevapların testte
+geçmesi gerçek model başarısı olarak raporlanamaz. Kapsam: `AI_EVALUATION.md`.
+
 Test izolasyonu (2026-11-22): PostgreSQL bağlantı testi her çalıştırmada ayrı şema
 oluşturur ve sonunda yalnızca kendi şemasını kaldırır. Eski testlerin audit kuyruğu,
 500 kayıtlık sorgu sınırında yeni kayıtları gizlememeli. Statik hosting agent testi

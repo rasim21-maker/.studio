@@ -16,7 +16,7 @@ This document describes the implemented local alpha, its code organization, cont
 - `src/v2/github-publications.ts`, `hosting.ts`, `hosting-providers.ts`, `static-deploy-agent.ts`: durable publication and bounded provider/agent connections. See their documents for ambiguity, reconciliation and live-acceptance limits.
 - Read root `SECURITY.md` first for the shared human/AI contributor contract. `docs/v2/SECURITY.md` retains the detailed import/preview boundary notes. No independent security signoff is implied.
 - Optional AI gateway/editing/publication/security modules are analysis-only in `AI_MODULES_PLAN.md`; model selection, worker isolation, entitlements and billing are not delivered features.
-- `AI_MODEL_COMPARISON.md` and `ADR_AI_EXECUTION.md` complete the desk analysis and evaluation design. The next slice is contracts/synthetic fixtures; no actual inference results exist yet.
+- `AI_MODEL_COMPARISON.md` and `ADR_AI_EXECUTION.md` complete the desk analysis and evaluation design. `AI_EVALUATION.md` documents preview contracts and an offline synthetic evaluator; durable jobs/isolated execution are next. No actual inference results exist yet.
 
 ## 1. Product purpose and current position
 

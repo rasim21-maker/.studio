@@ -1,5 +1,21 @@
 # V2 doğrulama raporu
 
+## 2026-11-22 — AI sözleşmeleri ve çevrimdışı değerlendirme aracı
+
+Tam kontrol `20261122T083512-60e2b600`; başlangıç commit'i `06df9f3`, çalışma ağacı
+`777e2461213114a6a0d9b17837521b4df3ffee4b772cc766abbc7879e2b50236`.
+Çalışma sırasında dosya değişmedi. 54 eski + 185 V2 = 239 uygulama testi geçti;
+uygulama skip'i yok ve gerçek PostgreSQL etkin. Yardımcı 15 başarılı/1 platform
+skip; typecheck, build, check, paket tüketicileri, lisans, SBOM ve audit geçti.
+Bu rapor ve devir notu testten sonra güncellendi; çalışan kod değişmedi.
+
+Altı yeni regresyon; sürümlü katı iş/sonuç şeması, kaynak/iş/hedef/bütçe/kanıt
+eşleşmesi, review-only sınırı, sentetik veri ayrımı, eksik/yanlış/yinelenen cevaplar
+ve gerçek CLI dosya sınırı/hata mesajını kapsar. 60 geliştirme ve 20 ayrı sentetik
+örnek sözleşme smoke testidir; model kurulmadı/çağrılmadı. Sentetik doğru cevaplarla
+değerlendiricinin sınanması model başarısı, pentest veya dil kalite ölçümü değildir.
+Yeni UI, sağlayıcı bağlantısı veya canlı CMS yazma yolu eklenmedi.
+
 ## 2026-11-22 — Görsel seçim, React prop bağlantıları ve ortak güvenlik sözleşmesi
 
 Son tam kontrol: `20261122T081034-7dd9d7df`; başlangıç commit'i `abebb07`, çalışma

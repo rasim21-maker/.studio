@@ -24,8 +24,12 @@ Update this list and share its current state after each completed task.
   See [comparison](AI_MODEL_COMPARISON.md). No real inference benchmark claimed.
 - [x] AI execution architecture and benchmark specification; current content-only
   proposal permissions preserved. See [ADR](ADR_AI_EXECUTION.md).
-- [ ] NEXT: versioned AI contracts and synthetic benchmark fixtures/runner.
-- [ ] Durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
+- [x] Preview AI job/result contracts and offline evaluation CLI: 60 development
+  and 20 separate synthetic smoke cases. No actual inference or quality score.
+  See [scope and usage](AI_EVALUATION.md).
+- [ ] NEXT: durable async AI jobs, lease/fencing, quota and isolated gateway/worker.
+- [ ] Real inference harness, natural-language/visual cases and stronger holdout;
+  synthetic evaluator checks do not satisfy model quality acceptance.
 - [ ] Pinned model/runtime pilot and measured quality/latency/cost decision.
   Production hardware, concurrency, budget and region remain deployment inputs.
 
