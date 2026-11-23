@@ -62,7 +62,9 @@ Trusted server configuration may inject security.aiConnector.execute({job, attem
 artifact, signal}); it must return the shared validated result envelope. This is
 an in-process orchestration boundary for a future isolated local Qwen transport,
 NOT a sandbox or permission to execute imported code. No browser can configure a
-connector/URL or provide worker credentials. The default application has no connector.
+connector/URL or provide worker credentials. The default application has no connector. `LOFT_AI_CONFIG` now supports the
+operator-owned container transport described in AI_LOCAL_RUNNER.md. Real container
+acceptance uses a synthetic probe; a Qwen inference image is not installed.
 Fixture connectors deliberately identify themselves as fixture-not-qwen.
 
 A private WeakMap binds each service worker identity to the submitting human and

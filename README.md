@@ -144,3 +144,7 @@ V2 AI iş kuyruğu: yetkili API/panel, kalıcı raporlar ve kesinti sonrası lea
 mevcut. Yerel Qwen bağlı değilse başlatma kapalıdır; otomatik içerik değişikliği veya
 yayın yapılmaz. İzole model çalıştırma ve ücretlendirme henüz hazır değildir.
 Ayrıntı: [AI job storage](docs/v2/AI_JOB_STORAGE.md).
+
+Yerel AI izolasyon taşıması `LOFT_AI_CONFIG` ile operatör tarafından yapılandırılabilir.
+Ağsız Docker çalıştırıcısı sentetik testlerle doğrulanmıştır; Qwen modeli henüz
+kurulu değildir. [Kurulum ve kapsam](docs/v2/AI_LOCAL_RUNNER.md).

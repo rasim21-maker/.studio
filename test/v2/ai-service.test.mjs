@@ -58,6 +58,11 @@ for(const backend of ['sqlite','postgres'])test('AI service authority, worker fe
   const saved=await route('GET','ai-jobs/'+item.job.id);assert.equal(saved.result,null);assert.equal(saved.state.status,scenario==='cancel'?'cancelled':scenario==='revoke'?'running':'failed');
   if(scenario==='revoke')await route('POST','ai-jobs/'+item.job.id+'/cancel',{revision:saved.state.revision});
  }
+ await service.close();let transportBusy=true;
+ service=await createAiService({...base,connector:{status:()=>({ready:true,busy:transportBusy}),execute:async args=>result(args)}});
+ const waiting=await route('POST','ai-jobs',{revision:1,idempotencyKey:randomUUID()});await service.worker.tick();
+ assert.equal((await route('GET','ai-jobs/'+waiting.job.id)).state.status,'queued','cleanup in progress must not consume/fail the next job');
+ transportBusy=false;await service.worker.tick();assert.equal((await route('GET','ai-jobs/'+waiting.job.id)).state.status,'review');
  const entries=await audit.pending(100);assert.ok(entries.every(e=>JSON.parse(e.payload).resource.startsWith('ai-job:')));
  assert.ok(entries.some(e=>JSON.parse(e.payload).actor.user_id==='system:ai-worker'));
 });

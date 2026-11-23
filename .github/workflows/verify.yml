@@ -13,6 +13,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  ai-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24.13.0'
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - name: Fetch pinned test-only base (no model)
+        run: docker pull postgres:17.7-alpine@sha256:bb377b7239d2774ac8cc76f481596ce96c5a6b5e9d141f6d0a0ee371a6e7c0f2
+      - name: Build offline isolation probe
+        run: docker build --network=none --pull=false -t loft-ai-isolation-fixture test/fixtures/ai-container
+      - name: Required container and HTTP acceptance (no silent skip)
+        shell: bash
+        run: |
+          export LOFT_TEST_AI_IMAGE="$(docker image inspect --format '{{.Id}}' loft-ai-isolation-fixture)"
+          node scripts/test-ai-container.mjs
   postgres:
     runs-on: ubuntu-latest
     timeout-minutes: 10

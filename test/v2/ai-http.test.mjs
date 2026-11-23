@@ -5,11 +5,12 @@ import net from 'node:net';
 import {tmpdir} from 'node:os';
 import {randomUUID} from 'node:crypto';
 import {createApp} from '../../src/server.mjs';
+import {createAiContainer} from '../../src/v2/ai-container.mjs';
 test('AI HTTP composition: auth, CSRF, worker-only actions, audit bridge and restart',async t=>{
  const projectRoot=path.resolve(import.meta.dirname,'../..'),dataDir=path.join(tmpdir(),'loft-ai-http-'+randomUUID());
  const probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));const origin='http://127.0.0.1:'+port;
  let app,cookie='',csrf='';
- const connector={execute:async({job,attempt})=>({version:1,jobId:job.id,attempt,baseRevision:job.baseRevision,artifactDigest:job.artifactDigest,model:'fixture-not-qwen',modelRevision:'fixture',runtimeRevision:'fixture',usage:{inputTokens:1,outputTokens:1,elapsedMs:1},output:{kind:'report',summary:'<script>untrusted report</script>',evidenceIds:[]}})};
+ const connector=process.env.LOFT_TEST_AI_IMAGE?await createAiContainer({image:process.env.LOFT_TEST_AI_IMAGE,model:'qwen-fixture-not-model',modelRevision:'fixture',runtimeRevision:'fixture',memoryMiB:256,cpus:1}):{execute:async({job,attempt})=>({version:1,jobId:job.id,attempt,baseRevision:job.baseRevision,artifactDigest:job.artifactDigest,model:'fixture-not-qwen',modelRevision:'fixture',runtimeRevision:'fixture',usage:{inputTokens:1,outputTokens:1,elapsedMs:1},output:{kind:'report',summary:'<script>untrusted report</script>',evidenceIds:[]}})};
  const open=async security=>{app=await createApp({projectRoot,dataDir,origin,security});await new Promise(r=>app.server.listen(port,'127.0.0.1',r));};await open({});t.after(()=>app.close());
  const api=async(url,method='GET',input,headers={})=>{const r=await fetch(origin+url,{method,headers:{Origin:origin,Cookie:cookie,'X-CSRF-Token':csrf,'Content-Type':'application/json',...headers},...(input===undefined?{}:{body:JSON.stringify(input)})});if(r.headers.get('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];const data=await r.json();if(data.csrf)csrf=data.csrf;return{status:r.status,data};};
  assert.equal((await api('/api/setup','POST',{token:app.setupToken,email:'ai@example.test',password:'AI-http-test-password-2026!'})).status,201);

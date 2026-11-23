@@ -41,8 +41,24 @@ Update this list and share its current state after each completed task.
   close review, worker-unavailable state and escaped result display.
 - [x] Trusted connector orchestration and expired-lease recovery, including abrupt
   child exit on SQLite/PostgreSQL and rejection of late/cancelled/invalid results.
-- [ ] NEXT: isolated local gateway transport/runtime and deployment controls.
-  Current connector injection is a trusted composition seam, not a sandbox.
+- [x] Docker local transport: pinned image, offline container, bounded input/output,
+  resource limits, cancellation, cleanup and operator configuration.
+- [x] Actual Linux container acceptance: non-root/read-only/network/cgroup controls,
+  abrupt orchestrator death/watchdog, HTTP queue and dedicated CI gate. Synthetic
+  probe only, not Qwen inference; see [runner scope](AI_LOCAL_RUNNER.md).
+- [ ] NEXT after isolation delivery: shared contextual AI chat/right sidebar, with
+  discoverable entry points on relevant editor, content, SEO, media, booking, CRM,
+  commerce and publication screens. Show the selected site/page/record and explicitly
+  scoped data to be sent; preserve drafts, keyboard access and mobile usability.
+  Reuse authorized job/proposal APIs; no automatic edits, publishing or scanning.
+  Missing model/capability must be clearly disabled, not simulated as live AI.
+- [ ] Refresh the existing Sites interactive application preview after the shared
+  AI interface is ready. Label sample chat/results and unsupported actions clearly;
+  Sites preview must not receive local Docker access, production secrets or data.
+  Verify desktop/mobile, sidebar interactions and error/unavailable states before
+  updating the existing preview. Keep this separate from CMS production deployment.
+- [ ] Verified Qwen4 runtime image, model load and functional/security acceptance.
+- [ ] Crash-remnant janitor and separately reviewed GPU/rootless deployment profiles.
 - [ ] Token accounting, retention and paid-module entitlement integration.
 - [x] Pure AI job transition policy: expiring ownership, increasing attempt,
   stale revision/worker rejection, cancellation and separate human review state.

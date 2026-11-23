@@ -1,5 +1,12 @@
 # Test prosedürü ve code review regresyonları
 
+Yerel AI konteyneri: ai-container.test.mjs taşıma sözleşmesini ve iptal/temizlik
+yarışlarını sınar. Gerçek izolasyon kapısı `node scripts/test-ai-container.mjs`
+için LOFT_TEST_AI_IMAGE zorunludur; bu kapı sessizce atlanamaz. Normal pakette
+Docker fixture yoksa gerçek testler skip olarak raporlanır. CI ai-isolation işi
+ağsız fixture oluşturup cgroup, iptal, ana süreç ölümü ve gerçek HTTP kuyruğu
+akışını zorunlu sınar. Model-free probe gerçek Qwen kabulü sayılmaz.
+
 AI servis regresyonu: ai-service.test.mjs SQLite/PostgreSQL üzerinde ani alt süreç
 çıkışı, lease kurtarma, geç sonuç reddi, çalışma sırasında yetki iptali, iptal sinyali
 ve bozuk sonuç reddini sınar. ai-http.test.mjs oturum/CSRF, sunucu tarafından

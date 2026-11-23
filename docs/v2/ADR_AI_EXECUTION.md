@@ -6,7 +6,8 @@ steps below are superseded by functional/security acceptance after Qwen4 weights
 and license are verified. Independent job/worker architecture remains applicable.
 
 Date: 22 November 2026. Status: proposed implementation architecture; desk analysis
-complete, production adoption gated on isolation and evaluation. No runtime changed.
+complete, production adoption gated on isolation and evaluation. The job/API/panel and container transport have since been implemented; see
+AI_JOB_STORAGE.md and AI_LOCAL_RUNNER.md for delivered controls and remaining gates.
 
 ## Existing code and compatibility
 

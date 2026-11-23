@@ -1,0 +1,35 @@
+#!/bin/sh
+# Deliberately not an inference runtime. Minimal deterministic isolation probe.
+read -r input
+b=/bin/busybox
+input=${input%%,\"artifact\":*}
+job=$(printf '%s' "$input" | $b sed -n 's/.*"id":"\([^"]*\)".*/\1/p')
+case "$job" in
+ hang) exec $b sleep 30;;
+ flood) exec $b yes oversized-fixture-output;;
+ invalid) printf 'not-json'; exit 0;;
+esac
+[ "$($b id -u)" = 65534 ] || exit 21
+[ -z "$LOFT_TEST_SENTINEL" ] || exit 22
+[ ! -e /var/run/docker.sock ] || exit 23
+[ "$(echo /sys/class/net/*)" = /sys/class/net/lo ] || exit 24
+if (echo forbidden > /studio/should-not-write) 2>/dev/null; then exit 25; fi
+echo ephemeral > /tmp/probe || exit 26
+$b grep -q '^NoNewPrivs:[[:space:]]*1$' /proc/self/status || exit 27
+$b grep -q '^CapEff:[[:space:]]*0000000000000000$' /proc/self/status || exit 28
+if [ -f /sys/fs/cgroup/memory.max ]; then
+ [ "$($b cat /sys/fs/cgroup/memory.max)" = 268435456 ] || exit 29
+ [ "$($b cat /sys/fs/cgroup/pids.max)" = 64 ] || exit 30
+ [ "$($b cat /sys/fs/cgroup/cpu.max)" = '100000 100000' ] || exit 31
+ [ "$($b cat /sys/fs/cgroup/memory.swap.max)" = 0 ] || exit 32
+else
+ [ "$($b cat /sys/fs/cgroup/memory/memory.limit_in_bytes)" = 268435456 ] || exit 33
+ [ "$($b cat /sys/fs/cgroup/pids/pids.max)" = 64 ] || exit 34
+ [ "$($b cat /sys/fs/cgroup/cpu/cpu.cfs_quota_us)" = 100000 ] || exit 35
+fi
+digest=$(printf '%s' "$input" | $b sed -n 's/.*"artifactDigest":"\([^"]*\)".*/\1/p')
+revision=$(printf '%s' "$input" | $b sed -n 's/.*"baseRevision":\([0-9]*\).*/\1/p')
+attempt=$(printf '%s' "$input" | $b sed -n 's/.*"attempt":\([0-9]*\).*/\1/p')
+model=qwen-fixture-not-model
+[ "$job" != wrong-model ] || model=unapproved-model
+printf '{"version":1,"jobId":"%s","attempt":%s,"baseRevision":%s,"artifactDigest":"%s","model":"%s","modelRevision":"fixture","runtimeRevision":"fixture","usage":{"inputTokens":1,"outputTokens":1,"elapsedMs":1},"output":{"kind":"report","summary":"Isolation fixture passed; no Qwen inference","evidenceIds":[]}}' "$job" "$attempt" "$revision" "$digest" "$model"

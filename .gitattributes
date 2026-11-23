@@ -4,3 +4,5 @@ vendor/loft/** -text
 *.webp binary
 *.jpg binary
 *.ico binary
+test/fixtures/ai-container/worker text eol=lf
+test/fixtures/ai-container/Dockerfile text eol=lf

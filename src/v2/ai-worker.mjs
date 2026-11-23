@@ -2,12 +2,12 @@
  * No shell, model loading, provider credentials or publication authority lives here. */
 export function createAiWorker({jobs,identity,resolve,connector,clock=Date.now}){
  let stopped=false,inflight=null,controller=null,activeId=null,cursor,lastError=false;
- const available=typeof connector?.execute==='function';
+ const available=()=>typeof connector?.execute==='function'&&(!connector.status||connector.status().ready===true);
  async function step(){
-  if(stopped||!available)return;
+  if(stopped||!available()||connector?.status?.().busy)return;
   const rows=await jobs.pending(cursor);cursor=rows.length?rows.at(-1).job:undefined;
   for(const row of rows){
-   if(stopped)return;
+   if(stopped||!available()||connector?.status?.().busy)return;
    if(row.state.status!=='queued'&&row.state.expires>clock())continue;
    const {job}=row;let actor,lease,timer;
    try{
@@ -34,9 +34,9 @@ export function createAiWorker({jobs,identity,resolve,connector,clock=Date.now})
   }
  }
  return{
-  status:()=>({available,running:!!inflight,lastError}),
+  status:()=>({available:available(),running:!!inflight,lastError}),
   cancel(id){if(id===activeId)controller?.abort();},
   tick(){if(inflight)return inflight;inflight=step().finally(()=>{inflight=null;});return inflight;},
-  async close(){stopped=true;controller?.abort();await inflight;}
+  async close(){stopped=true;controller?.abort();await inflight;await connector?.close?.();}
  };
 }

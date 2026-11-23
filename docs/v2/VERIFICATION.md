@@ -1,5 +1,33 @@
 # V2 doğrulama raporu
 
+## 2026-11-23 — Local container execution boundary
+
+Stable full gate 20261123T122421-a9eec22f, starting commit 3aca5e8, worktree
+ a6c1c980586882eedfe9a123622fcb3853dda00df8f22bed736b06b34444684a.
+54 legacy + 200 V2 = 254 application tests passed; actual PostgreSQL and Docker
+fixture enabled, no application skips. Helper: 15 passed, one platform skip.
+Typecheck/build/check/packages/licenses/SBOM/audit passed. No source changes during
+this run. Separate mandatory container/HTTP gate: 8/8 passed, zero skips.
+The earlier in-progress run was superseded after swap-preflight and busy-cleanup
+scheduler fixes. This evidence note was added after the stable run.
+
+Local Docker Engine 29.1.3; fixture image ID:
+sha256:e9a19b2e140e5739dc8970078f0bdbe8f441853af1abb6baa3c361fd309e27cf.
+The fixture checks actual cgroup CPU/memory/PID/swap bounds, only loopback network,
+non-root UID, no capabilities/new privileges, read-only root, absent host secret
+and Docker socket, bounded output, timeout, cancellation and removed containers.
+Abrupt orchestrator exit was exercised in a separate Node process; the in-container
+watchdog terminated execution independently. HTTP acceptance used this actual
+container connector for authorized creation, persisted report, audit and restart.
+
+A dedicated ai-isolation CI job now builds the pinned model-free probe and invokes
+a gate that cannot silently skip. General platform CI may skip real container tests;
+the dedicated job supplies that evidence. No Qwen model, GPU path, VM isolation,
+image redistribution/license clearance or model quality acceptance is claimed.
+See AI_LOCAL_RUNNER.md. Shared chat/sidebar and Sites preview refresh are queued
+next in DEVELOPMENT_TASKS.md; they are not part of this runtime delivery.
+
+
 ## 2026-11-23 — AI API, panel and worker recovery
 
 Full gate: 20261123T063813-bbf1499a, starting commit 5789332, worktree
