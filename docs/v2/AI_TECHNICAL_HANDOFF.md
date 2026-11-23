@@ -19,8 +19,8 @@ This document describes the implemented local alpha, its code organization, cont
 - `src/v2/component-bindings.ts`, `packages/sdk/components.mjs`: React SDK component prop declarations, validated on import/write. No arbitrary JSX rewriting or imported component execution in Studio.
 - `src/v2/github-publications.ts`, `hosting.ts`, `hosting-providers.ts`, `static-deploy-agent.ts`: durable publication and bounded provider/agent connections. See their documents for ambiguity, reconciliation and live-acceptance limits.
 - Read root `SECURITY.md` first for the shared human/AI contributor contract. `docs/v2/SECURITY.md` retains the detailed import/preview boundary notes. No independent security signoff is implied.
-- Optional AI gateway/editing/publication/security modules are analysis-only in `AI_MODULES_PLAN.md`; model selection, worker isolation, entitlements and billing are not delivered features.
-- `AI_MODEL_COMPARISON.md` and `ADR_AI_EXECUTION.md` complete the desk analysis and evaluation design. `AI_EVALUATION.md` documents preview contracts and an offline synthetic evaluator; durable jobs/isolated execution are next. No actual inference results exist yet.
+- Optional AI modules are scoped in `AI_MODULES_PLAN.md`. Durable job storage, authorized review API/panel and trusted connector orchestration are implemented (see `AI_JOB_STORAGE.md`); isolated model execution, entitlements and billing remain pending.
+- `AI_MODEL_COMPARISON.md` and `ADR_AI_EXECUTION.md` complete the desk analysis and evaluation design. `AI_EVALUATION.md` documents preview contracts and an offline synthetic evaluator; durable jobs and lease recovery are implemented; isolated model execution remains next. No actual inference results exist yet.
 
 ## 1. Product purpose and current position
 

@@ -139,3 +139,8 @@ npm.cmd test
 ```
 
 2 Kasım 2026: **54 test geçti**, başarısız/atlanmış test yok. Kaynak dosya özetleri ve 11 dilin 286 alanlık şeması kontrol edildi. Test kapsamı ve elle yapılan arayüz kontrolleri [doğrulama raporunda](VERIFICATION.md).
+
+V2 AI iş kuyruğu: yetkili API/panel, kalıcı raporlar ve kesinti sonrası lease kurtarma
+mevcut. Yerel Qwen bağlı değilse başlatma kapalıdır; otomatik içerik değişikliği veya
+yayın yapılmaz. İzole model çalıştırma ve ücretlendirme henüz hazır değildir.
+Ayrıntı: [AI job storage](docs/v2/AI_JOB_STORAGE.md).

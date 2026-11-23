@@ -41,7 +41,7 @@ export async function createApp({ projectRoot = path.resolve(import.meta.dirname
   const store = new Store(path.join(dataDir, 'console.sqlite'));
   store.seed(adapter);
   const features = await createFeatures({store,dataDir,origin,security});
-  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,modules:moduleFactory({store,features}),integrations,trustPolicy:security.moduleTrustPolicy,transport:security.studioTransport,secretProvider:security.studioSecretProvider});
+  const platform = await createPlatform({store,dataDir,legacyAdapter:adapter,features,modules:moduleFactory({store,features}),integrations,trustPolicy:security.moduleTrustPolicy,transport:security.studioTransport,secretProvider:security.studioSecretProvider,aiConnector:security.aiConnector});
   const audit = createAuditModule({store,platform,trustedProxies:security.audit?.trustedProxies||String(process.env.AUDIT_TRUSTED_PROXIES||'').split(',').filter(Boolean),operatorIds:security.audit?.operatorIds||String(process.env.AUDIT_OPERATOR_IDS||'').split(',').filter(Boolean)});
   const captcha = new Recaptcha({ hostname: urlOrigin.hostname, siteKey: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET, required: process.env.AUTH_REQUIRE_CAPTCHA === '1' || !['127.0.0.1', 'localhost', '[::1]'].includes(urlOrigin.hostname), ...security.captcha });
   const federation = new Federation({ store, origin, providers: security.providers || providerConfig(), ...(security.fetcher ? { fetcher: security.fetcher } : {}) });

@@ -11,6 +11,7 @@ import {safeRequest} from './network.ts';
 import {assertSnapshot,assertRestorable} from './snapshots.ts';
 import {sealSecret,openSecret} from '../security/envelope.mjs';
 import {openLocalKeyProvider} from '../security/local-keys.mjs';
+import {createAiService} from './ai-service.mjs';
 import {createAgentAccess} from './agent-access.mjs';
 import {createRegionalSettings} from './regional-settings.mjs';
 import {fixture} from './fixtures.ts';
@@ -29,7 +30,7 @@ const parse=(v:string)=>JSON.parse(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9-]{36}$/.test(v);
 const name=(v:unknown)=>typeof v==='string'&&v.trim().length>0&&v.length<=120&&!/[<>\u0000-\u001f]/.test(v);
 const packed=(row:any)=>({...row,document:parse(row.document),source:parse(row.source)});
-export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],integrations=[],trustPolicy,transport=safeRequest,secretProvider}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];integrations?:any[];trustPolicy?:any;transport?:typeof safeRequest;secretProvider?:any}){
+export async function createPlatform({store,dataDir,legacyAdapter,features,modules=[],integrations=[],trustPolicy,transport=safeRequest,secretProvider,aiConnector}:{store:Store;dataDir:string;legacyAdapter:any;features?:any;modules?:any[];integrations?:any[];trustPolicy?:any;transport?:typeof safeRequest;secretProvider?:any;aiConnector?:any}){
  store.db.exec(`
  CREATE TABLE IF NOT EXISTS studio_migrations(version INTEGER PRIMARY KEY, applied TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS studio_orgs(id TEXT PRIMARY KEY,name TEXT NOT NULL,owner TEXT NOT NULL REFERENCES users(id));
@@ -97,6 +98,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
  const hosting=createHosting({store,access,registry,seal,unseal,audit,transport});
  const agentAccess=createAgentAccess({store,access,registry,save,audit});
  const moduleRuntime=await createAsyncRuntime({store,dataDir,modules,integrations,trustPolicy,authorize:access,save,features});
+ const aiService=await createAiService({storage:moduleRuntime.storage,audit:moduleRuntime.audit,access,store,connector:aiConnector});
  const moduleHost=moduleRuntime.host;
  let eventSourceError=false;
  let delivering:Promise<void>|undefined;
@@ -231,6 +233,7 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
    if(action==='regional'||action==='regional-options'){
     if(await regional.route({req,user,siteId:id,action,method,url,body,send}))return true;
    }
+   if(action==='ai-jobs'||action.startsWith('ai-jobs/'))return await aiService.route({req,url,method,user,siteId:id,action,body,send});
    if(action==='agent-tokens'||action.startsWith('ai-proposals')){
     if(await agentAccess.humanRoute({req,url,method,user,siteId:id,action,body,send}))return true;
    }
@@ -316,5 +319,5 @@ export async function createPlatform({store,dataDir,legacyAdapter,features,modul
   }
   fail(404,'Studio V2 işlemi bulunamadı.');return true;
  }
- return{route,registry,save,access,deliverEvents,flushAudit:moduleRuntime.flushAudit,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);await delivering;await moduleRuntime.close();await features?.close?.();}};
+ return{route,registry,save,access,deliverEvents,flushAudit:moduleRuntime.flushAudit,agentRoute:agentAccess.agentRoute,async close(){closed=true;clearInterval(eventTimer);pending.length=0;for(const c of controllers.values())c.abort();await Promise.allSettled(running);await delivering;await aiService.close();await moduleRuntime.close();await features?.close?.();}};
 }

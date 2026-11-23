@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from 'react';
+import {AiJobsPanel} from './ai-jobs-panel.tsx';
 import {Modal} from './editors.tsx';
 import type {Document} from '../shared/v2/model.ts';
 
@@ -21,6 +22,7 @@ export function AgentPanel({base,request,document,revision,canManage,canAccept,o
  useEffect(()=>{void run(refresh);},[base]);
  return <Modal title="AI erişimi ve öneriler" onClose={onClose} wide>
   <p>AI yalnızca bu sitenin içeriğini okuyabilir ve öneri hazırlayabilir. Öneriler siz onaylamadan uygulanmaz; yayın, tasarım, üyeler ve ödeme işlemleri bu erişimin dışındadır.</p>
+  <AiJobsPanel base={base} request={request} revision={revision} canStart={canAccept}/>
   {error&&<div role="alert" className="error-banner">{error}</div>}
   {canManage&&<details><summary>AI erişim anahtarları</summary><form onSubmit={e=>{e.preventDefault();void run(async()=>{const issued=await request(base+'/agent-tokens','POST',{label,hours});setSecret(issued.token);setLabel('');await refresh();});}}>
    <div className="two-cols"><label>Anahtar adı<input required maxLength={80} value={label} onChange={e=>setLabel(e.target.value)}/></label><label>Geçerlilik (saat)<input required type="number" min={1} max={24} step={1} value={hours} onChange={e=>setHours(Number(e.target.value))}/></label></div>

@@ -136,3 +136,8 @@ Ana hedef açısından en kritik açık: **dışarıdan gelen bir geliştiricini
 - [Ürün ve ticari model](PRODUCT_MODEL.md)
 - [İşletim ve sınırlar](OPERATIONS.md)
 - [Doğrulama raporu](VERIFICATION.md)
+
+2026-11-23 AI güncellemesi: kalıcı iş deposu API/panele bağlandı; salt okunur yayın
+incelemesi, iptal, rapor görüntüleme ve lease kurtarma mevcut. İzole yerel Qwen
+çalıştırma, token muhasebesi, otomatik saklama/silme ve ücretli hak yönetimi eksik.
+Bu altyapı tamamlanmış bir üretken AI editörü veya pentest modülü değildir.

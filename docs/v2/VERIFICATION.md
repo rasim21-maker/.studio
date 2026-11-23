@@ -1,5 +1,31 @@
 # V2 doğrulama raporu
 
+## 2026-11-23 — AI API, panel and worker recovery
+
+Full gate: 20261123T063813-bbf1499a, starting commit 5789332, worktree
+cea5d4bf156a0bb9849e0bfb2e06d51f545b7dc4f056f781202fa661275aa5c3.
+No changes during this run. 54 legacy + 193 V2 = 247 application tests passed,
+real PostgreSQL enabled, no application skips. Helper: 15 passed, one platform
+skip. Typecheck/build/check/packed packages/licenses/SBOM/audit all passed.
+Separate required PostgreSQL acceptance: 40/40, zero skips.
+The earlier run rebuilt public/v2/app.js and was not used as immutable delivery
+evidence. This verification note was added after the successful stable run.
+
+New service tests cover both engines, abrupt child exit without storage cleanup,
+lease expiry/reclaim, a late old result, cancellation/AbortSignal, source changes,
+authority revocation during inference, invalid output and persisted review results.
+HTTP tests cover session/CSRF, unavailable runner, server-owned scope, forbidden
+worker actions, idempotency, bounded pagination, audit bridge and application restart.
+
+Browser acceptance used the actual AiJobsPanel component with clearly labelled
+synthetic data at loopback port 4329, separately from HTTP acceptance. Missing
+runner disables start; Enter starts and closes a report; 390x844 rendering wraps
+report text, including literal script markup. Screenshot: local ignored artifact
+test-results/ai-ui/mobile.jpg. This is not live Qwen output or a full accessibility audit.
+No isolated inference runtime, token billing, retention deletion or live model
+acceptance is claimed; see AI_JOB_STORAGE.md and DEVELOPMENT_TASKS.md.
+
+
 ## 2026-11-22 — Kalıcı AI deposu ve PostgreSQL CI düzeltmesi
 
 Tam kontrol `20261122T200319-2b32c028`, başlangıç `78fca80`, çalışma ağacı

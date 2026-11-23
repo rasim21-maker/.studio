@@ -1,5 +1,13 @@
 # Test prosedürü ve code review regresyonları
 
+AI servis regresyonu: ai-service.test.mjs SQLite/PostgreSQL üzerinde ani alt süreç
+çıkışı, lease kurtarma, geç sonuç reddi, çalışma sırasında yetki iptali, iptal sinyali
+ve bozuk sonuç reddini sınar. ai-http.test.mjs oturum/CSRF, sunucu tarafından
+belirlenen kapsam, yasak worker eylemleri, audit aktarımı ve restart kalıcılığını
+doğrular. Model yokluğunda API 503 ve panelde kapalı başlatma zorunludur. Tarayıcıda
+klavye, dar ekran ve HTML içeren sonucun metin olarak kalmasını kontrol edin.
+Fixture sonucu gerçek Qwen çıktısı olarak raporlanamaz.
+
 Kalıcı AI deposu: ai-jobs.test.mjs gerçek SQLite/PostgreSQL üzerinde kota/claim
 yarışları, yetki iptali, audit rollback, idempotency ve sonuç kalıcılığını sınar;
 test:postgres paketine dahildir. Testler önceden oluşmuş test-results klasörüne

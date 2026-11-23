@@ -1,6 +1,6 @@
 # Current development tasks
 
-Updated: 2026-11-22. This order supersedes the older feature gap report's sequencing.
+Updated: 2026-11-23. This order supersedes the older feature gap report's sequencing.
 Update this list and share its current state after each completed task.
 
 ## Delivered foundation
@@ -34,15 +34,20 @@ Update this list and share its current state after each completed task.
   See [scope and usage](AI_EVALUATION.md).
 - [x] Internal durable AI job repository: SQLite/PostgreSQL, atomic revision writes,
   idempotency, mandatory authorization/audit and tenant outstanding-job quotas.
-  See [scope](AI_JOB_STORAGE.md); not yet connected to the panel/model worker.
+  See [scope](AI_JOB_STORAGE.md); now composed with the authorized API/panel.
 - [x] Fix PostgreSQL CI clean-checkout failure: migration fixture no longer assumes
   test-results exists. AI repository tests added to required PostgreSQL acceptance.
-- [ ] NEXT: worker/API composition, crash recovery and isolated gateway/worker.
+- [x] Authorized AI API and panel: list/read, idempotent review submission, cancel,
+  close review, worker-unavailable state and escaped result display.
+- [x] Trusted connector orchestration and expired-lease recovery, including abrupt
+  child exit on SQLite/PostgreSQL and rejection of late/cancelled/invalid results.
+- [ ] NEXT: isolated local gateway transport/runtime and deployment controls.
+  Current connector injection is a trusted composition seam, not a sandbox.
 - [ ] Token accounting, retention and paid-module entitlement integration.
 - [x] Pure AI job transition policy: expiring ownership, increasing attempt,
   stale revision/worker rejection, cancellation and separate human review state.
-  Persistence/CAS and slot quota now have an internal repository; endpoint/worker
-  authentication and actual worker integration remain pending.
+  Persistence/CAS, slot quota, human API authorization and private service worker
+  identity are implemented; externally authenticated isolated workers remain pending.
 - [ ] Local Qwen4 checkpoint/runtime pinning and functional/security smoke acceptance
   after official open weights and license are verified. External release pending;
   independent jobs/worker implementation continues. No quality benchmark required.
